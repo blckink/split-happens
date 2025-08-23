@@ -1,7 +1,11 @@
 use rand::prelude::*;
 use serde_json::json;
 use std::error::Error;
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::path::PathBuf;
+use sha1::{Digest, Sha1};
+use crate::util::sha1_file;
 
 use crate::util::filesystem::copy_dir_recursive;
 use crate::{handler::Handler, paths::*};
@@ -25,8 +29,11 @@ pub fn create_profile(name: &str) -> Result<(), std::io::Error> {
     }
 
     let nepice_path = profile_dir.join("NemirtingasEpicEmu.json");
-    if !nepice_path.exists() {
+    if !nepice_path.exists() || std::fs::metadata(&nepice_path)?.len() == 0 {
         println!("Initializing Nemirtingas config for {name}");
+        let mut hasher = Sha1::new();
+        hasher.update(name.as_bytes());
+        let userid = format!("{:x}", hasher.finalize());
         let cfg = json!({
             "enable_overlay": false,
             "epicid": name,
@@ -35,12 +42,32 @@ pub fn create_profile(name: &str) -> Result<(), std::io::Error> {
             "savepath": "appdata",
             "unlock_dlcs": true,
             "language": "en",
-            "username": name
+            "username": name,
+            "userid": userid,
         });
-        std::fs::write(&nepice_path, serde_json::to_string_pretty(&cfg).unwrap())?;
+        let data = serde_json::to_string_pretty(&cfg).unwrap();
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .open(&nepice_path)?;
+        file.write_all(data.as_bytes())?;
+        file.sync_all()?;
     }
 
     Ok(())
+}
+
+pub fn ensure_nemirtingas_config(name: &str) -> Result<(PathBuf, String), Box<dyn Error>> {
+    let profile_dir = PATH_PARTY.join(format!("profiles/{name}"));
+    std::fs::create_dir_all(&profile_dir)?;
+    create_profile(name)?;
+    let path = profile_dir.join("NemirtingasEpicEmu.json");
+    if !path.exists() || std::fs::metadata(&path)?.len() == 0 {
+        return Err("Nemirtingas config missing".into());
+    }
+    let sha1 = sha1_file(&path)?;
+    Ok((path, sha1))
 }
 
 // Creates the "game save" folder for per-profile game data to go into
@@ -92,7 +119,7 @@ pub fn create_gamesave(name: &str, h: &Handler) -> Result<(), Box<dyn Error>> {
     let copy_save_src = PathBuf::from(&h.path_handler).join("copy_to_profilesave");
     if copy_save_src.exists() {
         println!("{} handler has built-in save data, copying...", h.uid);
-        copy_dir_recursive(&copy_save_src, &path_gamesave, false, true)?;
+        copy_dir_recursive(&copy_save_src, &path_gamesave, false, true, None)?;
     }
 
     println!("Save data directories created successfully");

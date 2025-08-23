@@ -34,6 +34,8 @@ pub struct Handler {
     // The handler must also bundle the patched EOSSDK DLL (e.g. via
     // copy_to_symdir) at the matching location; PartyDeck does not ship it.
     pub path_nemirtingas: String,
+    pub eos_per_instance: bool,
+    pub never_symlink_paths: Vec<String>,
     pub steam_appid: Option<String>,
     pub coldclient: bool,
 
@@ -127,6 +129,15 @@ impl Handler {
                 .unwrap_or_default()
                 .to_string()
                 .sanitize_path(),
+            eos_per_instance: json["eos.per_instance"].as_bool().unwrap_or(false),
+            never_symlink_paths: json["game.never_symlink_paths"]
+                .as_array()
+                .map(|arr| {
+                    arr.iter()
+                        .map(|v| v.as_str().unwrap_or_default().to_string().sanitize_path())
+                        .collect()
+                })
+                .unwrap_or_default(),
             steam_appid: json["steam.appid"]
                 .as_str()
                 .and_then(|s| Some(s.to_string())),
@@ -270,7 +281,7 @@ pub fn install_handler_from_file(file: &PathBuf) -> Result<(), Box<dyn Error>> {
         return Err("uid must be alphanumeric".into());
     }
 
-    copy_dir_recursive(&dir_tmp, &dir_handlers.join(uid), false, true)?;
+    copy_dir_recursive(&dir_tmp, &dir_handlers.join(uid), false, true, None)?;
     std::fs::remove_dir_all(&dir_tmp)?;
 
     Ok(())
@@ -283,7 +294,15 @@ pub fn create_symlink_folder(h: &Handler) -> Result<(), Box<dyn Error>> {
         return Ok(());
     }
     std::fs::create_dir_all(path_sym.to_owned())?;
-    copy_dir_recursive(&path_root, &path_sym, true, false)?;
+    let mut never_symlink: Vec<PathBuf> = h
+        .never_symlink_paths
+        .iter()
+        .map(|p| path_sym.join(p))
+        .collect();
+    if h.eos_per_instance || !h.path_nemirtingas.is_empty() {
+        never_symlink.push(path_sym.join(&h.path_nemirtingas));
+    }
+    copy_dir_recursive(&path_root, &path_sym, true, false, Some(&never_symlink))?;
 
     // copy_instead_paths takes symlink files and replaces them with their real equivalents
     for path in &h.copy_instead_paths {
@@ -295,7 +314,7 @@ pub fn create_symlink_folder(h: &Handler) -> Result<(), Box<dyn Error>> {
         println!("src: {}, dest: {}", src.display(), dest.display());
         if src.is_dir() {
             println!("Copying directory: {}", src.display());
-            copy_dir_recursive(&src, &dest, false, true)?;
+            copy_dir_recursive(&src, &dest, false, true, None)?;
         } else if src.is_file() {
             println!("Copying file: {}", src.display());
             if dest.exists() {
@@ -317,7 +336,7 @@ pub fn create_symlink_folder(h: &Handler) -> Result<(), Box<dyn Error>> {
     }
     let copypath = PathBuf::from(&h.path_handler).join("copy_to_symdir");
     if copypath.exists() {
-        copy_dir_recursive(&copypath, &path_sym, false, true)?;
+        copy_dir_recursive(&copypath, &path_sym, false, true, None)?;
     }
 
     // Insert goldberg dll
@@ -349,7 +368,7 @@ pub fn create_symlink_folder(h: &Handler) -> Result<(), Box<dyn Error>> {
                 false => src.join("x64"),
             };
 
-            copy_dir_recursive(&src, &dest, false, true)?;
+            copy_dir_recursive(&src, &dest, false, true, None)?;
 
             let path_steamdll = path_root.join(&h.path_goldberg);
             let steamdll = match &h.win {

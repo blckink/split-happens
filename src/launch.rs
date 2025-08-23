@@ -246,7 +246,8 @@ pub fn launch_cmd(
             false => "gamescope",
         };
 
-        let src_nemirtingas = PathBuf::from(format!("{path_prof}/NemirtingasEpicEmu.json"));
+        let (src_nemirtingas, sha1_nemirtingas) =
+            ensure_nemirtingas_config(instance.profname.as_str())?;
         let instance_gamedir = if use_bwrap {
             gamedir.clone()
         } else if let HandlerRef(h) = game {
@@ -326,14 +327,24 @@ pub fn launch_cmd(
                         std::fs::File::create(&dest)?;
                     }
 
-                    if src_nemirtingas.exists() {
-                        let sha1 = sha1_file(&src_nemirtingas)?;
+                    if src_nemirtingas.exists()
+                        && std::fs::metadata(&src_nemirtingas)?.len() > 0
+                    {
+                        if dest.is_symlink() {
+                            std::fs::remove_file(&dest)?;
+                        }
+                        if let Some(parent) = dest.parent() {
+                            std::fs::create_dir_all(parent)?;
+                        }
+                        if !dest.exists() {
+                            std::fs::File::create(&dest)?;
+                        }
                         println!(
                             "Instance {}: Nemirtingas config {} (SHA1 {}) -> {}",
                             instance.profname,
-                            src_nemirtingas.to_string_lossy(),
-                            sha1,
-                            dest.to_string_lossy()
+                            src_nemirtingas.canonicalize()?.display(),
+                            sha1_nemirtingas,
+                            dest.canonicalize()?.display()
                         );
                         binds.push_str(&format!(
                             "--bind \\\"{}\\\" \\\"{}\\\" ",
@@ -341,11 +352,12 @@ pub fn launch_cmd(
                             dest.to_string_lossy()
                         ));
                     } else {
-                        println!(
+                        return Err(format!(
                             "Nemirtingas config missing for profile {} at {}",
                             instance.profname,
                             src_nemirtingas.to_string_lossy()
-                        );
+                        )
+                        .into());
                     }
                 }
                 if h.win {
@@ -377,16 +389,25 @@ pub fn launch_cmd(
                 }
             }
         } else if let HandlerRef(h) = game {
-            if !h.path_nemirtingas.is_empty() && src_nemirtingas.exists() {
+            if !h.path_nemirtingas.is_empty()
+                && src_nemirtingas.exists()
+                && std::fs::metadata(&src_nemirtingas)?.len() > 0
+            {
                 let dest = PathBuf::from(&instance_gamedir).join(&h.path_nemirtingas);
-                let sha1 = sha1_file(&src_nemirtingas)?;
                 println!(
                     "Instance {}: Nemirtingas config {} (SHA1 {}) -> {}",
                     instance.profname,
-                    src_nemirtingas.to_string_lossy(),
-                    sha1,
-                    dest.to_string_lossy()
+                    src_nemirtingas.canonicalize()?.display(),
+                    sha1_nemirtingas,
+                    dest.canonicalize()?.display()
                 );
+            } else {
+                return Err(format!(
+                    "Nemirtingas config missing for profile {} at {}",
+                    instance.profname,
+                    src_nemirtingas.to_string_lossy()
+                )
+                .into());
             }
         }
 
