@@ -40,24 +40,6 @@ pub fn launch_game(
         }
     };
 
-    if let HandlerRef(h) = game {
-        if !h.path_nemirtingas.is_empty() {
-            if let Some(instance) = instances.first() {
-                let src = PATH_PARTY
-                    .join("profiles")
-                    .join(&instance.profname)
-                    .join("NemirtingasEpicEmu.json");
-                let dest = gamedir.join(&h.path_nemirtingas);
-                if let Some(parent) = dest.parent() {
-                    std::fs::create_dir_all(parent)?;
-                }
-                if src.exists() {
-                    std::fs::copy(&src, &dest)?;
-                }
-            }
-        }
-    }
-
     let cmd = launch_cmd(game, input_devices, instances, cfg)?;
     println!("\nCOMMAND:\n{}\n", cmd);
 
@@ -75,26 +57,6 @@ pub fn launch_game(
         .arg("-c")
         .arg(cmd)
         .status()?;
-
-    if let HandlerRef(h) = game {
-        if !h.path_nemirtingas.is_empty() {
-            if let Some(instance) = instances.first() {
-                let src = PATH_PARTY
-                    .join("profiles")
-                    .join(&instance.profname)
-                    .join("NemirtingasEpicEmu.json");
-                let dest = gamedir.join(&h.path_nemirtingas);
-                if src.exists() {
-                    std::fs::copy(&src, &dest)?;
-                    println!(
-                        "Persisted Nemirtingas config for {} at {}",
-                        instance.profname,
-                        dest.to_string_lossy()
-                    );
-                }
-            }
-        }
-    }
 
     if cfg.enable_kwin_script {
         kwin_dbus_unload_script()?;
