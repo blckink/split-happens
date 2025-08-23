@@ -1,4 +1,5 @@
 use rand::prelude::*;
+use serde_json::json;
 use std::error::Error;
 use std::path::PathBuf;
 
@@ -20,6 +21,21 @@ pub fn create_profile(name: &str) -> Result<(), std::io::Error> {
         "[user::general]\naccount_name={name}\naccount_steamid={steam_id}\nlanguage=english\nip_country=US"
     );
     std::fs::write(path_steam.join("configs.user.ini"), usersettings)?;
+
+    let nepice_path = PATH_PARTY.join(format!("profiles/{name}/NemirtingasEpicEmu.json"));
+    if !nepice_path.exists() {
+        let cfg = json!({
+            "enable_overlay": false,
+            "epicid": name,
+            "disable_online_networking": false,
+            "enable_lan": true,
+            "savepath": "appdata",
+            "unlock_dlcs": true,
+            "language": "en",
+            "username": name
+        });
+        std::fs::write(&nepice_path, serde_json::to_string_pretty(&cfg).unwrap())?;
+    }
 
     println!("Created successfully");
     Ok(())

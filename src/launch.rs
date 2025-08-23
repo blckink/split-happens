@@ -248,6 +248,17 @@ pub fn launch_cmd(
                     "--bind \"{path_prof}/steam\" \"{gamedir}/{path_goldberg}/goldbergsave\" "
                 ));
             }
+            if !h.path_nemirtingas.is_empty() {
+                let src = format!("{path_prof}/NemirtingasEpicEmu.json");
+                let dest = PathBuf::from(gamedir).join(&h.path_nemirtingas);
+                if let Some(parent) = dest.parent() {
+                    std::fs::create_dir_all(parent)?;
+                }
+                binds.push_str(&format!(
+                    "--bind \\\"{src}\\\" \\\"{}\\\" ",
+                    dest.to_string_lossy()
+                ));
+            }
             if h.win {
                 let path_windata = format!("{pfx}/drive_c/users/steamuser/");
                 if h.win_unique_appdata {

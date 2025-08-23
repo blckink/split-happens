@@ -43,6 +43,24 @@ You'll need to install KDE Plasma, Gamescope, and Bubblewrap using your distro's
 ### Getting Started
 Once in the main menu, click the + button to add a game: this can be just a regular Linux executable, a Windows game (.exe), or a PartyDeck Handler (.pdh). Create profiles if you want to store save data, and have a look through the settings menu.
 
+### Nemirtingas Epic Emu
+Some games ship a patched `EOSSDK-Win64-Shipping.dll` that reads a
+`NemirtingasEpicEmu.json` configuration. Handlers can expose this by
+adding an `eos.config_path` field pointing to the expected location of the
+JSON file **relative to the game's root directory**. This path should
+include the file name itself. For example, if the DLL loads
+`nepice_settings/NemirtingasEpicEmu.json` next to it, add
+`"eos.config_path": "nepice_settings/NemirtingasEpicEmu.json"` to the
+handler. PartyDeck will then create a per-profile JSON and bind it to that
+location when launching the game. Each profile's file sets both `epicid`
+and `username` to the profile name so player identity remains constant
+across sessions. The patched `EOSSDK` DLL is **not** bundled with
+PartyDeck; handlers should include it themselves. Place
+`EOSSDK-Win64-Shipping.dll` inside the handler's `copy_to_symdir` folder
+mirroring where the game expects it so PartyDeck can copy or symlink it
+into the game directory at launch.
+
+
 ## Building
 
 To build PartyDeck, You'll need a Rust toolchain installed with the 2024 Edition. For the mouse/keyboard gamescope build, you'll need ninja and meson installed.
