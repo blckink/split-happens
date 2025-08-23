@@ -30,6 +30,10 @@ pub struct Handler {
     pub dll_overrides: Vec<String>,
 
     pub path_goldberg: String,
+    // Path to Nemirtingas config relative to the game's root directory.
+    // The handler must also bundle the patched EOSSDK DLL (e.g. via
+    // copy_to_symdir) at the matching location; PartyDeck does not ship it.
+    pub path_nemirtingas: String,
     pub steam_appid: Option<String>,
     pub coldclient: bool,
 
@@ -114,6 +118,11 @@ impl Handler {
                 .unwrap_or_default(),
 
             path_goldberg: json["steam.api_path"]
+                .as_str()
+                .unwrap_or_default()
+                .to_string()
+                .sanitize_path(),
+            path_nemirtingas: json["eos.config_path"]
                 .as_str()
                 .unwrap_or_default()
                 .to_string()

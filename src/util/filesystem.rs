@@ -161,9 +161,7 @@ impl SanitizePath for String {
         // Allow single quotes in paths since they are quoted when launching
         // commands. Double quotes would break the quoting though, so we still
         // strip those along with other potentially dangerous characters.
-        let chars_to_sanitize = [
-            ';', '&', '|', '$', '`', '(', ')', '<', '>', '"', '\\', '/',
-        ];
+        let chars_to_sanitize = [';', '&', '|', '$', '`', '(', ')', '<', '>', '"', '\\', '/'];
 
         if chars_to_sanitize.iter().any(|&c| sanitized.contains(c)) {
             sanitized = sanitized
