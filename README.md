@@ -63,17 +63,10 @@ into the game directory at launch.
 
 ## Building
 
-To build PartyDeck, You'll need a Rust toolchain installed with the 2024 Edition. For the mouse/keyboard gamescope build, you'll need ninja and meson installed.
-Clone the repo with submodules by running `git clone --recurse-submodules https://github.com/wunnr/partydeck-rs.git`. Navigate to the gamescope submodule at `deps/gamescope` and run these commands to build the mouse/keyboard gamescope:
+To build PartyDeck, you'll need a Rust toolchain installed with the 2024 Edition and a system installation of `gamescope`.
+Clone the repo with submodules by running `git clone --recurse-submodules https://github.com/wunnr/partydeck-rs.git`.
 
-```
-git submodule update --init
-meson setup build/
-ninja -C build/
-build/gamescope -- <game>
-```
-
-Then, in the main partydeck folder, run `build.sh`. This will build the executable, and place it in the `build` folder, along with the relevant dependencies and resources.
+In the main PartyDeck folder, run `build.sh`. This will build the executable and place it in the `build` folder along with the relevant dependencies and resources.
 
 
 ## How it Works
@@ -96,7 +89,7 @@ PartyDeck uses a few software layers to provide a console-like split-screen gami
 
 ## Credits/Thanks
 
-- @davidawesome02-backup for the [Gamescope keyboard/mouse fork](https://github.com/davidawesome02-backup/gamescope), and Valve for Gamescope
+- Valve for [Gamescope](https://github.com/Plagman/gamescope)
 - [@blckink](https://github.com/blckink) for contributions
 - MrGoldberg & Detanup01 for [Goldberg Steam Emu](https://github.com/Detanup01/gbe_fork/)
 - GloriousEggroll and the rest of the contributors for [UMU Launcher](https://github.com/Open-Wine-Components/umu-launcher)
