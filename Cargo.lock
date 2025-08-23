@@ -3313,6 +3313,7 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
+ "sha1",
  "steamlocate",
  "tar",
  "walkdir",
