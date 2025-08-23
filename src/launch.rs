@@ -1,4 +1,6 @@
-use std::path::PathBuf;
+use std::fs::OpenOptions;
+use std::io::ErrorKind;
+use std::path::{Path, PathBuf};
 
 use crate::app::PartyConfig;
 use crate::game::Game;
@@ -8,6 +10,39 @@ use crate::instance::*;
 use crate::launch::Game::{ExecRef, HandlerRef};
 use crate::paths::*;
 use crate::util::*;
+
+fn prepare_working_tree(
+    profname: &str,
+    gamedir: &str,
+    nemirtingas_rel: &str,
+    src: &Path,
+) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    let run_fs = PATH_PARTY.join(format!("run/{profname}/fs"));
+    if run_fs.exists() {
+        std::fs::remove_dir_all(&run_fs)?;
+    }
+    std::fs::create_dir_all(&run_fs)?;
+    let status = std::process::Command::new("cp")
+        .arg("-r")
+        .arg("-s")
+        .arg(format!("{gamedir}/."))
+        .arg(run_fs.to_string_lossy().to_string())
+        .status()?;
+    if !status.success() {
+        return Err("cp failed".into());
+    }
+    if !nemirtingas_rel.is_empty() {
+        let dest = run_fs.join(nemirtingas_rel);
+        if dest.exists() {
+            std::fs::remove_file(&dest)?;
+        }
+        if let Some(parent) = dest.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::copy(src, &dest)?;
+    }
+    Ok(run_fs)
+}
 
 pub fn launch_game(
     game: &Game,
@@ -25,20 +60,19 @@ pub fn launch_game(
         }
     }
 
-    let gamedir = match game {
-        ExecRef(e) => e
-            .path()
-            .parent()
-            .ok_or_else(|| "Invalid path")?
-            .to_path_buf(),
-        HandlerRef(h) => {
-            if h.symlink_dir {
-                PATH_PARTY.join(format!("gamesyms/{}", h.uid))
-            } else {
-                PathBuf::from(get_rootpath_handler(&h)?)
+    let run_dir = PATH_PARTY.join("run");
+    std::fs::create_dir_all(&run_dir)?;
+    let mut locks = Vec::new();
+    for instance in instances {
+        let lock_path = run_dir.join(format!("{}.lock", instance.profname));
+        match OpenOptions::new().write(true).create_new(true).open(&lock_path) {
+            Ok(_) => locks.push(lock_path),
+            Err(e) if e.kind() == ErrorKind::AlreadyExists => {
+                return Err(format!("Instance {} already running", instance.profname).into());
             }
+            Err(e) => return Err(e.into()),
         }
-    };
+    }
 
     let cmd = launch_cmd(game, input_devices, instances, cfg)?;
     println!("\nCOMMAND:\n{}\n", cmd);
@@ -53,10 +87,16 @@ pub fn launch_game(
         kwin_dbus_start_script(PATH_RES.join(script))?;
     }
 
-    std::process::Command::new("sh")
+    let status = std::process::Command::new("sh")
         .arg("-c")
-        .arg(cmd)
-        .status()?;
+        .arg(&cmd)
+        .status();
+
+    for lock in locks {
+        let _ = std::fs::remove_file(lock);
+    }
+
+    status?;
 
     if cfg.enable_kwin_script {
         kwin_dbus_unload_script()?;
@@ -79,16 +119,15 @@ pub fn launch_cmd(
     let steam = PATH_STEAM.display();
 
     let gamedir = match game {
-        ExecRef(e) => &format!(
-            "{}",
-            e.path()
-                .parent()
-                .ok_or_else(|| "Invalid path")?
-                .to_string_lossy()
-        ),
+        ExecRef(e) => e
+            .path()
+            .parent()
+            .ok_or_else(|| "Invalid path")?
+            .to_string_lossy()
+            .to_string(),
         HandlerRef(h) => match h.symlink_dir {
-            true => &format!("{party}/gamesyms/{}", h.uid),
-            false => &get_rootpath_handler(&h)?,
+            true => format!("{party}/gamesyms/{}", h.uid),
+            false => get_rootpath_handler(&h)?,
         },
     };
 
@@ -159,9 +198,14 @@ pub fn launch_cmd(
         HandlerRef(h) => h.exec.as_str(),
     };
 
-    if !PathBuf::from(gamedir).join(exec).exists() {
+    if !PathBuf::from(&gamedir).join(exec).exists() {
         return Err(format!("Executable not found: {gamedir}/{exec}").into());
     }
+
+    let use_bwrap = std::process::Command::new("bwrap")
+        .arg("--version")
+        .status()
+        .is_ok();
 
     if let HandlerRef(h) = game {
         if h.runtime == "scout" && !PATH_STEAM.join("ubuntu12_32/steam-runtime/run.sh").exists() {
@@ -174,8 +218,6 @@ pub fn launch_cmd(
             return Err("Steam Soldier Runtime not found".into());
         }
     }
-
-    cmd.push_str(&format!("cd \"{gamedir}\"; "));
 
     for (i, instance) in instances.iter().enumerate() {
         let path_prof = &format!("{party}/profiles/{}", instance.profname.as_str());
@@ -204,9 +246,23 @@ pub fn launch_cmd(
             false => "gamescope",
         };
 
-        cmd.push_str(&format!(
-            "{gamescope} -W {gsc_width} -H {gsc_height} {gsc_sdl} "
-        ));
+        let src_nemirtingas = PathBuf::from(format!("{path_prof}/NemirtingasEpicEmu.json"));
+        let instance_gamedir = if use_bwrap {
+            gamedir.clone()
+        } else if let HandlerRef(h) = game {
+            prepare_working_tree(
+                instance.profname.as_str(),
+                &gamedir,
+                h.path_nemirtingas.as_str(),
+                &src_nemirtingas,
+            )?
+            .to_string_lossy()
+            .to_string()
+        } else {
+            gamedir.clone()
+        };
+
+        cmd.push_str(&format!("cd \"{instance_gamedir}\"; {gamescope} -W {gsc_width} -H {gsc_height} {gsc_sdl} "));
 
         if cfg.kbm_support {
             let mut instance_has_keyboard = false;
@@ -236,85 +292,101 @@ pub fn launch_cmd(
                 cmd.push_str(&format!("--libinput-hold-dev {} ", kbms));
             }
         }
-
-        cmd.push_str(&format!("-- "));
-
-        cmd.push_str(&format!(
-            "bwrap --die-with-parent --dev-bind / / --tmpfs /tmp "
-        ));
+        if use_bwrap {
+            cmd.push_str(&format!("-- "));
+            cmd.push_str("bwrap --die-with-parent --dev-bind / / --tmpfs /tmp ");
+        }
 
         // Bind player profile directories to the game's directories
         let mut binds = String::new();
-
-        // Mask out any gamepads that aren't this player's
-        for (d, dev) in input_devices.iter().enumerate() {
-            if !dev.enabled
-                || (!instance.devices.contains(&d) && dev.device_type == DeviceType::Gamepad)
-            {
-                let path = &dev.path;
-                binds.push_str(&format!("--bind /dev/null {path} "));
-            }
-        }
-
-        if let HandlerRef(h) = game {
-            let path_goldberg = h.path_goldberg.as_str();
-            if !path_goldberg.is_empty() {
-                binds.push_str(&format!(
-                    "--bind \"{path_prof}/steam\" \"{gamedir}/{path_goldberg}/goldbergsave\" "
-                ));
-            }
-            if !h.path_nemirtingas.is_empty() {
-                let src = PathBuf::from(format!("{path_prof}/NemirtingasEpicEmu.json"));
-                let dest = PathBuf::from(gamedir).join(&h.path_nemirtingas);
-                if let Some(parent) = dest.parent() {
-                    std::fs::create_dir_all(parent)?;
+        if use_bwrap {
+            // Mask out any gamepads that aren't this player's
+            for (d, dev) in input_devices.iter().enumerate() {
+                if !dev.enabled
+                    || (!instance.devices.contains(&d) && dev.device_type == DeviceType::Gamepad)
+                {
+                    let path = &dev.path;
+                    binds.push_str(&format!("--bind /dev/null {path} "));
                 }
-                if src.exists() {
-                    println!(
-                        "Binding Nemirtingas config for {}: {} -> {}",
-                        instance.profname,
-                        src.to_string_lossy(),
-                        dest.to_string_lossy()
-                    );
+            }
+
+            if let HandlerRef(h) = game {
+                let path_goldberg = h.path_goldberg.as_str();
+                if !path_goldberg.is_empty() {
                     binds.push_str(&format!(
-                        "--bind \\\"{}\\\" \\\"{}\\\" ",
-                        src.to_string_lossy(),
-                        dest.to_string_lossy()
+                        "--bind \"{path_prof}/steam\" \"{instance_gamedir}/{path_goldberg}/goldbergsave\" "
                     ));
+                }
+                if !h.path_nemirtingas.is_empty() {
+                    let dest = PathBuf::from(&instance_gamedir).join(&h.path_nemirtingas);
+                    if let Some(parent) = dest.parent() {
+                        std::fs::create_dir_all(parent)?;
+                    }
+                    if !dest.exists() {
+                        std::fs::File::create(&dest)?;
+                    }
+
+                    if src_nemirtingas.exists() {
+                        let sha1 = sha1_file(&src_nemirtingas)?;
+                        println!(
+                            "Instance {}: Nemirtingas config {} (SHA1 {}) -> {}",
+                            instance.profname,
+                            src_nemirtingas.to_string_lossy(),
+                            sha1,
+                            dest.to_string_lossy()
+                        );
+                        binds.push_str(&format!(
+                            "--bind \\\"{}\\\" \\\"{}\\\" ",
+                            src_nemirtingas.to_string_lossy(),
+                            dest.to_string_lossy()
+                        ));
+                    } else {
+                        println!(
+                            "Nemirtingas config missing for profile {} at {}",
+                            instance.profname,
+                            src_nemirtingas.to_string_lossy()
+                        );
+                    }
+                }
+                if h.win {
+                    let path_windata = format!("{pfx}/drive_c/users/steamuser/");
+                    if h.win_unique_appdata {
+                        binds.push_str(&format!(
+                            "--bind \"{path_save}/_AppData\" \"{path_windata}/AppData\" "
+                        ));
+                    }
+                    if h.win_unique_documents {
+                        binds.push_str(&format!(
+                            "--bind \"{path_save}/_Documents\" \"{path_windata}/Documents\" "
+                        ));
+                    }
                 } else {
-                    println!(
-                        "Nemirtingas config missing for profile {} at {}",
-                        instance.profname,
-                        src.to_string_lossy()
-                    );
+                    if h.linux_unique_localshare {
+                        binds.push_str(&format!("--bind \"{path_save}/_share\" \"{localshare}\" "));
+                    }
+                    if h.linux_unique_config {
+                        binds.push_str(&format!(
+                            "--bind \"{path_save}/_config\" \"{home}/.config\" "
+                        ));
+                    }
                 }
-            }
-            if h.win {
-                let path_windata = format!("{pfx}/drive_c/users/steamuser/");
-                if h.win_unique_appdata {
+                for subdir in &h.game_unique_paths {
                     binds.push_str(&format!(
-                        "--bind \"{path_save}/_AppData\" \"{path_windata}/AppData\" "
-                    ));
-                }
-                if h.win_unique_documents {
-                    binds.push_str(&format!(
-                        "--bind \"{path_save}/_Documents\" \"{path_windata}/Documents\" "
-                    ));
-                }
-            } else {
-                if h.linux_unique_localshare {
-                    binds.push_str(&format!("--bind \"{path_save}/_share\" \"{localshare}\" "));
-                }
-                if h.linux_unique_config {
-                    binds.push_str(&format!(
-                        "--bind \"{path_save}/_config\" \"{home}/.config\" "
+                        "--bind \"{path_save}/{subdir}\" \"{instance_gamedir}/{subdir}\" "
                     ));
                 }
             }
-            for subdir in &h.game_unique_paths {
-                binds.push_str(&format!(
-                    "--bind \"{path_save}/{subdir}\" \"{gamedir}/{subdir}\" "
-                ));
+        } else if let HandlerRef(h) = game {
+            if !h.path_nemirtingas.is_empty() && src_nemirtingas.exists() {
+                let dest = PathBuf::from(&instance_gamedir).join(&h.path_nemirtingas);
+                let sha1 = sha1_file(&src_nemirtingas)?;
+                println!(
+                    "Instance {}: Nemirtingas config {} (SHA1 {}) -> {}",
+                    instance.profname,
+                    src_nemirtingas.to_string_lossy(),
+                    sha1,
+                    dest.to_string_lossy()
+                );
             }
         }
 
@@ -323,7 +395,7 @@ pub fn launch_cmd(
                 .args
                 .iter()
                 .map(|arg| match arg.as_str() {
-                    "$GAMEDIR" => format!(" \"{gamedir}\""),
+                    "$GAMEDIR" => format!(" \"{instance_gamedir}\""),
                     "$PROFILE" => format!(" \"{}\"", instance.profname.as_str()),
                     "$WIDTH" => format!(" {gsc_width}"),
                     "$HEIGHT" => format!(" {gsc_height}"),
@@ -334,7 +406,9 @@ pub fn launch_cmd(
             ExecRef(e) => e.args.clone().sanitize_path(),
         };
 
-        cmd.push_str(&format!("{binds} {runtime} \"{gamedir}/{exec}\" {args} "));
+        cmd.push_str(&format!(
+            "{binds} {runtime} \"{instance_gamedir}/{exec}\" {args} "
+        ));
 
         if i < instances.len() - 1 {
             // Proton games need a ~5 second buffer in-between launches
