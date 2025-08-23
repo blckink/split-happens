@@ -12,6 +12,7 @@ pub fn copy_dir_recursive(
     dest: &PathBuf,
     symlink_instead: bool,
     overwrite_dest: bool,
+    never_symlink: Option<&Vec<PathBuf>>,
 ) -> Result<(), Box<dyn Error>> {
     println!(
         "copy_dir_recursive - src: {}, dest: {}",
@@ -44,8 +45,16 @@ pub fn copy_dir_recursive(
             if new_path.exists() && overwrite_dest {
                 std::fs::remove_file(&new_path)?;
             }
-            if symlink_instead {
+            let is_excluded = never_symlink
+                .map(|paths| paths.iter().any(|p| p == &new_path))
+                .unwrap_or(false);
+            if symlink_instead && !is_excluded {
                 std::os::unix::fs::symlink(entry.path(), new_path)?;
+            } else if symlink_instead && is_excluded {
+                if new_path.is_symlink() {
+                    std::fs::remove_file(&new_path)?;
+                }
+                std::fs::File::create(&new_path)?;
             } else {
                 std::fs::copy(entry.path(), new_path)?;
             }
