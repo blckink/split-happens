@@ -8,22 +8,25 @@ use crate::{handler::Handler, paths::*};
 
 // Makes a folder and sets up Goldberg Steam Emu profile for Steam games
 pub fn create_profile(name: &str) -> Result<(), std::io::Error> {
-    if PATH_PARTY.join(format!("profiles/{name}")).exists() {
-        return Ok(());
+    let profile_dir = PATH_PARTY.join(format!("profiles/{name}"));
+
+    if !profile_dir.exists() {
+        println!("Creating profile {name}");
+        let path_steam = profile_dir.join("steam/settings");
+        std::fs::create_dir_all(&path_steam)?;
+
+        let steam_id = format!("{:017}", rand::rng().random_range(u32::MIN..u32::MAX));
+        let usersettings = format!(
+            "[user::general]\naccount_name={name}\naccount_steamid={steam_id}\nlanguage=english\nip_country=US"
+        );
+        std::fs::write(path_steam.join("configs.user.ini"), usersettings)?;
+
+        println!("Created successfully");
     }
 
-    println!("Creating profile {name}");
-    let path_steam = PATH_PARTY.join(format!("profiles/{name}/steam/settings"));
-    std::fs::create_dir_all(path_steam.clone())?;
-
-    let steam_id = format!("{:017}", rand::rng().random_range(u32::MIN..u32::MAX));
-    let usersettings = format!(
-        "[user::general]\naccount_name={name}\naccount_steamid={steam_id}\nlanguage=english\nip_country=US"
-    );
-    std::fs::write(path_steam.join("configs.user.ini"), usersettings)?;
-
-    let nepice_path = PATH_PARTY.join(format!("profiles/{name}/NemirtingasEpicEmu.json"));
+    let nepice_path = profile_dir.join("NemirtingasEpicEmu.json");
     if !nepice_path.exists() {
+        println!("Initializing Nemirtingas config for {name}");
         let cfg = json!({
             "enable_overlay": false,
             "epicid": name,
@@ -37,7 +40,6 @@ pub fn create_profile(name: &str) -> Result<(), std::io::Error> {
         std::fs::write(&nepice_path, serde_json::to_string_pretty(&cfg).unwrap())?;
     }
 
-    println!("Created successfully");
     Ok(())
 }
 

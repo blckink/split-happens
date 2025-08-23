@@ -25,6 +25,39 @@ pub fn launch_game(
         }
     }
 
+    let gamedir = match game {
+        ExecRef(e) => e
+            .path()
+            .parent()
+            .ok_or_else(|| "Invalid path")?
+            .to_path_buf(),
+        HandlerRef(h) => {
+            if h.symlink_dir {
+                PATH_PARTY.join(format!("gamesyms/{}", h.uid))
+            } else {
+                PathBuf::from(get_rootpath_handler(&h)?)
+            }
+        }
+    };
+
+    if let HandlerRef(h) = game {
+        if !h.path_nemirtingas.is_empty() {
+            if let Some(instance) = instances.first() {
+                let src = PATH_PARTY
+                    .join("profiles")
+                    .join(&instance.profname)
+                    .join("NemirtingasEpicEmu.json");
+                let dest = gamedir.join(&h.path_nemirtingas);
+                if let Some(parent) = dest.parent() {
+                    std::fs::create_dir_all(parent)?;
+                }
+                if src.exists() {
+                    std::fs::copy(&src, &dest)?;
+                }
+            }
+        }
+    }
+
     let cmd = launch_cmd(game, input_devices, instances, cfg)?;
     println!("\nCOMMAND:\n{}\n", cmd);
 
@@ -42,6 +75,26 @@ pub fn launch_game(
         .arg("-c")
         .arg(cmd)
         .status()?;
+
+    if let HandlerRef(h) = game {
+        if !h.path_nemirtingas.is_empty() {
+            if let Some(instance) = instances.first() {
+                let src = PATH_PARTY
+                    .join("profiles")
+                    .join(&instance.profname)
+                    .join("NemirtingasEpicEmu.json");
+                let dest = gamedir.join(&h.path_nemirtingas);
+                if src.exists() {
+                    std::fs::copy(&src, &dest)?;
+                    println!(
+                        "Persisted Nemirtingas config for {} at {}",
+                        instance.profname,
+                        dest.to_string_lossy()
+                    );
+                }
+            }
+        }
+    }
 
     if cfg.enable_kwin_script {
         kwin_dbus_unload_script()?;
@@ -250,16 +303,28 @@ pub fn launch_cmd(
             }
             if !h.path_nemirtingas.is_empty() {
                 let src = PathBuf::from(format!("{path_prof}/NemirtingasEpicEmu.json"));
+                let dest = PathBuf::from(gamedir).join(&h.path_nemirtingas);
+                if let Some(parent) = dest.parent() {
+                    std::fs::create_dir_all(parent)?;
+                }
                 if src.exists() {
-                    let dest = PathBuf::from(gamedir).join(&h.path_nemirtingas);
-                    if let Some(parent) = dest.parent() {
-                        std::fs::create_dir_all(parent)?;
-                    }
+                    println!(
+                        "Binding Nemirtingas config for {}: {} -> {}",
+                        instance.profname,
+                        src.to_string_lossy(),
+                        dest.to_string_lossy()
+                    );
                     binds.push_str(&format!(
                         "--bind \\\"{}\\\" \\\"{}\\\" ",
                         src.to_string_lossy(),
                         dest.to_string_lossy()
                     ));
+                } else {
+                    println!(
+                        "Nemirtingas config missing for profile {} at {}",
+                        instance.profname,
+                        src.to_string_lossy()
+                    );
                 }
             }
             if h.win {

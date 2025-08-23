@@ -28,17 +28,17 @@ A split-screen game launcher for Linux/SteamOS
 
 ## Installing & Usage
 
-Download the latest release [here](https://github.com/wunnr/partydeck-rs/releases) and extract it into a folder. Download game handlers [here](https://drive.proton.me/urls/D9HBKM18YR#zG8XC8yVy9WL).
+Download the latest release [here](https://github.com/blckink/suckmydeck/releases) and extract it into a folder. Download game handlers [here](https://drive.proton.me/urls/D9HBKM18YR#zG8XC8yVy9WL).
 
 ### SteamOS
 
 SteamOS includes all of PartyDeck's dependencies, but you will need to be on SteamOS 3.7.0 or above for the splitscreen script to work.
 
-If you're in desktop mode, simply run `partydeck-rs`. To use PartyDeck in Gaming Mode, add `partydeck-rs` as a non-Steam game by right-clicking that file and selecting "Add to Steam", then go into the properties of the non-Steam game, add `--kwin --fullscreen` to the launch options, and disable Steam Input.
+If you're in desktop mode, simply run `partydeck`. To use PartyDeck in Gaming Mode, add `partydeck` as a non-Steam game by right-clicking that file and selecting "Add to Steam", then go into the properties of the non-Steam game, add `--kwin --fullscreen` to the launch options, and disable Steam Input.
 
 ### Desktop Linux
 
-You'll need to install KDE Plasma, Gamescope, and Bubblewrap using your distro's package manager. Then, while in a KDE Plasma session, run `partydeck-rs` to get started. If you're running Steam, make sure none of the controllers are using a Steam Input desktop layout, as Steam Input causes issues such as duplicate controllers being detected.
+You'll need to install KDE Plasma, Gamescope, and Bubblewrap using your distro's package manager. Then, while in a KDE Plasma session, run `partydeck` to get started. If you're running Steam, make sure none of the controllers are using a Steam Input desktop layout, as Steam Input causes issues such as duplicate controllers being detected.
 
 ### Getting Started
 Once in the main menu, click the + button to add a game: this can be just a regular Linux executable, a Windows game (.exe), or a PartyDeck Handler (.pdh). Create profiles if you want to store save data, and have a look through the settings menu.
@@ -54,7 +54,9 @@ include the file name itself. For example, if the DLL loads
 handler. PartyDeck will then create a per-profile JSON and bind it to that
 location when launching the game. Each profile's file sets both `epicid`
 and `username` to the profile name so player identity remains constant
-across sessions. The patched `EOSSDK` DLL is **not** bundled with
+across sessions. When the game exits, PartyDeck copies the profile's
+`NemirtingasEpicEmu.json` back to this location so you can inspect the
+values written during play. The patched `EOSSDK` DLL is **not** bundled with
 PartyDeck; handlers should include it themselves. Place
 `EOSSDK-Win64-Shipping.dll` inside the handler's `copy_to_symdir` folder
 mirroring where the game expects it so PartyDeck can copy or symlink it
@@ -64,7 +66,7 @@ into the game directory at launch.
 ## Building
 
 To build PartyDeck, you'll need a Rust toolchain installed with the 2024 Edition and a system installation of `gamescope`.
-Clone the repo with submodules by running `git clone --recurse-submodules https://github.com/wunnr/partydeck-rs.git`.
+Clone the repo with submodules by running `git clone --recurse-submodules https://github.com/blckink/suckmydeck.git`.
 
 In the main PartyDeck folder, run `build.sh`. This will build the executable and place it in the `build` folder along with the relevant dependencies and resources.
 
