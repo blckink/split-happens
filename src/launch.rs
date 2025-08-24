@@ -1,6 +1,6 @@
-use std::fs::{File, OpenOptions};
-use std::io::ErrorKind;
+use std::fs::File;
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
 
 use crate::app::PartyConfig;
 use crate::game::Game;
@@ -10,6 +10,9 @@ use crate::input::*;
 use crate::instance::*;
 use crate::paths::*;
 use crate::util::*;
+use ctrlc;
+use nix::sys::signal::{Signal, kill};
+use nix::unistd::Pid;
 use std::process::{Child, Command};
 use std::time::Duration;
 
@@ -62,22 +65,32 @@ pub fn launch_game(
         }
     }
 
-    let run_dir = PATH_PARTY.join("run");
-    std::fs::create_dir_all(&run_dir)?;
-    let mut locks = Vec::new();
+    let game_id = match game {
+        ExecRef(e) => e.filename().to_string(),
+        HandlerRef(h) => h.uid.clone(),
+    };
+    let mut locks_vec = Vec::new();
     for instance in instances {
-        let lock_path = run_dir.join(format!("{}.lock", instance.profname));
-        match OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(&lock_path)
-        {
-            Ok(_) => locks.push(lock_path),
-            Err(e) if e.kind() == ErrorKind::AlreadyExists => {
-                return Err(format!("Instance {} already running", instance.profname).into());
+        let lock = ProfileLock::acquire(&game_id, &instance.profname)?;
+        locks_vec.push(lock);
+    }
+    let locks = Arc::new(Mutex::new(locks_vec));
+    let child_pids: Arc<Mutex<Vec<u32>>> = Arc::new(Mutex::new(Vec::new()));
+    {
+        let child_pids = Arc::clone(&child_pids);
+        let locks = Arc::clone(&locks);
+        ctrlc::set_handler(move || {
+            if let Ok(pids) = child_pids.lock() {
+                for pid in pids.iter() {
+                    let _ = kill(Pid::from_raw(-(*pid as i32)), Signal::SIGTERM);
+                }
             }
-            Err(e) => return Err(e.into()),
-        }
+            if let Ok(locks) = locks.lock() {
+                for lock in locks.iter() {
+                    lock.cleanup();
+                }
+            }
+        })?;
     }
 
     let home = PATH_HOME.display();
@@ -180,7 +193,7 @@ pub fn launch_game(
                     std::fs::create_dir_all(parent)?;
                 }
                 if !dest.exists() {
-                    let mut f = File::create(&dest)?;
+                    let f = File::create(&dest)?;
                     f.sync_all()?;
                 }
                 let dest = dest.canonicalize()?;
@@ -240,16 +253,18 @@ pub fn launch_game(
         }
 
         let pfx = if win {
+            let mut pfx = format!("{party}/pfx/{}", instance.profname);
             if cfg.proton_separate_pfxs {
-                format!("{party}/pfx{}", i + 1)
-            } else {
-                format!("{party}/pfx")
+                pfx = format!("{}_{}", pfx, i + 1);
             }
+            pfx
         } else {
             String::new()
         };
         if win {
+            std::fs::create_dir_all(&pfx)?;
             cmd.env("WINEPREFIX", &pfx);
+            cmd.env("STEAM_COMPAT_DATA_PATH", &pfx);
         }
 
         cmd.arg("-W").arg(instance.width.to_string());
@@ -298,7 +313,7 @@ pub fn launch_game(
                 if !dev.enabled
                     || (!instance.devices.contains(&d) && dev.device_type == DeviceType::Gamepad)
                 {
-                    cmd.arg("--bind").arg("/dev/null").arg(&dev.path);
+                    cmd.args(["--bind", "/dev/null", dev.path.as_str()]);
                 }
             }
 
@@ -306,46 +321,41 @@ pub fn launch_game(
                 let path_prof = format!("{party}/profiles/{}", instance.profname);
                 let path_save = format!("{path_prof}/saves/{}", h.uid);
                 if !h.path_goldberg.is_empty() {
-                    cmd.arg("--bind")
-                        .arg(format!("{path_prof}/steam"))
-                        .arg(format!(
-                            "{instance_gamedir}/{}/goldbergsave",
-                            h.path_goldberg
-                        ));
+                    let src = format!("{path_prof}/steam");
+                    let dst = format!("{instance_gamedir}/{}/goldbergsave", h.path_goldberg);
+                    cmd.args(["--bind", src.as_str(), dst.as_str()]);
                 }
                 if let Some(dest) = &bind_json {
-                    cmd.arg("--bind");
-                    cmd.arg(&src_json);
-                    cmd.arg(dest);
+                    cmd.arg("--bind").arg(&src_json).arg(dest);
                 }
                 if h.win {
                     let path_windata = format!("{pfx}/drive_c/users/steamuser");
                     if h.win_unique_appdata {
-                        cmd.arg("--bind")
-                            .arg(format!("{path_save}/_AppData"))
-                            .arg(format!("{path_windata}/AppData"));
+                        let src = format!("{path_save}/_AppData");
+                        let dst = format!("{path_windata}/AppData");
+                        cmd.args(["--bind", src.as_str(), dst.as_str()]);
                     }
                     if h.win_unique_documents {
-                        cmd.arg("--bind")
-                            .arg(format!("{path_save}/_Documents"))
-                            .arg(format!("{path_windata}/Documents"));
+                        let src = format!("{path_save}/_Documents");
+                        let dst = format!("{path_windata}/Documents");
+                        cmd.args(["--bind", src.as_str(), dst.as_str()]);
                     }
                 } else {
                     if h.linux_unique_localshare {
-                        cmd.arg("--bind")
-                            .arg(format!("{path_save}/_share"))
-                            .arg(format!("{localshare}"));
+                        let src = format!("{path_save}/_share");
+                        let dst = format!("{localshare}");
+                        cmd.args(["--bind", src.as_str(), dst.as_str()]);
                     }
                     if h.linux_unique_config {
-                        cmd.arg("--bind")
-                            .arg(format!("{path_save}/_config"))
-                            .arg(format!("{home}/.config"));
+                        let src = format!("{path_save}/_config");
+                        let dst = format!("{home}/.config");
+                        cmd.args(["--bind", src.as_str(), dst.as_str()]);
                     }
                 }
                 for subdir in &h.game_unique_paths {
-                    cmd.arg("--bind")
-                        .arg(format!("{path_save}/{subdir}"))
-                        .arg(format!("{instance_gamedir}/{subdir}"));
+                    let src = format!("{path_save}/{subdir}");
+                    let dst = format!("{instance_gamedir}/{subdir}");
+                    cmd.args(["--bind", src.as_str(), dst.as_str()]);
                 }
             }
         }
@@ -377,24 +387,23 @@ pub fn launch_game(
         }
 
         let child = cmd.spawn()?;
+        child_pids.lock().unwrap().push(child.id());
         children.push(child);
 
         if i < instances.len() - 1 {
-            if win {
-                std::thread::sleep(Duration::from_secs(6));
-            } else {
-                std::thread::sleep(Duration::from_millis(10));
-            }
+            std::thread::sleep(Duration::from_secs(6));
         }
     }
 
     for mut child in children {
         let _ = child.wait();
     }
-
-    for lock in locks {
-        let _ = std::fs::remove_file(lock);
+    if let Ok(pids) = child_pids.lock() {
+        for pid in pids.iter() {
+            let _ = kill(Pid::from_raw(-(*pid as i32)), Signal::SIGTERM);
+        }
     }
+    locks.lock().unwrap().clear();
 
     if cfg.enable_kwin_script {
         kwin_dbus_unload_script()?;
