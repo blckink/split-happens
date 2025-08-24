@@ -1,5 +1,5 @@
-use std::fs::{File, OpenOptions};
-use std::io::ErrorKind;
+use std::fs::File;
+use std::sync::{Arc, Mutex};
 use std::path::{Path, PathBuf};
 
 use crate::app::PartyConfig;
@@ -12,6 +12,9 @@ use crate::paths::*;
 use crate::util::*;
 use std::process::{Child, Command};
 use std::time::Duration;
+use nix::sys::signal::{kill, Signal};
+use nix::unistd::Pid;
+use ctrlc;
 
 fn prepare_working_tree(
     profname: &str,
@@ -62,22 +65,32 @@ pub fn launch_game(
         }
     }
 
-    let run_dir = PATH_PARTY.join("run");
-    std::fs::create_dir_all(&run_dir)?;
-    let mut locks = Vec::new();
+    let game_id = match game {
+        ExecRef(e) => e.filename().to_string(),
+        HandlerRef(h) => h.uid.clone(),
+    };
+    let mut locks_vec = Vec::new();
     for instance in instances {
-        let lock_path = run_dir.join(format!("{}.lock", instance.profname));
-        match OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(&lock_path)
-        {
-            Ok(_) => locks.push(lock_path),
-            Err(e) if e.kind() == ErrorKind::AlreadyExists => {
-                return Err(format!("Instance {} already running", instance.profname).into());
+        let lock = ProfileLock::acquire(&game_id, &instance.profname)?;
+        locks_vec.push(lock);
+    }
+    let locks = Arc::new(Mutex::new(locks_vec));
+    let child_pids: Arc<Mutex<Vec<u32>>> = Arc::new(Mutex::new(Vec::new()));
+    {
+        let child_pids = Arc::clone(&child_pids);
+        let locks = Arc::clone(&locks);
+        ctrlc::set_handler(move || {
+            if let Ok(pids) = child_pids.lock() {
+                for pid in pids.iter() {
+                    let _ = kill(Pid::from_raw(-(*pid as i32)), Signal::SIGTERM);
+                }
             }
-            Err(e) => return Err(e.into()),
-        }
+            if let Ok(locks) = locks.lock() {
+                for lock in locks.iter() {
+                    lock.cleanup();
+                }
+            }
+        })?;
     }
 
     let home = PATH_HOME.display();
@@ -180,7 +193,7 @@ pub fn launch_game(
                     std::fs::create_dir_all(parent)?;
                 }
                 if !dest.exists() {
-                    let mut f = File::create(&dest)?;
+                    let f = File::create(&dest)?;
                     f.sync_all()?;
                 }
                 let dest = dest.canonicalize()?;
@@ -377,24 +390,23 @@ pub fn launch_game(
         }
 
         let child = cmd.spawn()?;
+        child_pids.lock().unwrap().push(child.id());
         children.push(child);
 
         if i < instances.len() - 1 {
-            if win {
-                std::thread::sleep(Duration::from_secs(6));
-            } else {
-                std::thread::sleep(Duration::from_millis(10));
-            }
+            std::thread::sleep(Duration::from_secs(6));
         }
     }
 
     for mut child in children {
         let _ = child.wait();
     }
-
-    for lock in locks {
-        let _ = std::fs::remove_file(lock);
+    if let Ok(pids) = child_pids.lock() {
+        for pid in pids.iter() {
+            let _ = kill(Pid::from_raw(-(*pid as i32)), Signal::SIGTERM);
+        }
     }
+    locks.lock().unwrap().clear();
 
     if cfg.enable_kwin_script {
         kwin_dbus_unload_script()?;

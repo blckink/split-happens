@@ -4,6 +4,7 @@ mod hash;
 mod profiles;
 mod sys;
 mod updates;
+mod lock;
 
 // Re-export functions from profiles
 pub use profiles::{
@@ -15,6 +16,8 @@ pub use profiles::{
 pub use filesystem::{SanitizePath, copy_dir_recursive, get_rootpath, get_rootpath_handler};
 
 pub use hash::sha1_file;
+
+pub use lock::ProfileLock;
 
 // Re-export functions from launcher
 pub use sys::{get_screen_resolution, kwin_dbus_start_script, kwin_dbus_unload_script, msg, yesno};
