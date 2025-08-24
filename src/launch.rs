@@ -1,6 +1,6 @@
 use std::fs::File;
-use std::sync::{Arc, Mutex};
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
 
 use crate::app::PartyConfig;
 use crate::game::Game;
@@ -10,6 +10,9 @@ use crate::input::*;
 use crate::instance::*;
 use crate::paths::*;
 use crate::util::*;
+use ctrlc;
+use nix::sys::signal::{Signal, kill};
+use nix::unistd::Pid;
 use std::process::{Child, Command};
 use std::time::Duration;
 use nix::sys::signal::{kill, Signal};
@@ -253,16 +256,18 @@ pub fn launch_game(
         }
 
         let pfx = if win {
+            let mut pfx = format!("{party}/pfx/{}", instance.profname);
             if cfg.proton_separate_pfxs {
-                format!("{party}/pfx{}", i + 1)
-            } else {
-                format!("{party}/pfx")
+                pfx = format!("{}_{}", pfx, i + 1);
             }
+            pfx
         } else {
             String::new()
         };
         if win {
+            std::fs::create_dir_all(&pfx)?;
             cmd.env("WINEPREFIX", &pfx);
+            cmd.env("STEAM_COMPAT_DATA_PATH", &pfx);
         }
 
         cmd.arg("-W").arg(instance.width.to_string());
@@ -311,7 +316,7 @@ pub fn launch_game(
                 if !dev.enabled
                     || (!instance.devices.contains(&d) && dev.device_type == DeviceType::Gamepad)
                 {
-                    cmd.arg("--bind").arg("/dev/null").arg(&dev.path);
+                    cmd.args(["--bind", "/dev/null", dev.path.as_str()]);
                 }
             }
 
@@ -319,46 +324,41 @@ pub fn launch_game(
                 let path_prof = format!("{party}/profiles/{}", instance.profname);
                 let path_save = format!("{path_prof}/saves/{}", h.uid);
                 if !h.path_goldberg.is_empty() {
-                    cmd.arg("--bind")
-                        .arg(format!("{path_prof}/steam"))
-                        .arg(format!(
-                            "{instance_gamedir}/{}/goldbergsave",
-                            h.path_goldberg
-                        ));
+                    let src = format!("{path_prof}/steam");
+                    let dst = format!("{instance_gamedir}/{}/goldbergsave", h.path_goldberg);
+                    cmd.args(["--bind", src.as_str(), dst.as_str()]);
                 }
                 if let Some(dest) = &bind_json {
-                    cmd.arg("--bind");
-                    cmd.arg(&src_json);
-                    cmd.arg(dest);
+                    cmd.arg("--bind").arg(&src_json).arg(dest);
                 }
                 if h.win {
                     let path_windata = format!("{pfx}/drive_c/users/steamuser");
                     if h.win_unique_appdata {
-                        cmd.arg("--bind")
-                            .arg(format!("{path_save}/_AppData"))
-                            .arg(format!("{path_windata}/AppData"));
+                        let src = format!("{path_save}/_AppData");
+                        let dst = format!("{path_windata}/AppData");
+                        cmd.args(["--bind", src.as_str(), dst.as_str()]);
                     }
                     if h.win_unique_documents {
-                        cmd.arg("--bind")
-                            .arg(format!("{path_save}/_Documents"))
-                            .arg(format!("{path_windata}/Documents"));
+                        let src = format!("{path_save}/_Documents");
+                        let dst = format!("{path_windata}/Documents");
+                        cmd.args(["--bind", src.as_str(), dst.as_str()]);
                     }
                 } else {
                     if h.linux_unique_localshare {
-                        cmd.arg("--bind")
-                            .arg(format!("{path_save}/_share"))
-                            .arg(format!("{localshare}"));
+                        let src = format!("{path_save}/_share");
+                        let dst = format!("{localshare}");
+                        cmd.args(["--bind", src.as_str(), dst.as_str()]);
                     }
                     if h.linux_unique_config {
-                        cmd.arg("--bind")
-                            .arg(format!("{path_save}/_config"))
-                            .arg(format!("{home}/.config"));
+                        let src = format!("{path_save}/_config");
+                        let dst = format!("{home}/.config");
+                        cmd.args(["--bind", src.as_str(), dst.as_str()]);
                     }
                 }
                 for subdir in &h.game_unique_paths {
-                    cmd.arg("--bind")
-                        .arg(format!("{path_save}/{subdir}"))
-                        .arg(format!("{instance_gamedir}/{subdir}"));
+                    let src = format!("{path_save}/{subdir}");
+                    let dst = format!("{instance_gamedir}/{subdir}");
+                    cmd.args(["--bind", src.as_str(), dst.as_str()]);
                 }
             }
         }
