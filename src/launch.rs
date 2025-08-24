@@ -10,14 +10,12 @@ use crate::input::*;
 use crate::instance::*;
 use crate::paths::*;
 use crate::util::*;
+
 use ctrlc;
 use nix::sys::signal::{Signal, kill};
 use nix::unistd::Pid;
 use std::process::{Child, Command};
 use std::time::Duration;
-use nix::sys::signal::{kill, Signal};
-use nix::unistd::Pid;
-use ctrlc;
 
 fn prepare_working_tree(
     profname: &str,
@@ -310,7 +308,10 @@ pub fn launch_game(
             cmd.arg("bwrap");
             cmd.arg("--die-with-parent");
             cmd.arg("--dev-bind").arg("/").arg("/");
-            cmd.arg("--tmpfs").arg("/tmp");
+            cmd.arg("--bind").arg("/tmp").arg("/tmp");
+            if let Ok(runtime_dir) = std::env::var("XDG_RUNTIME_DIR") {
+                cmd.arg("--bind").arg(&runtime_dir).arg(&runtime_dir);
+            }
 
             for (d, dev) in input_devices.iter().enumerate() {
                 if !dev.enabled
