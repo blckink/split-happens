@@ -1,10 +1,9 @@
 use rand::prelude::*;
-use serde_json::json;
+use serde_json::{json, Map, Value};
 use std::error::Error;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::PathBuf;
-use sha1::{Digest, Sha1};
 use crate::util::sha1_file;
 
 use crate::util::filesystem::copy_dir_recursive;
@@ -28,46 +27,72 @@ pub fn create_profile(name: &str) -> Result<(), std::io::Error> {
         println!("Created successfully");
     }
 
-    let nepice_path = profile_dir.join("NemirtingasEpicEmu.json");
-    if !nepice_path.exists() || std::fs::metadata(&nepice_path)?.len() == 0 {
-        println!("Initializing Nemirtingas config for {name}");
-        let mut hasher = Sha1::new();
-        hasher.update(name.as_bytes());
-        let userid = format!("{:x}", hasher.finalize());
-        let cfg = json!({
-            "enable_overlay": false,
-            "epicid": name,
-            "disable_online_networking": false,
-            "enable_lan": true,
-            "savepath": "appdata",
-            "unlock_dlcs": true,
-            "language": "en",
-            "username": name,
-            "userid": userid,
-        });
-        let data = serde_json::to_string_pretty(&cfg).unwrap();
-        let mut file = OpenOptions::new()
-            .write(true)
-            .create(true)
-            .truncate(true)
-            .open(&nepice_path)?;
-        file.write_all(data.as_bytes())?;
-        file.sync_all()?;
-    }
+    std::fs::create_dir_all(profile_dir.join("nepice_settings"))?;
 
     Ok(())
 }
 
-pub fn ensure_nemirtingas_config(name: &str) -> Result<(PathBuf, String), Box<dyn Error>> {
+pub fn ensure_nemirtingas_config(
+    name: &str,
+    appid: &str,
+) -> Result<(PathBuf, PathBuf, String), Box<dyn Error>> {
     let profile_dir = PATH_PARTY.join(format!("profiles/{name}"));
     std::fs::create_dir_all(&profile_dir)?;
     create_profile(name)?;
-    let path = profile_dir.join("NemirtingasEpicEmu.json");
-    if !path.exists() || std::fs::metadata(&path)?.len() == 0 {
-        return Err("Nemirtingas config missing".into());
+
+    let nepice_dir = profile_dir.join("nepice_settings");
+    std::fs::create_dir_all(&nepice_dir)?;
+    let path = nepice_dir.join("NemirtingasEpicEmu.json");
+
+    let mut existing_epicid = None;
+    let mut existing_productuserid = None;
+    if let Ok(file) = std::fs::File::open(&path) {
+        if let Ok(value) = serde_json::from_reader::<_, Value>(file) {
+            existing_epicid = value
+                .get("epicid")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string());
+            existing_productuserid = value
+                .get("productuserid")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string());
+        }
     }
+
+    if let Some(ref epicid) = existing_epicid {
+        if !epicid.chars().all(|c| c.is_ascii_hexdigit()) {
+            return Err("Invalid epicid".into());
+        }
+    }
+    if let Some(ref productuserid) = existing_productuserid {
+        if !productuserid.chars().all(|c| c.is_ascii_hexdigit()) {
+            return Err("Invalid productuserid".into());
+        }
+    }
+
+    let mut obj = Map::new();
+    obj.insert("username".to_string(), json!(name));
+    obj.insert("language".to_string(), json!("en"));
+    obj.insert("appid".to_string(), json!(appid));
+    obj.insert("log_level".to_string(), json!("DEBUG"));
+    if let Some(epicid) = existing_epicid {
+        obj.insert("epicid".to_string(), json!(epicid));
+    }
+    if let Some(productuserid) = existing_productuserid {
+        obj.insert("productuserid".to_string(), json!(productuserid));
+    }
+
+    let data = serde_json::to_string_pretty(&obj)?;
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(&path)?;
+    file.write_all(data.as_bytes())?;
+    file.sync_all()?;
+
     let sha1 = sha1_file(&path)?;
-    Ok((path, sha1))
+    Ok((nepice_dir, path, sha1))
 }
 
 // Creates the "game save" folder for per-profile game data to go into

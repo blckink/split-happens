@@ -51,13 +51,12 @@ JSON file **relative to the game's root directory**. This path should
 include the file name itself. For example, if the DLL loads
 `nepice_settings/NemirtingasEpicEmu.json` next to it, add
 `"eos.config_path": "nepice_settings/NemirtingasEpicEmu.json"` to the
-handler. PartyDeck will then create a per-profile JSON and bind it to that
-location when launching the game. Each profile's file sets both `epicid`
-and `username` to the profile name so player identity remains constant
-across sessions. When the game exits, PartyDeck copies the profile's
-`NemirtingasEpicEmu.json` back to this location so you can inspect the
-values written during play. The patched `EOSSDK` DLL is **not** bundled with
-PartyDeck; handlers should include it themselves. Place
+handler. PartyDeck will then create a per-profile `nepice_settings` folder
+containing `NemirtingasEpicEmu.json` and bind it to that location when
+launching the game so logs and config live per profile. Each profile's JSON
+sets `username` to the profile name, `language` to `"en"`, `appid` to a fixed
+game identifier, and `log_level` to `"DEBUG"`. The patched `EOSSDK` DLL is
+**not** bundled with PartyDeck; handlers should include it themselves. Place
 `EOSSDK-Win64-Shipping.dll` inside the handler's `copy_to_symdir` folder
 mirroring where the game expects it so PartyDeck can copy or symlink it
 into the game directory at launch.

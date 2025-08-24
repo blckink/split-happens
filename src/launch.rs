@@ -1,4 +1,3 @@
-use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
@@ -38,14 +37,18 @@ fn prepare_working_tree(
         return Err("cp failed".into());
     }
     if !nemirtingas_rel.is_empty() {
-        let dest = run_fs.join(nemirtingas_rel);
-        if dest.exists() {
-            std::fs::remove_file(&dest)?;
+        let dest_dir = run_fs.join(Path::new(nemirtingas_rel).parent().unwrap());
+        if dest_dir.exists() {
+            if dest_dir.is_file() || dest_dir.is_symlink() {
+                std::fs::remove_file(&dest_dir)?;
+            } else {
+                std::fs::remove_dir_all(&dest_dir)?;
+            }
         }
-        if let Some(parent) = dest.parent() {
+        if let Some(parent) = dest_dir.parent() {
             std::fs::create_dir_all(parent)?;
         }
-        std::fs::copy(src, &dest)?;
+        std::os::unix::fs::symlink(src, &dest_dir)?;
     }
     Ok(run_fs)
 }
@@ -165,8 +168,9 @@ pub fn launch_game(
 
     let mut children: Vec<Child> = Vec::new();
     for (i, instance) in instances.iter().enumerate() {
-        let (src_json, sha1_nemirtingas) = ensure_nemirtingas_config(&instance.profname)?;
-        let src_json = src_json.canonicalize()?;
+        let (nepice_dir, json_path, sha1_nemirtingas) =
+            ensure_nemirtingas_config(&instance.profname, &game_id)?;
+        let json_real = json_path.canonicalize()?;
 
         let instance_gamedir = if use_bwrap {
             gamedir.clone()
@@ -175,7 +179,7 @@ pub fn launch_game(
                 instance.profname.as_str(),
                 &gamedir,
                 h.path_nemirtingas.as_str(),
-                &src_json,
+                &nepice_dir,
             )?
             .to_string_lossy()
             .to_string()
@@ -183,30 +187,26 @@ pub fn launch_game(
             gamedir.clone()
         };
 
-        let mut bind_json = None;
+        let mut bind_dir = None;
         if let HandlerRef(h) = game {
             if !h.path_nemirtingas.is_empty() {
-                let dest = PathBuf::from(&instance_gamedir).join(&h.path_nemirtingas);
-                if dest.exists() && dest.is_symlink() {
-                    std::fs::remove_file(&dest)?;
+                let dest_dir = PathBuf::from(&instance_gamedir)
+                    .join(Path::new(&h.path_nemirtingas).parent().unwrap());
+                if dest_dir.exists() && !dest_dir.is_dir() {
+                    std::fs::remove_file(&dest_dir)?;
                 }
-                if let Some(parent) = dest.parent() {
-                    std::fs::create_dir_all(parent)?;
-                }
-                if !dest.exists() {
-                    let f = File::create(&dest)?;
-                    f.sync_all()?;
-                }
-                let dest = dest.canonicalize()?;
+                std::fs::create_dir_all(&dest_dir)?;
                 println!(
-                    "Instance {}: Nemirtingas config {} (SHA1 {}) -> {}",
+                    "Instance {}: Nemirtingas config {} (SHA1 {}) -> {} (user {} appid {})",
                     instance.profname,
-                    src_json.display(),
+                    json_real.display(),
                     sha1_nemirtingas,
-                    dest.display()
+                    dest_dir.display(),
+                    instance.profname,
+                    game_id
                 );
                 if use_bwrap {
-                    bind_json = Some(dest);
+                    bind_dir = Some(dest_dir);
                 }
             }
         }
@@ -329,8 +329,8 @@ pub fn launch_game(
                     let dst = format!("{instance_gamedir}/{}/goldbergsave", h.path_goldberg);
                     cmd.args(["--bind", src.as_str(), dst.as_str()]);
                 }
-                if let Some(dest) = &bind_json {
-                    cmd.arg("--bind").arg(&src_json).arg(dest);
+                if let Some(dest) = &bind_dir {
+                    cmd.arg("--bind").arg(&nepice_dir).arg(dest);
                 }
                 if h.win {
                     let path_windata = format!("{pfx}/drive_c/users/steamuser");
