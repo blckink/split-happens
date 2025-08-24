@@ -15,6 +15,9 @@ use nix::sys::signal::{Signal, kill};
 use nix::unistd::Pid;
 use std::process::{Child, Command};
 use std::time::Duration;
+use nix::sys::signal::{kill, Signal};
+use nix::unistd::Pid;
+use ctrlc;
 
 fn prepare_working_tree(
     profname: &str,
