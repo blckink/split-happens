@@ -1,4 +1,4 @@
-use std::fs::OpenOptions;
+use std::fs::{File, OpenOptions};
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
@@ -151,20 +151,8 @@ pub fn launch_game(
 
     let mut children: Vec<Child> = Vec::new();
     for (i, instance) in instances.iter().enumerate() {
-        let profile_dir = PATH_PARTY.join(format!("profiles/{}", instance.profname));
-        let src_json = profile_dir.join("NemirtingasEpicEmu.json");
-        if !src_json.exists() || std::fs::metadata(&src_json)?.len() == 0 {
-            create_profile(instance.profname.as_str())?;
-        }
-        if !src_json.exists() || std::fs::metadata(&src_json)?.len() == 0 {
-            eprintln!(
-                "Nemirtingas config missing for profile {} at {}",
-                instance.profname,
-                src_json.display()
-            );
-            return Err("Nemirtingas config missing".into());
-        }
-        let sha1_nemirtingas = sha1_file(&src_json)?;
+        let (src_json, sha1_nemirtingas) = ensure_nemirtingas_config(&instance.profname)?;
+        let src_json = src_json.canonicalize()?;
 
         let instance_gamedir = if use_bwrap {
             gamedir.clone()
@@ -181,44 +169,32 @@ pub fn launch_game(
             gamedir.clone()
         };
 
-        let mut dest_json_opt = None;
-        if use_bwrap {
-            if let HandlerRef(h) = game {
-                if !h.path_nemirtingas.is_empty() {
-                    let dest = PathBuf::from(&instance_gamedir).join(&h.path_nemirtingas);
-                    if dest.exists() && dest.is_symlink() {
-                        std::fs::remove_file(&dest)?;
-                    }
-                    if let Some(parent) = dest.parent() {
-                        std::fs::create_dir_all(parent)?;
-                    }
-                    if !dest.exists() {
-                        std::fs::File::create(&dest)?;
-                    }
-                    dest_json_opt = Some(dest);
-                }
-            }
-        } else if let HandlerRef(h) = game {
+        let mut bind_json = None;
+        if let HandlerRef(h) = game {
             if !h.path_nemirtingas.is_empty() {
                 let dest = PathBuf::from(&instance_gamedir).join(&h.path_nemirtingas);
+                if dest.exists() && dest.is_symlink() {
+                    std::fs::remove_file(&dest)?;
+                }
+                if let Some(parent) = dest.parent() {
+                    std::fs::create_dir_all(parent)?;
+                }
+                if !dest.exists() {
+                    let mut f = File::create(&dest)?;
+                    f.sync_all()?;
+                }
+                let dest = dest.canonicalize()?;
                 println!(
                     "Instance {}: Nemirtingas config {} (SHA1 {}) -> {}",
                     instance.profname,
-                    src_json.canonicalize()?.display(),
+                    src_json.display(),
                     sha1_nemirtingas,
-                    dest.canonicalize()?.display()
+                    dest.display()
                 );
+                if use_bwrap {
+                    bind_json = Some(dest);
+                }
             }
-        }
-
-        if let Some(dest) = &dest_json_opt {
-            println!(
-                "Instance {}: Nemirtingas config {} (SHA1 {}) -> {}",
-                instance.profname,
-                src_json.canonicalize()?.display(),
-                sha1_nemirtingas,
-                dest.canonicalize()?.display()
-            );
         }
 
         let mut cmd = Command::new(match cfg.kbm_support {
@@ -337,7 +313,7 @@ pub fn launch_game(
                             h.path_goldberg
                         ));
                 }
-                if let Some(dest) = &dest_json_opt {
+                if let Some(dest) = &bind_json {
                     cmd.arg("--bind");
                     cmd.arg(&src_json);
                     cmd.arg(dest);
