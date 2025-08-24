@@ -4,12 +4,14 @@ use std::path::{Path, PathBuf};
 
 use crate::app::PartyConfig;
 use crate::game::Game;
+use crate::game::Game::{ExecRef, HandlerRef};
 use crate::handler::*;
 use crate::input::*;
 use crate::instance::*;
-use crate::launch::Game::{ExecRef, HandlerRef};
 use crate::paths::*;
 use crate::util::*;
+use std::process::{Child, Command};
+use std::time::Duration;
 
 fn prepare_working_tree(
     profname: &str,
@@ -65,7 +67,11 @@ pub fn launch_game(
     let mut locks = Vec::new();
     for instance in instances {
         let lock_path = run_dir.join(format!("{}.lock", instance.profname));
-        match OpenOptions::new().write(true).create_new(true).open(&lock_path) {
+        match OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&lock_path)
+        {
             Ok(_) => locks.push(lock_path),
             Err(e) if e.kind() == ErrorKind::AlreadyExists => {
                 return Err(format!("Instance {} already running", instance.profname).into());
@@ -74,45 +80,6 @@ pub fn launch_game(
         }
     }
 
-    let cmd = launch_cmd(game, input_devices, instances, cfg)?;
-    println!("\nCOMMAND:\n{}\n", cmd);
-
-    if cfg.enable_kwin_script {
-        let script = if instances.len() == 2 && cfg.vertical_two_player {
-            "splitscreen_kwin_vertical.js"
-        } else {
-            "splitscreen_kwin.js"
-        };
-
-        kwin_dbus_start_script(PATH_RES.join(script))?;
-    }
-
-    let status = std::process::Command::new("sh")
-        .arg("-c")
-        .arg(&cmd)
-        .status();
-
-    for lock in locks {
-        let _ = std::fs::remove_file(lock);
-    }
-
-    status?;
-
-    if cfg.enable_kwin_script {
-        kwin_dbus_unload_script()?;
-    }
-
-    remove_guest_profiles()?;
-
-    Ok(())
-}
-
-pub fn launch_cmd(
-    game: &Game,
-    input_devices: &[DeviceInfo],
-    instances: &Vec<Instance>,
-    cfg: &PartyConfig,
-) -> Result<String, Box<dyn std::error::Error>> {
     let home = PATH_HOME.display();
     let localshare = PATH_LOCAL_SHARE.display();
     let party = PATH_PARTY.display();
@@ -136,76 +103,28 @@ pub fn launch_cmd(
         HandlerRef(h) => h.win,
     };
 
-    let mut cmd = String::new();
-    // Command: "gamescope [settings] -- bwrap [binds] [runtime] [exec] [args] & ..."
-    cmd.push_str("export ");
-    cmd.push_str("SDL_JOYSTICK_HIDAPI=0 ");
-    cmd.push_str("ENABLE_GAMESCOPE_WSI=0 ");
-    cmd.push_str("PROTON_DISABLE_HIDRAW=1 ");
-
-    if cfg.force_sdl && !win {
-        let mut path_sdl = "/ubuntu12_32/steam-runtime/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0";
-        if let HandlerRef(h) = game {
-            if h.is32bit {
-                path_sdl = "/ubuntu12_32/steam-runtime/usr/lib/i386-linux-gnu/libSDL2-2.0.so.0";
-            }
-        };
-        cmd.push_str(&format!("SDL_DYNAMIC_API=\"{steam}/{path_sdl}\" "));
-    }
-    if win {
-        let protonpath = match cfg.proton_version.is_empty() {
-            true => "GE-Proton",
-            false => cfg.proton_version.as_str(),
-        };
-        cmd.push_str(&format!("PROTON_VERB=run "));
-        cmd.push_str(&format!("PROTONPATH={protonpath} "));
-
-        if let HandlerRef(h) = game {
-            if !h.dll_overrides.is_empty() {
-                cmd.push_str("WINEDLLOVERRIDES=\"");
-                for dll in &h.dll_overrides {
-                    cmd.push_str(&format!("{dll},"));
-                }
-                cmd.push_str("=n,b\" ");
-            }
-            if h.coldclient {
-                cmd.push_str("PROTON_DISABLE_LSTEAMCLIENT=1 ");
-            }
-        }
-    }
-    cmd.push_str("; ");
-
-    let runtime = match win {
-        // UMU CHANGE
-        true => &format!("{}", BIN_UMU_RUN.to_string_lossy()),
-        false => {
-            if let HandlerRef(h) = game {
-                match h.runtime.as_str() {
-                    "scout" => &format!("\"{steam}/ubuntu12_32/steam-runtime/run.sh\""),
-                    "soldier" => &format!(
-                        "\"{steam}/steamapps/common/SteamLinuxRuntime_soldier/_v2-entry-point\""
-                    ),
-                    _ => "",
-                }
-            } else {
-                ""
-            }
-        }
-    };
-
     let exec = match game {
-        ExecRef(e) => &e.filename(),
-        HandlerRef(h) => h.exec.as_str(),
+        ExecRef(e) => e.filename().to_string(),
+        HandlerRef(h) => h.exec.clone(),
     };
 
-    if !PathBuf::from(&gamedir).join(exec).exists() {
+    let runtime = if win {
+        BIN_UMU_RUN.to_string_lossy().to_string()
+    } else if let HandlerRef(h) = game {
+        match h.runtime.as_str() {
+            "scout" => format!("{steam}/ubuntu12_32/steam-runtime/run.sh"),
+            "soldier" => {
+                format!("{steam}/steamapps/common/SteamLinuxRuntime_soldier/_v2-entry-point")
+            }
+            _ => String::new(),
+        }
+    } else {
+        String::new()
+    };
+
+    if !PathBuf::from(&gamedir).join(&exec).exists() {
         return Err(format!("Executable not found: {gamedir}/{exec}").into());
     }
-
-    let use_bwrap = std::process::Command::new("bwrap")
-        .arg("--version")
-        .status()
-        .is_ok();
 
     if let HandlerRef(h) = game {
         if h.runtime == "scout" && !PATH_STEAM.join("ubuntu12_32/steam-runtime/run.sh").exists() {
@@ -219,35 +138,34 @@ pub fn launch_cmd(
         }
     }
 
+    let use_bwrap = Command::new("bwrap").arg("--version").status().is_ok();
+
+    if cfg.enable_kwin_script {
+        let script = if instances.len() == 2 && cfg.vertical_two_player {
+            "splitscreen_kwin_vertical.js"
+        } else {
+            "splitscreen_kwin.js"
+        };
+        kwin_dbus_start_script(PATH_RES.join(script))?;
+    }
+
+    let mut children: Vec<Child> = Vec::new();
     for (i, instance) in instances.iter().enumerate() {
-        let path_prof = &format!("{party}/profiles/{}", instance.profname.as_str());
-        let path_save = match game {
-            ExecRef(_) => "",
-            HandlerRef(h) => &format!("{path_prof}/saves/{}", h.uid.as_str()),
-        };
-
-        let pfx = match cfg.proton_separate_pfxs {
-            true => &format!("{party}/pfx{}", i + 1),
-            false => &format!("{party}/pfx"),
-        };
-        if win {
-            cmd.push_str(&format!("WINEPREFIX={pfx} "));
+        let profile_dir = PATH_PARTY.join(format!("profiles/{}", instance.profname));
+        let src_json = profile_dir.join("NemirtingasEpicEmu.json");
+        if !src_json.exists() || std::fs::metadata(&src_json)?.len() == 0 {
+            create_profile(instance.profname.as_str())?;
         }
+        if !src_json.exists() || std::fs::metadata(&src_json)?.len() == 0 {
+            eprintln!(
+                "Nemirtingas config missing for profile {} at {}",
+                instance.profname,
+                src_json.display()
+            );
+            return Err("Nemirtingas config missing".into());
+        }
+        let sha1_nemirtingas = sha1_file(&src_json)?;
 
-        let (gsc_width, gsc_height) = (instance.width, instance.height);
-
-        let gsc_sdl = match cfg.gamescope_sdl_backend {
-            true => "--backend=sdl",
-            false => "",
-        };
-
-        let gamescope = match cfg.kbm_support {
-            true => &format!("{}", BIN_GSC_KBM.to_string_lossy()),
-            false => "gamescope",
-        };
-
-        let (src_nemirtingas, sha1_nemirtingas) =
-            ensure_nemirtingas_config(instance.profname.as_str())?;
         let instance_gamedir = if use_bwrap {
             gamedir.clone()
         } else if let HandlerRef(h) = game {
@@ -255,7 +173,7 @@ pub fn launch_cmd(
                 instance.profname.as_str(),
                 &gamedir,
                 h.path_nemirtingas.as_str(),
-                &src_nemirtingas,
+                &src_json,
             )?
             .to_string_lossy()
             .to_string()
@@ -263,183 +181,250 @@ pub fn launch_cmd(
             gamedir.clone()
         };
 
-        cmd.push_str(&format!("cd \"{instance_gamedir}\"; {gamescope} -W {gsc_width} -H {gsc_height} {gsc_sdl} "));
-
-        if cfg.kbm_support {
-            let mut instance_has_keyboard = false;
-            let mut instance_has_mouse = false;
-            let mut kbms = String::new();
-
-            for d in &instance.devices {
-                if input_devices[*d].device_type == DeviceType::Keyboard {
-                    instance_has_keyboard = true;
-                } else if input_devices[*d].device_type == DeviceType::Mouse {
-                    instance_has_mouse = true;
-                }
-                if input_devices[*d].device_type == DeviceType::Keyboard
-                    || input_devices[*d].device_type == DeviceType::Mouse
-                {
-                    kbms.push_str(&format!("{},", input_devices[*d].path));
-                }
-            }
-
-            if instance_has_keyboard {
-                cmd.push_str("--backend-disable-keyboard ");
-            }
-            if instance_has_mouse {
-                cmd.push_str("--backend-disable-mouse ");
-            }
-            if !kbms.is_empty() {
-                cmd.push_str(&format!("--libinput-hold-dev {} ", kbms));
-            }
-        }
+        let mut dest_json_opt = None;
         if use_bwrap {
-            cmd.push_str(&format!("-- "));
-            cmd.push_str("bwrap --die-with-parent --dev-bind / / --tmpfs /tmp ");
-        }
-
-        // Bind player profile directories to the game's directories
-        let mut binds = String::new();
-        if use_bwrap {
-            // Mask out any gamepads that aren't this player's
-            for (d, dev) in input_devices.iter().enumerate() {
-                if !dev.enabled
-                    || (!instance.devices.contains(&d) && dev.device_type == DeviceType::Gamepad)
-                {
-                    let path = &dev.path;
-                    binds.push_str(&format!("--bind /dev/null {path} "));
-                }
-            }
-
             if let HandlerRef(h) = game {
-                let path_goldberg = h.path_goldberg.as_str();
-                if !path_goldberg.is_empty() {
-                    binds.push_str(&format!(
-                        "--bind \"{path_prof}/steam\" \"{instance_gamedir}/{path_goldberg}/goldbergsave\" "
-                    ));
-                }
                 if !h.path_nemirtingas.is_empty() {
                     let dest = PathBuf::from(&instance_gamedir).join(&h.path_nemirtingas);
+                    if dest.exists() && dest.is_symlink() {
+                        std::fs::remove_file(&dest)?;
+                    }
                     if let Some(parent) = dest.parent() {
                         std::fs::create_dir_all(parent)?;
                     }
                     if !dest.exists() {
                         std::fs::File::create(&dest)?;
                     }
-
-                    if src_nemirtingas.exists()
-                        && std::fs::metadata(&src_nemirtingas)?.len() > 0
-                    {
-                        if dest.is_symlink() {
-                            std::fs::remove_file(&dest)?;
-                        }
-                        if let Some(parent) = dest.parent() {
-                            std::fs::create_dir_all(parent)?;
-                        }
-                        if !dest.exists() {
-                            std::fs::File::create(&dest)?;
-                        }
-                        println!(
-                            "Instance {}: Nemirtingas config {} (SHA1 {}) -> {}",
-                            instance.profname,
-                            src_nemirtingas.canonicalize()?.display(),
-                            sha1_nemirtingas,
-                            dest.canonicalize()?.display()
-                        );
-                        binds.push_str(&format!(
-                            "--bind \\\"{}\\\" \\\"{}\\\" ",
-                            src_nemirtingas.to_string_lossy(),
-                            dest.to_string_lossy()
-                        ));
-                    } else {
-                        return Err(format!(
-                            "Nemirtingas config missing for profile {} at {}",
-                            instance.profname,
-                            src_nemirtingas.to_string_lossy()
-                        )
-                        .into());
-                    }
-                }
-                if h.win {
-                    let path_windata = format!("{pfx}/drive_c/users/steamuser/");
-                    if h.win_unique_appdata {
-                        binds.push_str(&format!(
-                            "--bind \"{path_save}/_AppData\" \"{path_windata}/AppData\" "
-                        ));
-                    }
-                    if h.win_unique_documents {
-                        binds.push_str(&format!(
-                            "--bind \"{path_save}/_Documents\" \"{path_windata}/Documents\" "
-                        ));
-                    }
-                } else {
-                    if h.linux_unique_localshare {
-                        binds.push_str(&format!("--bind \"{path_save}/_share\" \"{localshare}\" "));
-                    }
-                    if h.linux_unique_config {
-                        binds.push_str(&format!(
-                            "--bind \"{path_save}/_config\" \"{home}/.config\" "
-                        ));
-                    }
-                }
-                for subdir in &h.game_unique_paths {
-                    binds.push_str(&format!(
-                        "--bind \"{path_save}/{subdir}\" \"{instance_gamedir}/{subdir}\" "
-                    ));
+                    dest_json_opt = Some(dest);
                 }
             }
         } else if let HandlerRef(h) = game {
-            if !h.path_nemirtingas.is_empty()
-                && src_nemirtingas.exists()
-                && std::fs::metadata(&src_nemirtingas)?.len() > 0
-            {
+            if !h.path_nemirtingas.is_empty() {
                 let dest = PathBuf::from(&instance_gamedir).join(&h.path_nemirtingas);
                 println!(
                     "Instance {}: Nemirtingas config {} (SHA1 {}) -> {}",
                     instance.profname,
-                    src_nemirtingas.canonicalize()?.display(),
+                    src_json.canonicalize()?.display(),
                     sha1_nemirtingas,
                     dest.canonicalize()?.display()
                 );
-            } else {
-                return Err(format!(
-                    "Nemirtingas config missing for profile {} at {}",
-                    instance.profname,
-                    src_nemirtingas.to_string_lossy()
-                )
-                .into());
             }
         }
 
-        let args = match game {
+        if let Some(dest) = &dest_json_opt {
+            println!(
+                "Instance {}: Nemirtingas config {} (SHA1 {}) -> {}",
+                instance.profname,
+                src_json.canonicalize()?.display(),
+                sha1_nemirtingas,
+                dest.canonicalize()?.display()
+            );
+        }
+
+        let mut cmd = Command::new(match cfg.kbm_support {
+            true => BIN_GSC_KBM.to_string_lossy().to_string(),
+            false => "gamescope".to_string(),
+        });
+
+        cmd.current_dir(&instance_gamedir);
+        cmd.env("SDL_JOYSTICK_HIDAPI", "0");
+        cmd.env("ENABLE_GAMESCOPE_WSI", "0");
+        cmd.env("PROTON_DISABLE_HIDRAW", "1");
+        if cfg.force_sdl && !win {
+            let mut path_sdl =
+                "ubuntu12_32/steam-runtime/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0";
+            if let HandlerRef(h) = game {
+                if h.is32bit {
+                    path_sdl = "ubuntu12_32/steam-runtime/usr/lib/i386-linux-gnu/libSDL2-2.0.so.0";
+                }
+            }
+            cmd.env("SDL_DYNAMIC_API", format!("{steam}/{path_sdl}"));
+        }
+        if win {
+            let protonpath = if cfg.proton_version.is_empty() {
+                "GE-Proton".to_string()
+            } else {
+                cfg.proton_version.clone()
+            };
+            cmd.env("PROTON_VERB", "run");
+            cmd.env("PROTONPATH", protonpath);
+            if let HandlerRef(h) = game {
+                if !h.dll_overrides.is_empty() {
+                    let mut overrides = String::new();
+                    for dll in &h.dll_overrides {
+                        overrides.push_str(&format!("{dll},"));
+                    }
+                    overrides.push_str("=n,b");
+                    cmd.env("WINEDLLOVERRIDES", overrides);
+                }
+                if h.coldclient {
+                    cmd.env("PROTON_DISABLE_LSTEAMCLIENT", "1");
+                }
+            }
+        }
+
+        let pfx = if win {
+            if cfg.proton_separate_pfxs {
+                format!("{party}/pfx{}", i + 1)
+            } else {
+                format!("{party}/pfx")
+            }
+        } else {
+            String::new()
+        };
+        if win {
+            cmd.env("WINEPREFIX", &pfx);
+        }
+
+        cmd.arg("-W").arg(instance.width.to_string());
+        cmd.arg("-H").arg(instance.height.to_string());
+        if cfg.gamescope_sdl_backend {
+            cmd.arg("--backend=sdl");
+        }
+
+        if cfg.kbm_support {
+            let mut has_keyboard = false;
+            let mut has_mouse = false;
+            let mut kbms: Vec<String> = Vec::new();
+            for d in &instance.devices {
+                match input_devices[*d].device_type {
+                    DeviceType::Keyboard => {
+                        has_keyboard = true;
+                        kbms.push(input_devices[*d].path.clone());
+                    }
+                    DeviceType::Mouse => {
+                        has_mouse = true;
+                        kbms.push(input_devices[*d].path.clone());
+                    }
+                    _ => {}
+                }
+            }
+            if has_keyboard {
+                cmd.arg("--backend-disable-keyboard");
+            }
+            if has_mouse {
+                cmd.arg("--backend-disable-mouse");
+            }
+            if !kbms.is_empty() {
+                cmd.arg("--libinput-hold-dev");
+                cmd.arg(kbms.join(","));
+            }
+        }
+
+        cmd.arg("--");
+        if use_bwrap {
+            cmd.arg("bwrap");
+            cmd.arg("--die-with-parent");
+            cmd.arg("--dev-bind").arg("/").arg("/");
+            cmd.arg("--tmpfs").arg("/tmp");
+
+            for (d, dev) in input_devices.iter().enumerate() {
+                if !dev.enabled
+                    || (!instance.devices.contains(&d) && dev.device_type == DeviceType::Gamepad)
+                {
+                    cmd.arg("--bind").arg("/dev/null").arg(&dev.path);
+                }
+            }
+
+            if let HandlerRef(h) = game {
+                let path_prof = format!("{party}/profiles/{}", instance.profname);
+                let path_save = format!("{path_prof}/saves/{}", h.uid);
+                if !h.path_goldberg.is_empty() {
+                    cmd.arg("--bind")
+                        .arg(format!("{path_prof}/steam"))
+                        .arg(format!(
+                            "{instance_gamedir}/{}/goldbergsave",
+                            h.path_goldberg
+                        ));
+                }
+                if let Some(dest) = &dest_json_opt {
+                    cmd.arg("--bind");
+                    cmd.arg(&src_json);
+                    cmd.arg(dest);
+                }
+                if h.win {
+                    let path_windata = format!("{pfx}/drive_c/users/steamuser");
+                    if h.win_unique_appdata {
+                        cmd.arg("--bind")
+                            .arg(format!("{path_save}/_AppData"))
+                            .arg(format!("{path_windata}/AppData"));
+                    }
+                    if h.win_unique_documents {
+                        cmd.arg("--bind")
+                            .arg(format!("{path_save}/_Documents"))
+                            .arg(format!("{path_windata}/Documents"));
+                    }
+                } else {
+                    if h.linux_unique_localshare {
+                        cmd.arg("--bind")
+                            .arg(format!("{path_save}/_share"))
+                            .arg(format!("{localshare}"));
+                    }
+                    if h.linux_unique_config {
+                        cmd.arg("--bind")
+                            .arg(format!("{path_save}/_config"))
+                            .arg(format!("{home}/.config"));
+                    }
+                }
+                for subdir in &h.game_unique_paths {
+                    cmd.arg("--bind")
+                        .arg(format!("{path_save}/{subdir}"))
+                        .arg(format!("{instance_gamedir}/{subdir}"));
+                }
+            }
+        }
+
+        if !runtime.is_empty() {
+            cmd.arg(&runtime);
+        }
+
+        let exec_path = format!("{instance_gamedir}/{exec}");
+        cmd.arg(exec_path);
+
+        let args: Vec<String> = match game {
             HandlerRef(h) => h
                 .args
                 .iter()
                 .map(|arg| match arg.as_str() {
-                    "$GAMEDIR" => format!(" \"{instance_gamedir}\""),
-                    "$PROFILE" => format!(" \"{}\"", instance.profname.as_str()),
-                    "$WIDTH" => format!(" {gsc_width}"),
-                    "$HEIGHT" => format!(" {gsc_height}"),
-                    "$WIDTHXHEIGHT" => format!(" \"{gsc_width}x{gsc_height}\""),
-                    _ => format!(" {arg}"),
+                    "$GAMEDIR" => instance_gamedir.clone(),
+                    "$PROFILE" => instance.profname.clone(),
+                    "$WIDTH" => instance.width.to_string(),
+                    "$HEIGHT" => instance.height.to_string(),
+                    "$WIDTHXHEIGHT" => format!("{}x{}", instance.width, instance.height),
+                    _ => arg.to_string(),
                 })
-                .collect::<String>(),
-            ExecRef(e) => e.args.clone().sanitize_path(),
+                .collect(),
+            ExecRef(e) => e.args.split_whitespace().map(|s| s.to_string()).collect(),
         };
+        for a in args {
+            cmd.arg(a);
+        }
 
-        cmd.push_str(&format!(
-            "{binds} {runtime} \"{instance_gamedir}/{exec}\" {args} "
-        ));
+        let child = cmd.spawn()?;
+        children.push(child);
 
         if i < instances.len() - 1 {
-            // Proton games need a ~5 second buffer in-between launches
-            // TODO: investigate why this is
-            match win {
-                true => cmd.push_str("& sleep 6; "),
-                false => cmd.push_str("& sleep 0.01; "),
+            if win {
+                std::thread::sleep(Duration::from_secs(6));
+            } else {
+                std::thread::sleep(Duration::from_millis(10));
             }
         }
     }
 
-    Ok(cmd)
+    for mut child in children {
+        let _ = child.wait();
+    }
+
+    for lock in locks {
+        let _ = std::fs::remove_file(lock);
+    }
+
+    if cfg.enable_kwin_script {
+        kwin_dbus_unload_script()?;
+    }
+
+    remove_guest_profiles()?;
+
+    Ok(())
 }
