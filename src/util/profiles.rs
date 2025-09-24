@@ -4,6 +4,7 @@ use std::error::Error;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::PathBuf;
+
 use crate::util::sha1_file;
 
 use crate::util::filesystem::copy_dir_recursive;
@@ -48,14 +49,28 @@ pub fn ensure_nemirtingas_config(
     let mut existing_productuserid = None;
     if let Ok(file) = std::fs::File::open(&path) {
         if let Ok(value) = serde_json::from_reader::<_, Value>(file) {
+            // Support both the new nested structure and the legacy flat structure so that
+            // previously generated profiles keep their IDs without interruption.
             existing_epicid = value
-                .get("epicid")
+                .pointer("/EOSEmu/User/EpicId")
                 .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
+                .map(|s| s.to_string())
+                .or_else(|| {
+                    value
+                        .get("epicid")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string())
+                });
             existing_productuserid = value
-                .get("productuserid")
+                .pointer("/EOSEmu/User/ProductUserId")
                 .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
+                .map(|s| s.to_string())
+                .or_else(|| {
+                    value
+                        .get("productuserid")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string())
+                });
         }
     }
 
@@ -70,19 +85,66 @@ pub fn ensure_nemirtingas_config(
         }
     }
 
-    let mut obj = Map::new();
-    obj.insert("username".to_string(), json!(name));
-    obj.insert("language".to_string(), json!("en"));
-    obj.insert("appid".to_string(), json!(appid));
-    obj.insert("log_level".to_string(), json!("DEBUG"));
-    if let Some(epicid) = existing_epicid {
-        obj.insert("epicid".to_string(), json!(epicid));
+    // Build the Nemirtingas configuration with the expected nested layout.
+    let mut user_obj = Map::new();
+    user_obj.insert("Language".to_string(), json!("en"));
+    user_obj.insert("UserName".to_string(), json!(name));
+    if let Some(epicid) = &existing_epicid {
+        user_obj.insert("EpicId".to_string(), json!(epicid));
     }
-    if let Some(productuserid) = existing_productuserid {
-        obj.insert("productuserid".to_string(), json!(productuserid));
+    if let Some(productuserid) = &existing_productuserid {
+        user_obj.insert("ProductUserId".to_string(), json!(productuserid));
     }
 
-    let data = serde_json::to_string_pretty(&obj)?;
+    let mut obj = Map::new();
+    obj.insert(
+        "EOSEmu".to_string(),
+        json!({
+            "Achievements": {
+                "OnlineDatabase": ""
+            },
+            "Application": {
+                "AppId": appid,
+                "DisableCrashDump": false,
+                "DisableOnlineNetworking": false,
+                "LogLevel": "off",
+                "SavePath": "appdata"
+            },
+            "Ecom": {
+                "UnlockDlcs": true
+            },
+            "Plugins": {
+                "Overlay": {
+                    "DelayDetection": "5s",
+                    "Enabled": true
+                }
+            },
+            "User": user_obj
+        }),
+    );
+    obj.insert(
+        "Network".to_string(),
+        json!({
+            "IceServers": [],
+            "Plugins": {
+                "Broadcast": {
+                    "EnableLog": false,
+                    "Enabled": false,
+                    "LocalhostOnly": false
+                },
+                "WebSocket": {
+                    "EnableLog": false,
+                    "SignalingServers": []
+                }
+            }
+        }),
+    );
+    obj.insert("appid".to_string(), json!(appid));
+    obj.insert("language".to_string(), json!("en"));
+    obj.insert("log_level".to_string(), json!("DEBUG"));
+    obj.insert("username".to_string(), json!(name));
+
+    let data = serde_json::to_string_pretty(&Value::Object(obj))?;
     let mut file = OpenOptions::new()
         .write(true)
         .create(true)
