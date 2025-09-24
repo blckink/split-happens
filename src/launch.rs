@@ -1,3 +1,5 @@
+use std::fs::{self, OpenOptions};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
@@ -51,6 +53,118 @@ fn prepare_working_tree(
         std::os::unix::fs::symlink(src, &dest_dir)?;
     }
     Ok(run_fs)
+}
+
+/// Appends launch diagnostics to a persistent log so users can inspect warnings after the game exits.
+fn append_launch_log(level: &str, message: &str) {
+    let log_dir = PATH_PARTY.join("logs");
+    if let Err(err) = fs::create_dir_all(&log_dir) {
+        println!(
+            "[PARTYDECK][WARN] Failed to prepare launch log directory {}: {}",
+            log_dir.display(),
+            err
+        );
+        return;
+    }
+
+    let log_path = log_dir.join("launch_warnings.txt");
+    if let Err(err) = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&log_path)
+        .and_then(|mut file| writeln!(file, "[{}] {}", level, message))
+    {
+        println!(
+            "[PARTYDECK][WARN] Failed to persist launch warning log {}: {}",
+            log_path.display(),
+            err
+        );
+    }
+}
+
+/// Prints and persists a launch warning so it appears both on stdout and in the log file.
+fn log_launch_warning(message: &str) {
+    println!("[PARTYDECK][WARN] {message}");
+    append_launch_log("WARN", message);
+}
+
+/// Logs diagnostic information for handlers so users can verify their assets before launch.
+fn log_handler_resource_state(handler: &Handler, gamedir: &str) {
+    // Report the resolved executable path so the user can confirm the handler layout.
+    let exec_path = PathBuf::from(gamedir).join(&handler.exec);
+    println!(
+        "[PARTYDECK] Handler {} uses executable {}",
+        handler.uid,
+        exec_path.display()
+    );
+
+    if handler.path_nemirtingas.is_empty() {
+        return;
+    }
+
+    // Expose the resolved Nemirtingas config target to make missing path issues obvious.
+    let nemirtingas_target = PathBuf::from(gamedir).join(&handler.path_nemirtingas);
+    println!(
+        "[PARTYDECK] Handler {} expects Nemirtingas config at {}",
+        handler.uid,
+        nemirtingas_target.display()
+    );
+
+    let parent_rel = Path::new(&handler.path_nemirtingas).parent();
+    let Some(parent_rel) = parent_rel else {
+        log_launch_warning(&format!(
+            "Nemirtingas path for handler {} has no parent directory; check handler JSON.",
+            handler.uid
+        ));
+        return;
+    };
+
+    // Validate the directory next to the Nemirtingas config contains patched EOSSDK files.
+    let parent_path = PathBuf::from(gamedir).join(parent_rel);
+    if !parent_path.exists() {
+        log_launch_warning(&format!(
+            "Nemirtingas directory {} is missing. Ensure the handler copied patched EOSSDK files there.",
+            parent_path.display()
+        ));
+        return;
+    }
+
+    let mut eos_paths = Vec::new();
+    if let Ok(entries) = fs::read_dir(&parent_path) {
+        for entry in entries.flatten() {
+            if entry
+                .file_type()
+                .map(|file_type| file_type.is_file())
+                .unwrap_or(false)
+            {
+                let name_lower = entry.file_name().to_string_lossy().to_lowercase();
+                if name_lower.contains("eossdk") {
+                    eos_paths.push(entry.path());
+                }
+            }
+        }
+    } else {
+        log_launch_warning(&format!(
+            "Failed to scan {} for EOSSDK files. Verify directory permissions.",
+            parent_path.display()
+        ));
+        return;
+    }
+
+    if eos_paths.is_empty() {
+        log_launch_warning(&format!(
+            "No EOSSDK files were found next to {}. Nemirtingas may fail to initialize.",
+            nemirtingas_target.display()
+        ));
+    } else {
+        // List the discovered EOSSDK assets to help verify the patched binaries are available.
+        for path in eos_paths {
+            println!(
+                "[PARTYDECK] Found EOS-related file for Nemirtingas: {}",
+                path.display()
+            );
+        }
+    }
 }
 
 pub fn launch_game(
@@ -153,6 +267,9 @@ pub fn launch_game(
         {
             return Err("Steam Soldier Runtime not found".into());
         }
+
+        // Surface handler-specific resource information so users can debug launch issues quickly.
+        log_handler_resource_state(h, &gamedir);
     }
 
     let use_bwrap = Command::new("bwrap").arg("--version").status().is_ok();
