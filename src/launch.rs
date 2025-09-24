@@ -187,26 +187,39 @@ pub fn launch_game(
             gamedir.clone()
         };
 
-        let mut bind_dir = None;
+        // Track the optional Nemirtingas bind mount as a tuple of source and destination.
+        let mut nemirtingas_bind: Option<(PathBuf, PathBuf)> = None;
         if let HandlerRef(h) = game {
             if !h.path_nemirtingas.is_empty() {
-                let dest_dir = PathBuf::from(&instance_gamedir)
-                    .join(Path::new(&h.path_nemirtingas).parent().unwrap());
-                if dest_dir.exists() && !dest_dir.is_dir() {
-                    std::fs::remove_file(&dest_dir)?;
+                let nemirtingas_rel = Path::new(&h.path_nemirtingas);
+                let dest_parent = nemirtingas_rel
+                    .parent()
+                    .map(|parent| PathBuf::from(&instance_gamedir).join(parent))
+                    .unwrap_or_else(|| PathBuf::from(&instance_gamedir));
+                if dest_parent.exists() && !dest_parent.is_dir() {
+                    std::fs::remove_file(&dest_parent)?;
                 }
-                std::fs::create_dir_all(&dest_dir)?;
+                std::fs::create_dir_all(&dest_parent)?;
+                let dest_path = PathBuf::from(&instance_gamedir).join(nemirtingas_rel);
+                if dest_path.exists() && dest_path.is_dir() {
+                    std::fs::remove_dir_all(&dest_path)?;
+                }
+                if !dest_path.exists() {
+                    // Ensure the destination file exists so that bubblewrap can bind over it.
+                    std::fs::File::create(&dest_path)?;
+                }
                 println!(
                     "Instance {}: Nemirtingas config {} (SHA1 {}) -> {} (user {} appid {})",
                     instance.profname,
                     json_real.display(),
                     sha1_nemirtingas,
-                    dest_dir.display(),
+                    dest_path.display(),
                     instance.profname,
                     game_id
                 );
                 if use_bwrap {
-                    bind_dir = Some(dest_dir);
+                    // Bind the per-profile JSON directly onto the handler's expected location.
+                    nemirtingas_bind = Some((json_path.clone(), dest_path));
                 }
             }
         }
@@ -329,8 +342,9 @@ pub fn launch_game(
                     let dst = format!("{instance_gamedir}/{}/goldbergsave", h.path_goldberg);
                     cmd.args(["--bind", src.as_str(), dst.as_str()]);
                 }
-                if let Some(dest) = &bind_dir {
-                    cmd.arg("--bind").arg(&nepice_dir).arg(dest);
+                if let Some((src, dest)) = &nemirtingas_bind {
+                    // Bind the single Nemirtingas JSON file into the game directory.
+                    cmd.arg("--bind").arg(src).arg(dest);
                 }
                 if h.win {
                     let path_windata = format!("{pfx}/drive_c/users/steamuser");
