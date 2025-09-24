@@ -1,4 +1,5 @@
-use std::fs;
+use std::fs::{self, OpenOptions};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
@@ -54,6 +55,39 @@ fn prepare_working_tree(
     Ok(run_fs)
 }
 
+/// Appends launch diagnostics to a persistent log so users can inspect warnings after the game exits.
+fn append_launch_log(level: &str, message: &str) {
+    let log_dir = PATH_PARTY.join("logs");
+    if let Err(err) = fs::create_dir_all(&log_dir) {
+        println!(
+            "[PARTYDECK][WARN] Failed to prepare launch log directory {}: {}",
+            log_dir.display(),
+            err
+        );
+        return;
+    }
+
+    let log_path = log_dir.join("launch_warnings.txt");
+    if let Err(err) = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&log_path)
+        .and_then(|mut file| writeln!(file, "[{}] {}", level, message))
+    {
+        println!(
+            "[PARTYDECK][WARN] Failed to persist launch warning log {}: {}",
+            log_path.display(),
+            err
+        );
+    }
+}
+
+/// Prints and persists a launch warning so it appears both on stdout and in the log file.
+fn log_launch_warning(message: &str) {
+    println!("[PARTYDECK][WARN] {message}");
+    append_launch_log("WARN", message);
+}
+
 /// Logs diagnostic information for handlers so users can verify their assets before launch.
 fn log_handler_resource_state(handler: &Handler, gamedir: &str) {
     // Report the resolved executable path so the user can confirm the handler layout.
@@ -78,20 +112,21 @@ fn log_handler_resource_state(handler: &Handler, gamedir: &str) {
 
     let parent_rel = Path::new(&handler.path_nemirtingas).parent();
     let Some(parent_rel) = parent_rel else {
-        println!(
-            "[PARTYDECK][WARN] Nemirtingas path for handler {} has no parent directory; check handler JSON.",
+        log_launch_warning(&format!(
+            "Nemirtingas path for handler {} has no parent directory; check handler JSON.",
             handler.uid
-        );
+        ));
+
         return;
     };
 
     // Validate the directory next to the Nemirtingas config contains patched EOSSDK files.
     let parent_path = PathBuf::from(gamedir).join(parent_rel);
     if !parent_path.exists() {
-        println!(
-            "[PARTYDECK][WARN] Nemirtingas directory {} is missing. Ensure the handler copied patched EOSSDK files there.",
+        log_launch_warning(&format!(
+            "Nemirtingas directory {} is missing. Ensure the handler copied patched EOSSDK files there.",
             parent_path.display()
-        );
+        ));
         return;
     }
 
@@ -110,18 +145,18 @@ fn log_handler_resource_state(handler: &Handler, gamedir: &str) {
             }
         }
     } else {
-        println!(
-            "[PARTYDECK][WARN] Failed to scan {} for EOSSDK files. Verify directory permissions.",
+        log_launch_warning(&format!(
+            "Failed to scan {} for EOSSDK files. Verify directory permissions.",
             parent_path.display()
-        );
+        ));
         return;
     }
 
     if eos_paths.is_empty() {
-        println!(
-            "[PARTYDECK][WARN] No EOSSDK files were found next to {}. Nemirtingas may fail to initialize.",
+        log_launch_warning(&format!(
+            "No EOSSDK files were found next to {}. Nemirtingas may fail to initialize.",
             nemirtingas_target.display()
-        );
+        ));
     } else {
         // List the discovered EOSSDK assets to help verify the patched binaries are available.
         for path in eos_paths {

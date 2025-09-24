@@ -1,5 +1,5 @@
 use rand::prelude::*;
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 use std::error::Error;
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -107,7 +107,7 @@ pub fn ensure_nemirtingas_config(
                 "AppId": appid,
                 "DisableCrashDump": false,
                 "DisableOnlineNetworking": false,
-                "LogLevel": "off",
+                "LogLevel": "Warning",
                 "SavePath": "appdata"
             },
             "Ecom": {
@@ -141,7 +141,7 @@ pub fn ensure_nemirtingas_config(
     );
     obj.insert("appid".to_string(), json!(appid));
     obj.insert("language".to_string(), json!("en"));
-    obj.insert("log_level".to_string(), json!("DEBUG"));
+    obj.insert("log_level".to_string(), json!("WARNING"));
     obj.insert("username".to_string(), json!(name));
 
     let data = serde_json::to_string_pretty(&Value::Object(obj))?;
