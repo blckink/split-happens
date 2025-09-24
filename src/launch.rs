@@ -116,6 +116,7 @@ fn log_handler_resource_state(handler: &Handler, gamedir: &str) {
             "Nemirtingas path for handler {} has no parent directory; check handler JSON.",
             handler.uid
         ));
+
         return;
     };
 
