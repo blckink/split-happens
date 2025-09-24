@@ -85,7 +85,7 @@ impl ProfileLock {
     }
 
     pub fn cleanup(&self) {
-        let _ = self.file.unlock();
+        let _ = FileExt::unlock(&self.file);
         let _ = std::fs::remove_file(&self.path);
     }
 }
