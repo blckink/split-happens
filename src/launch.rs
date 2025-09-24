@@ -382,8 +382,17 @@ pub fn launch_game(
             cmd.arg(&runtime);
         }
 
-        let exec_path = format!("{instance_gamedir}/{exec}");
-        cmd.arg(exec_path);
+        // Resolve the executable path and canonicalize it for Windows builds so Proton receives
+        // the real filesystem target instead of a symlink path that certain games refuse to open.
+        let exec_path = PathBuf::from(&instance_gamedir).join(&exec);
+        let exec_arg = if win {
+            exec_path
+                .canonicalize()
+                .unwrap_or_else(|_| exec_path.clone())
+        } else {
+            exec_path.clone()
+        };
+        cmd.arg(exec_arg.to_string_lossy().to_string());
 
         let args: Vec<String> = match game {
             HandlerRef(h) => h
