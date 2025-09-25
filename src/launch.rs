@@ -130,32 +130,67 @@ fn log_handler_resource_state(handler: &Handler, gamedir: &str) {
         return;
     }
 
+    // Walk upward from the Nemirtingas config directory so we also catch EOSSDK files
+    // that sit next to the executable instead of inside the nepice_settings folder.
+    let gamedir_path = PathBuf::from(gamedir);
     let mut eos_paths = Vec::new();
-    if let Ok(entries) = fs::read_dir(&parent_path) {
-        for entry in entries.flatten() {
-            if entry
-                .file_type()
-                .map(|file_type| file_type.is_file())
-                .unwrap_or(false)
-            {
-                let name_lower = entry.file_name().to_string_lossy().to_lowercase();
-                if name_lower.contains("eossdk") {
-                    eos_paths.push(entry.path());
+    let mut scanned_dirs = Vec::new();
+    let mut search_dir = parent_path.clone();
+    while search_dir.starts_with(&gamedir_path) {
+        scanned_dirs.push(search_dir.clone());
+
+        match fs::read_dir(&search_dir) {
+            Ok(entries) => {
+                for entry in entries.flatten() {
+                    if entry
+                        .file_type()
+                        .map(|file_type| file_type.is_file())
+                        .unwrap_or(false)
+                    {
+                        let name_lower = entry.file_name().to_string_lossy().to_lowercase();
+                        if name_lower.contains("eossdk") {
+                            eos_paths.push(entry.path());
+                        }
+                    }
                 }
             }
+            Err(err) => {
+                log_launch_warning(&format!(
+                    "Failed to scan {} for EOSSDK files: {}. Verify directory permissions.",
+                    search_dir.display(),
+                    err
+                ));
+                return;
+            }
         }
-    } else {
-        log_launch_warning(&format!(
-            "Failed to scan {} for EOSSDK files. Verify directory permissions.",
-            parent_path.display()
-        ));
-        return;
+
+        if !eos_paths.is_empty() {
+            break;
+        }
+
+        let Some(parent) = search_dir.parent() else {
+            break;
+        };
+        if parent == search_dir || !parent.starts_with(&gamedir_path) {
+            break;
+        }
+        search_dir = parent.to_path_buf();
     }
 
     if eos_paths.is_empty() {
+        let scanned_display = if scanned_dirs.is_empty() {
+            String::from("<none>")
+        } else {
+            scanned_dirs
+                .iter()
+                .map(|dir| dir.display().to_string())
+                .collect::<Vec<_>>()
+                .join(", ")
+        };
         log_launch_warning(&format!(
-            "No EOSSDK files were found next to {}. Nemirtingas may fail to initialize.",
-            nemirtingas_target.display()
+            "No EOSSDK files were found near {} (searched: {}). Nemirtingas may fail to initialize.",
+            nemirtingas_target.display(),
+            scanned_display
         ));
     } else {
         // List the discovered EOSSDK assets to help verify the patched binaries are available.
