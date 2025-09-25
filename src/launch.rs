@@ -1,5 +1,5 @@
 use std::fs::{self, OpenOptions};
-use std::io::Write;
+use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
@@ -15,7 +15,7 @@ use crate::util::*;
 use ctrlc;
 use nix::sys::signal::{Signal, kill};
 use nix::unistd::Pid;
-use std::process::{Child, Command};
+use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 
 fn prepare_working_tree(
@@ -108,6 +108,35 @@ fn append_launch_log(level: &str, message: &str) {
 fn log_launch_warning(message: &str) {
     println!("[PARTYDECK][WARN] {message}");
     append_launch_log("WARN", message);
+}
+
+/// Gamescope repeats this benign warning endlessly; capture the exact text so we can filter it.
+const GAMESCOPE_DUP_BUFFER_WARNING: &str =
+    "[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.";
+
+/// Streams child output on a background thread while suppressing the noisy duplicate-buffer warning.
+fn forward_child_output<R>(reader: R)
+where
+    R: Read + Send + 'static,
+{
+    std::thread::spawn(move || {
+        let reader = BufReader::new(reader);
+        for line in reader.lines() {
+            match line {
+                Ok(line) => {
+                    let trimmed = line.trim();
+                    if trimmed == GAMESCOPE_DUP_BUFFER_WARNING {
+                        continue;
+                    }
+                    println!("{line}");
+                }
+                Err(err) => {
+                    println!("[PARTYDECK][WARN] Failed to read child output: {err}");
+                    break;
+                }
+            }
+        }
+    });
 }
 
 /// Logs diagnostic information for handlers so users can verify their assets before launch.
@@ -688,8 +717,20 @@ pub fn launch_game(
             cmd.arg(a);
         }
 
-        let child = cmd.spawn()?;
+        // Capture child output so we can filter redundant Gamescope warnings without hiding other logs.
+        cmd.stdout(Stdio::piped());
+        cmd.stderr(Stdio::piped());
+
+        let mut child = cmd.spawn()?;
         child_pids.lock().unwrap().push(child.id());
+
+        if let Some(stdout) = child.stdout.take() {
+            forward_child_output(stdout);
+        }
+        if let Some(stderr) = child.stderr.take() {
+            forward_child_output(stderr);
+        }
+
         children.push(child);
 
         if i < instances.len() - 1 {
