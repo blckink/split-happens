@@ -474,9 +474,7 @@ pub fn launch_game(
                     nemirtingas_binds.push((json_path.clone(), dest_path.clone()));
                 }
 
-                if let Some(runtime_parent) =
-                    nemirtingas_rel.parent().and_then(|parent| parent.parent())
-                {
+                if let Some(runtime_parent) = nemirtingas_rel.parent() {
                     let runtime_log = PathBuf::from(&instance_gamedir)
                         .join(runtime_parent)
                         .join("NemirtingasEpicEmu.log");
