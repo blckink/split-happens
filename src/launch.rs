@@ -55,6 +55,28 @@ fn prepare_working_tree(
     Ok(run_fs)
 }
 
+/// Links the runtime Nemirtingas log location back into the profile tree so each
+/// player receives an isolated log even when the emulator writes next to the DLLs.
+fn ensure_profile_log_link(
+    profile_log: &Path,
+    runtime_log: &Path,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if runtime_log == profile_log {
+        return Ok(());
+    }
+
+    if let Some(parent) = runtime_log.parent() {
+        fs::create_dir_all(parent)?;
+    }
+
+    if runtime_log.exists() || runtime_log.is_symlink() {
+        std::fs::remove_file(runtime_log)?;
+    }
+
+    std::os::unix::fs::symlink(profile_log, runtime_log)?;
+    Ok(())
+}
+
 /// Appends launch diagnostics to a persistent log so users can inspect warnings after the game exits.
 fn append_launch_log(level: &str, message: &str) {
     let log_dir = PATH_PARTY.join("logs");
@@ -398,7 +420,7 @@ pub fn launch_game(
 
     let mut children: Vec<Child> = Vec::new();
     for (i, instance) in instances.iter().enumerate() {
-        let (nepice_dir, json_path, sha1_nemirtingas) =
+        let (nepice_dir, json_path, log_path, sha1_nemirtingas) =
             ensure_nemirtingas_config(&instance.profname, &game_id)?;
         let json_real = json_path.canonicalize()?;
 
@@ -418,7 +440,7 @@ pub fn launch_game(
         };
 
         // Track the optional Nemirtingas bind mount as a tuple of source and destination.
-        let mut nemirtingas_bind: Option<(PathBuf, PathBuf)> = None;
+        let mut nemirtingas_binds: Vec<(PathBuf, PathBuf)> = Vec::new();
         if let HandlerRef(h) = game {
             if !h.path_nemirtingas.is_empty() {
                 let nemirtingas_rel = Path::new(&h.path_nemirtingas);
@@ -449,7 +471,32 @@ pub fn launch_game(
                 );
                 if use_bwrap {
                     // Bind the per-profile JSON directly onto the handler's expected location.
-                    nemirtingas_bind = Some((json_path.clone(), dest_path));
+                    nemirtingas_binds.push((json_path.clone(), dest_path.clone()));
+                }
+
+                if let Some(runtime_parent) =
+                    nemirtingas_rel.parent().and_then(|parent| parent.parent())
+                {
+                    let runtime_log = PathBuf::from(&instance_gamedir)
+                        .join(runtime_parent)
+                        .join("NemirtingasEpicEmu.log");
+
+                    if use_bwrap {
+                        if let Some(parent) = runtime_log.parent() {
+                            fs::create_dir_all(parent)?;
+                        }
+                        if runtime_log.exists() && runtime_log.is_dir() {
+                            std::fs::remove_dir_all(&runtime_log)?;
+                        }
+                        OpenOptions::new()
+                            .create(true)
+                            .write(true)
+                            .open(&runtime_log)?;
+                        nemirtingas_binds.push((log_path.clone(), runtime_log));
+                    } else {
+                        // Mirror the runtime log back into the profile tree via symlink for non-bwrap runs.
+                        ensure_profile_log_link(&log_path, &runtime_log)?;
+                    }
                 }
             }
         }
@@ -572,8 +619,8 @@ pub fn launch_game(
                     let dst = format!("{instance_gamedir}/{}/goldbergsave", h.path_goldberg);
                     cmd.args(["--bind", src.as_str(), dst.as_str()]);
                 }
-                if let Some((src, dest)) = &nemirtingas_bind {
-                    // Bind the single Nemirtingas JSON file into the game directory.
+                for (src, dest) in &nemirtingas_binds {
+                    // Bind per-profile Nemirtingas assets (config, logs) into the game directory.
                     cmd.arg("--bind").arg(src).arg(dest);
                 }
                 if h.win {

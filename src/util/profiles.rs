@@ -36,7 +36,7 @@ pub fn create_profile(name: &str) -> Result<(), std::io::Error> {
 pub fn ensure_nemirtingas_config(
     name: &str,
     appid: &str,
-) -> Result<(PathBuf, PathBuf, String), Box<dyn Error>> {
+) -> Result<(PathBuf, PathBuf, PathBuf, String), Box<dyn Error>> {
     let profile_dir = PATH_PARTY.join(format!("profiles/{name}"));
     std::fs::create_dir_all(&profile_dir)?;
     create_profile(name)?;
@@ -107,6 +107,7 @@ pub fn ensure_nemirtingas_config(
                 "AppId": appid,
                 "DisableCrashDump": false,
                 "DisableOnlineNetworking": false,
+                // Keep Nemirtingas at debug verbosity so cross-profile issues remain visible during invite debugging.
                 "LogLevel": "Debug",
                 "SavePath": "appdata"
             },
@@ -122,6 +123,8 @@ pub fn ensure_nemirtingas_config(
             "User": user_obj
         }),
     );
+    // Enable the broadcast plugin so Nemirtingas advertises the lobby over LAN, allowing
+    // other players on the local network to discover the host via invite codes.
     obj.insert(
         "Network".to_string(),
         json!({
@@ -129,11 +132,12 @@ pub fn ensure_nemirtingas_config(
             "Plugins": {
                 "Broadcast": {
                     "EnableLog": false,
-                    "Enabled": false,
+                    "Enabled": true,
                     "LocalhostOnly": false
                 },
                 "WebSocket": {
                     "EnableLog": false,
+                    "Enabled": false,
                     "SignalingServers": []
                 }
             }
@@ -141,6 +145,7 @@ pub fn ensure_nemirtingas_config(
     );
     obj.insert("appid".to_string(), json!(appid));
     obj.insert("language".to_string(), json!("en"));
+    // Mirror the nested debug verbosity in the legacy flat configuration for tools still reading the flat keys.
     obj.insert("log_level".to_string(), json!("DEBUG"));
     obj.insert("username".to_string(), json!(name));
 
@@ -171,7 +176,7 @@ pub fn ensure_nemirtingas_config(
     }
 
     let sha1 = sha1_file(&path)?;
-    Ok((nepice_dir, path, sha1))
+    Ok((nepice_dir, path, log_path, sha1))
 }
 
 // Creates the "game save" folder for per-profile game data to go into
