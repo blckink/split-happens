@@ -107,7 +107,7 @@ pub fn ensure_nemirtingas_config(
                 "AppId": appid,
                 "DisableCrashDump": false,
                 "DisableOnlineNetworking": false,
-                "LogLevel": "Warning",
+                "LogLevel": "Debug",
                 "SavePath": "appdata"
             },
             "Ecom": {
@@ -141,7 +141,7 @@ pub fn ensure_nemirtingas_config(
     );
     obj.insert("appid".to_string(), json!(appid));
     obj.insert("language".to_string(), json!("en"));
-    obj.insert("log_level".to_string(), json!("WARNING"));
+    obj.insert("log_level".to_string(), json!("DEBUG"));
     obj.insert("username".to_string(), json!(name));
 
     let data = serde_json::to_string_pretty(&Value::Object(obj))?;
@@ -152,6 +152,23 @@ pub fn ensure_nemirtingas_config(
         .open(&path)?;
     file.write_all(data.as_bytes())?;
     file.sync_all()?;
+
+    // Surface the per-profile Nemirtingas log location and ensure the file exists so
+    // users immediately know where to inspect debug output after switching log levels.
+    let log_path = nepice_dir.join("NemirtingasEpicEmu.log");
+    match OpenOptions::new().create(true).append(true).open(&log_path) {
+        Ok(_) => println!(
+            "[PARTYDECK] Nemirtingas log for profile {} will be written to {}",
+            name,
+            log_path.display()
+        ),
+        Err(err) => println!(
+            "[PARTYDECK][WARN] Failed to prepare Nemirtingas log for profile {} at {}: {}",
+            name,
+            log_path.display(),
+            err
+        ),
+    }
 
     let sha1 = sha1_file(&path)?;
     Ok((nepice_dir, path, sha1))
