@@ -8,6 +8,15 @@ use std::path::PathBuf;
 use crate::util::sha1_file;
 
 use crate::util::filesystem::copy_dir_recursive;
+
+/// Generates a random hexadecimal string of the requested length so Nemirtingas
+/// receives deterministic-looking IDs instead of regenerating them every boot.
+fn generate_hex_id(len: usize) -> String {
+    let mut rng = rand::rng();
+    (0..len)
+        .map(|_| format!("{:x}", rng.random_range(0..16)))
+        .collect()
+}
 use crate::{handler::Handler, paths::*};
 
 // Makes a folder and sets up Goldberg Steam Emu profile for Steam games
@@ -85,16 +94,31 @@ pub fn ensure_nemirtingas_config(
         }
     }
 
+    // Persistently assign Nemirtingas IDs when they are missing so invite codes do not
+    // depend on the emulator regenerating identifiers on every launch.
+    let epic_id = existing_epicid.unwrap_or_else(|| {
+        let new_id = generate_hex_id(32);
+        println!(
+            "[PARTYDECK] Generated Nemirtingas EpicId {} for profile {}",
+            new_id, name
+        );
+        new_id
+    });
+    let product_user_id = existing_productuserid.unwrap_or_else(|| {
+        let new_id = generate_hex_id(32);
+        println!(
+            "[PARTYDECK] Generated Nemirtingas ProductUserId {} for profile {}",
+            new_id, name
+        );
+        new_id
+    });
+
     // Build the Nemirtingas configuration with the expected nested layout.
     let mut user_obj = Map::new();
     user_obj.insert("Language".to_string(), json!("en"));
     user_obj.insert("UserName".to_string(), json!(name));
-    if let Some(epicid) = &existing_epicid {
-        user_obj.insert("EpicId".to_string(), json!(epicid));
-    }
-    if let Some(productuserid) = &existing_productuserid {
-        user_obj.insert("ProductUserId".to_string(), json!(productuserid));
-    }
+    user_obj.insert("EpicId".to_string(), json!(epic_id.clone()));
+    user_obj.insert("ProductUserId".to_string(), json!(product_user_id.clone()));
 
     let mut obj = Map::new();
     obj.insert(
@@ -148,6 +172,9 @@ pub fn ensure_nemirtingas_config(
     // Mirror the nested debug verbosity in the legacy flat configuration for tools still reading the flat keys.
     obj.insert("log_level".to_string(), json!("DEBUG"));
     obj.insert("username".to_string(), json!(name));
+    // Surface the generated IDs in the flat layout as well so legacy Nemirtingas builds read them consistently.
+    obj.insert("epicid".to_string(), json!(epic_id));
+    obj.insert("productuserid".to_string(), json!(product_user_id));
 
     let data = serde_json::to_string_pretty(&Value::Object(obj))?;
     let mut file = OpenOptions::new()
