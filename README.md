@@ -61,6 +61,20 @@ game identifier, and `log_level` to `"DEBUG"`. The patched `EOSSDK` DLL is
 mirroring where the game expects it so PartyDeck can copy or symlink it
 into the game directory at launch.
 
+### Goldberg Steam API overrides
+Handlers can opt into a custom Goldberg build on a per-game basis. To do
+so, point `steam.api_path` in the handler JSON to the folder that should
+contain Goldberg inside the game directory (for example,
+`"steam.api_path": "Engine/Binaries/ThirdParty/Steamworks/Steamv147/Win64"`).
+When PartyDeck prepares the instance folder, it binds that directory and
+copies Goldberg's default files there. If the handler bundles a patched
+`steam_api64.dll`, `steam_api.dll`, or `libsteam_api.so`, place those
+files beside the handler JSON (the same directory that contains
+`handler.json`). PartyDeck automatically copies the override matching the
+platform/architecture into the Goldberg directory, letting specific
+handlers keep using their known-good Steam API build without impacting
+other games.
+
 
 ## Building
 
