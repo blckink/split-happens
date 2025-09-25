@@ -98,106 +98,183 @@ fn log_handler_resource_state(handler: &Handler, gamedir: &str) {
         exec_path.display()
     );
 
-    if handler.path_nemirtingas.is_empty() {
-        return;
-    }
+    if !handler.path_nemirtingas.is_empty() {
+        // Expose the resolved Nemirtingas config target to make missing path issues obvious.
+        let nemirtingas_target = PathBuf::from(gamedir).join(&handler.path_nemirtingas);
+        println!(
+            "[PARTYDECK] Handler {} expects Nemirtingas config at {}",
+            handler.uid,
+            nemirtingas_target.display()
+        );
 
-    // Expose the resolved Nemirtingas config target to make missing path issues obvious.
-    let nemirtingas_target = PathBuf::from(gamedir).join(&handler.path_nemirtingas);
-    println!(
-        "[PARTYDECK] Handler {} expects Nemirtingas config at {}",
-        handler.uid,
-        nemirtingas_target.display()
-    );
+        let parent_rel = Path::new(&handler.path_nemirtingas).parent();
+        let Some(parent_rel) = parent_rel else {
+            log_launch_warning(&format!(
+                "Nemirtingas path for handler {} has no parent directory; check handler JSON.",
+                handler.uid
+            ));
 
-    let parent_rel = Path::new(&handler.path_nemirtingas).parent();
-    let Some(parent_rel) = parent_rel else {
-        log_launch_warning(&format!(
-            "Nemirtingas path for handler {} has no parent directory; check handler JSON.",
-            handler.uid
-        ));
+            return;
+        };
 
-        return;
-    };
+        // Validate the directory next to the Nemirtingas config contains patched EOSSDK files.
+        let parent_path = PathBuf::from(gamedir).join(parent_rel);
+        if !parent_path.exists() {
+            log_launch_warning(&format!(
+                "Nemirtingas directory {} is missing. Ensure the handler copied patched EOSSDK files there.",
+                parent_path.display()
+            ));
+            return;
+        }
 
-    // Validate the directory next to the Nemirtingas config contains patched EOSSDK files.
-    let parent_path = PathBuf::from(gamedir).join(parent_rel);
-    if !parent_path.exists() {
-        log_launch_warning(&format!(
-            "Nemirtingas directory {} is missing. Ensure the handler copied patched EOSSDK files there.",
-            parent_path.display()
-        ));
-        return;
-    }
+        // Walk upward from the Nemirtingas config directory so we also catch EOSSDK files
+        // that sit next to the executable instead of inside the nepice_settings folder.
+        let gamedir_path = PathBuf::from(gamedir);
+        let mut eos_paths = Vec::new();
+        let mut scanned_dirs = Vec::new();
+        let mut search_dir = parent_path.clone();
+        while search_dir.starts_with(&gamedir_path) {
+            scanned_dirs.push(search_dir.clone());
 
-    // Walk upward from the Nemirtingas config directory so we also catch EOSSDK files
-    // that sit next to the executable instead of inside the nepice_settings folder.
-    let gamedir_path = PathBuf::from(gamedir);
-    let mut eos_paths = Vec::new();
-    let mut scanned_dirs = Vec::new();
-    let mut search_dir = parent_path.clone();
-    while search_dir.starts_with(&gamedir_path) {
-        scanned_dirs.push(search_dir.clone());
-
-        match fs::read_dir(&search_dir) {
-            Ok(entries) => {
-                for entry in entries.flatten() {
-                    if entry
-                        .file_type()
-                        .map(|file_type| file_type.is_file())
-                        .unwrap_or(false)
-                    {
-                        let name_lower = entry.file_name().to_string_lossy().to_lowercase();
-                        if name_lower.contains("eossdk") {
-                            eos_paths.push(entry.path());
+            match fs::read_dir(&search_dir) {
+                Ok(entries) => {
+                    for entry in entries.flatten() {
+                        if entry
+                            .file_type()
+                            .map(|file_type| file_type.is_file())
+                            .unwrap_or(false)
+                        {
+                            let name_lower = entry.file_name().to_string_lossy().to_lowercase();
+                            if name_lower.contains("eossdk") {
+                                eos_paths.push(entry.path());
+                            }
                         }
                     }
                 }
+                Err(err) => {
+                    log_launch_warning(&format!(
+                        "Failed to scan {} for EOSSDK files: {}. Verify directory permissions.",
+                        search_dir.display(),
+                        err
+                    ));
+                    return;
+                }
             }
-            Err(err) => {
-                log_launch_warning(&format!(
-                    "Failed to scan {} for EOSSDK files: {}. Verify directory permissions.",
-                    search_dir.display(),
-                    err
-                ));
-                return;
+
+            if !eos_paths.is_empty() {
+                break;
             }
+
+            let Some(parent) = search_dir.parent() else {
+                break;
+            };
+            if parent == search_dir || !parent.starts_with(&gamedir_path) {
+                break;
+            }
+            search_dir = parent.to_path_buf();
         }
 
-        if !eos_paths.is_empty() {
-            break;
+        if eos_paths.is_empty() {
+            let scanned_display = if scanned_dirs.is_empty() {
+                String::from("<none>")
+            } else {
+                scanned_dirs
+                    .iter()
+                    .map(|dir| dir.display().to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            };
+            log_launch_warning(&format!(
+                "No EOSSDK files were found near {} (searched: {}). Nemirtingas may fail to initialize.",
+                nemirtingas_target.display(),
+                scanned_display
+            ));
+        } else {
+            // List the discovered EOSSDK assets to help verify the patched binaries are available.
+            for path in eos_paths {
+                println!(
+                    "[PARTYDECK] Found EOS-related file for Nemirtingas: {}",
+                    path.display()
+                );
+            }
         }
-
-        let Some(parent) = search_dir.parent() else {
-            break;
-        };
-        if parent == search_dir || !parent.starts_with(&gamedir_path) {
-            break;
-        }
-        search_dir = parent.to_path_buf();
     }
 
-    if eos_paths.is_empty() {
-        let scanned_display = if scanned_dirs.is_empty() {
-            String::from("<none>")
-        } else {
-            scanned_dirs
-                .iter()
-                .map(|dir| dir.display().to_string())
-                .collect::<Vec<_>>()
-                .join(", ")
-        };
+    if handler.path_goldberg.is_empty() {
+        return;
+    }
+
+    // Surface the resolved Goldberg override directory so the user can spot missing assets.
+    let goldberg_dir = PathBuf::from(gamedir).join(&handler.path_goldberg);
+    println!(
+        "[PARTYDECK] Handler {} expects Goldberg assets at {}",
+        handler.uid,
+        goldberg_dir.display()
+    );
+
+    if !goldberg_dir.exists() {
         log_launch_warning(&format!(
-            "No EOSSDK files were found near {} (searched: {}). Nemirtingas may fail to initialize.",
-            nemirtingas_target.display(),
-            scanned_display
+            "Goldberg directory {} is missing. Ensure the handler copied Goldberg files there.",
+            goldberg_dir.display()
         ));
-    } else {
-        // List the discovered EOSSDK assets to help verify the patched binaries are available.
-        for path in eos_paths {
+        return;
+    }
+
+    // Validate the presence of the per-game steam_settings folder and critical config files.
+    let steam_settings = goldberg_dir.join("steam_settings");
+    if !steam_settings.exists() {
+        log_launch_warning(&format!(
+            "Goldberg path {} lacks a steam_settings directory. Multiplayer emulation will likely fail.",
+            goldberg_dir.display()
+        ));
+        return;
+    }
+
+    for (filename, description) in [
+        ("steam_appid.txt", "Steam App ID"),
+        ("configs.user.ini", "user configuration"),
+        ("steam_interfaces.txt", "interface list"),
+    ] {
+        let file_path = steam_settings.join(filename);
+        if !file_path.exists() {
+            log_launch_warning(&format!(
+                "steam_settings at {} is missing {} ({}).",
+                steam_settings.display(),
+                filename,
+                description
+            ));
+            continue;
+        }
+
+        // Emit light diagnostics so we can inspect mismatched App IDs at a glance.
+        if filename == "steam_appid.txt" {
+            match fs::read_to_string(&file_path) {
+                Ok(contents) => {
+                    let trimmed = contents.trim();
+                    if let Some(expected_appid) = &handler.steam_appid {
+                        if trimmed != expected_appid {
+                            log_launch_warning(&format!(
+                                "steam_appid.txt at {} contains {} but handler expects {}.",
+                                file_path.display(),
+                                trimmed,
+                                expected_appid
+                            ));
+                        }
+                    }
+                    println!(
+                        "[PARTYDECK] Detected steam_appid.txt at {} with value {}",
+                        file_path.display(),
+                        trimmed
+                    );
+                }
+                Err(err) => {
+                    log_launch_warning(&format!("Failed to read {}: {}", file_path.display(), err));
+                }
+            }
+        } else {
             println!(
-                "[PARTYDECK] Found EOS-related file for Nemirtingas: {}",
-                path.display()
+                "[PARTYDECK] Found Goldberg config file: {}",
+                file_path.display()
             );
         }
     }
