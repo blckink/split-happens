@@ -1,4 +1,0 @@
-[WARN] No EOSSDK files were found next to /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json. Nemirtingas may fail to initialize.
-[WARN] No EOSSDK files were found next to /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json. Nemirtingas may fail to initialize.
-[WARN] No EOSSDK files were found next to /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json. Nemirtingas may fail to initialize.
-[WARN] No EOSSDK files were found next to /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json. Nemirtingas may fail to initialize.
