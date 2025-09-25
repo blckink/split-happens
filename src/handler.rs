@@ -355,6 +355,40 @@ pub fn create_symlink_folder(h: &Handler) -> Result<(), Box<dyn Error>> {
             std::fs::write(steam_settings.join("steam_appid.txt"), appid.as_str())?;
         }
 
+        // Provide the compatibility toggles that the Windows handler uses so Goldberg stays online-friendly.
+        std::fs::create_dir_all(steam_settings.join("mods"))?;
+        // disable_lan_only.txt lives next to the Goldberg DLL on Windows, so keep it beside the overrides too.
+        std::fs::write(dest.join("disable_lan_only.txt"), "")?;
+        for (file_name, contents) in [
+            ("disable_overlay.txt", ""),
+            ("auto_accept_invite.txt", ""),
+            ("disable_overlay_warning_any.txt", ""),
+            ("gc_token.txt", ""),
+            ("new_app_ticket.txt", ""),
+        ] {
+            std::fs::write(steam_settings.join(file_name), contents)?;
+        }
+
+        // Allow handler authors to bundle a patched Goldberg steam_api library that replaces the default template.
+        let handler_root = &h.path_handler;
+        for (file_name, should_check_override) in [
+            ("steam_api64.dll", !h.is32bit && h.win),
+            ("steam_api.dll", h.is32bit && h.win),
+            ("libsteam_api.so", !h.win),
+        ] {
+            if !should_check_override {
+                continue;
+            }
+            let override_path = handler_root.join(file_name);
+            if override_path.exists() {
+                let dest_path = dest.join(file_name);
+                if dest_path.exists() {
+                    std::fs::remove_file(&dest_path)?;
+                }
+                std::fs::copy(&override_path, &dest_path)?;
+            }
+        }
+
         // If the game uses goldberg coldclient, assume the handler owner has set up coldclient in the copy_to_symdir files
         // And so we don't copy goldberg dlls or generate interfaces
         if !&h.coldclient {
