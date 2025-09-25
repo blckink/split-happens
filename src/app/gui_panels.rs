@@ -48,7 +48,10 @@ impl PartyApp {
                     true => format!("v{} (Update Available)", env!("CARGO_PKG_VERSION")),
                     false => format!("v{}", env!("CARGO_PKG_VERSION")),
                 };
-                ui.hyperlink_to(version_label, "https://github.com/blckink/suckmydeck/releases");
+                ui.hyperlink_to(
+                    version_label,
+                    "https://github.com/blckink/suckmydeck/releases",
+                );
                 ui.add(egui::Separator::default().vertical());
                 ui.hyperlink_to(
                     "Open Source Licenses",

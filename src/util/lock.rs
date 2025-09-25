@@ -28,7 +28,11 @@ impl ProfileLock {
         let game = game.to_string().sanitize_path();
         let path = dir.join(format!("{}_{}.lock", game, profile));
         loop {
-            let mut file = OpenOptions::new().read(true).write(true).create(true).open(&path)?;
+            let mut file = OpenOptions::new()
+                .read(true)
+                .write(true)
+                .create(true)
+                .open(&path)?;
             match file.try_lock_exclusive() {
                 Ok(()) => {
                     let info = LockInfo {
@@ -51,7 +55,10 @@ impl ProfileLock {
                     } else {
                         if let Ok(content) = std::fs::read_to_string(&path) {
                             if let Ok(info) = serde_json::from_str::<LockInfo>(&content) {
-                                println!("Instance {} already running with PID {}", info.profile, info.pid);
+                                println!(
+                                    "Instance {} already running with PID {}",
+                                    info.profile, info.pid
+                                );
                             }
                         }
                         return Err("Instance already running".into());
@@ -95,4 +102,3 @@ impl Drop for ProfileLock {
         self.cleanup();
     }
 }
-

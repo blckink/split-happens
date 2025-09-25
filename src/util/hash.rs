@@ -1,7 +1,7 @@
+use sha1::{Digest, Sha1};
 use std::fs::File;
 use std::io::{self, Read};
 use std::path::Path;
-use sha1::{Digest, Sha1};
 
 pub fn sha1_file(path: &Path) -> io::Result<String> {
     let mut file = File::open(path)?;

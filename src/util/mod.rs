@@ -1,15 +1,15 @@
 // Re-export all utility functions from submodules
 mod filesystem;
 mod hash;
+mod lock;
 mod profiles;
 mod sys;
 mod updates;
-mod lock;
 
 // Re-export functions from profiles
 pub use profiles::{
-    GUEST_NAMES, create_gamesave, create_profile, ensure_nemirtingas_config,
-    remove_guest_profiles, scan_profiles,
+    GUEST_NAMES, create_gamesave, create_profile, ensure_nemirtingas_config, remove_guest_profiles,
+    scan_profiles,
 };
 
 // Re-export functions from filesystem
