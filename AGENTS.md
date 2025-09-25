@@ -6,3 +6,4 @@
 - For UI changes, ensure a modern, well-aligned, and consistent presentation without unnecessary spacing around elements.
 - Default Nemirtingas configuration log levels to debug severity so multiplayer invite issues remain inspectable.
 - Persist launch warnings to a text log under the PARTY directory in addition to printing them to the console for easier debugging.
+- Generate and persist unique Nemirtingas `EpicId`/`ProductUserId` pairs for each profile so invite codes stay stable between sessions.
