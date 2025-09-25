@@ -1,0 +1,2 @@
+[12:53:06.456](224)[error] - EOSSDK_Stats::EmuInit{132} - Failed to load stats: [json.exception.type_error.302] type must be array, but is null
+[12:53:06.456](224)[warning] - EOSSDK_Achievements::_LoadAchievements{217} - Failed to load achievements: [json.exception.type_error.302] type must be array, but is null

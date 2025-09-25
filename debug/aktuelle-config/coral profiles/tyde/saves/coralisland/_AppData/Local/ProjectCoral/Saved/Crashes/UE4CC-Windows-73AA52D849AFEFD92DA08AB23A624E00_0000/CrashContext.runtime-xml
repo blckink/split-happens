@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FGenericCrashContext>
+	<RuntimeProperties>
+		<CrashVersion>3</CrashVersion>
+		<ExecutionGuid>CA18CE79444252803C84158A960636C1</ExecutionGuid>
+		<CrashGUID>UE4CC-Windows-73AA52D849AFEFD92DA08AB23A624E00_0000</CrashGUID>
+		<IsEnsure>false</IsEnsure>
+		<IsAssert>false</IsAssert>
+		<CrashType>Crash</CrashType>
+		<ErrorMessage>Unhandled Exception: EXCEPTION_ACCESS_VIOLATION reading address 0x0000000000000000</ErrorMessage>
+		<CrashReporterMessage />
+		<ProcessId>220</ProcessId>
+		<SecondsSinceStart>0</SecondsSinceStart>
+		<IsInternalBuild>false</IsInternalBuild>
+		<IsPerforceBuild>false</IsPerforceBuild>
+		<IsSourceDistribution>false</IsSourceDistribution>
+		<GameName>UE4-ProjectCoral</GameName>
+		<ExecutableName>ProjectCoral-Win64-Shipping</ExecutableName>
+		<BuildConfiguration>Shipping</BuildConfiguration>
+		<GameSessionID />
+		<Symbols>**UE4*Release-4.27-CL-0-Win64-Shipping</Symbols>
+		<PlatformName>WindowsNoEditor</PlatformName>
+		<PlatformNameIni>Windows</PlatformNameIni>
+		<EngineMode>Game</EngineMode>
+		<EngineModeEx>Unset</EngineModeEx>
+		<DeploymentName />
+		<EngineVersion>4.27.2-0+++UE4+Release-4.27</EngineVersion>
+		<CommandLine>-windowed -NoSplash</CommandLine>
+		<LanguageLCID>0</LanguageLCID>
+		<AppDefaultLocale>en-US</AppDefaultLocale>
+		<BuildVersion>++UE4+Release-4.27-CL-0</BuildVersion>
+		<IsUE4Release>true</IsUE4Release>
+		<IsRequestingExit>false</IsRequestingExit>
+		<UserName />
+		<BaseDir>X:/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/</BaseDir>
+		<RootDir>X:/.local/share/partydeck/gamesyms/coralisland/</RootDir>
+		<MachineId>D3C7A0584E7D6D1DDFCA19BC1DDE4CD3</MachineId>
+		<LoginId>d3c7a0584e7d6d1ddfca19bc1dde4cd3</LoginId>
+		<EpicAccountId />
+		<SourceContext />
+		<UserDescription />
+		<UserActivityHint />
+		<CrashDumpMode>0</CrashDumpMode>
+		<GameStateName />
+		<Misc.NumberOfCores>4</Misc.NumberOfCores>
+		<Misc.NumberOfCoresIncludingHyperthreads>8</Misc.NumberOfCoresIncludingHyperthreads>
+		<Misc.Is64bitOperatingSystem>1</Misc.Is64bitOperatingSystem>
+		<Misc.CPUVendor>AuthenticAMD</Misc.CPUVendor>
+		<Misc.CPUBrand>AMD Custom APU 0405</Misc.CPUBrand>
+		<Misc.PrimaryGPUBrand>AMD Custom GPU 0405 (RADV VANGOGH)</Misc.PrimaryGPUBrand>
+		<Misc.OSVersionMajor>Windows 10 (Release 2009)</Misc.OSVersionMajor>
+		<Misc.OSVersionMinor />
+		<MemoryStats.TotalPhysical>15528919040</MemoryStats.TotalPhysical>
+		<MemoryStats.TotalVirtual>140737488224256</MemoryStats.TotalVirtual>
+		<MemoryStats.PageSize>4096</MemoryStats.PageSize>
+		<MemoryStats.TotalPhysicalGB>15</MemoryStats.TotalPhysicalGB>
+		<MemoryStats.AvailablePhysical>0</MemoryStats.AvailablePhysical>
+		<MemoryStats.AvailableVirtual>0</MemoryStats.AvailableVirtual>
+		<MemoryStats.UsedPhysical>0</MemoryStats.UsedPhysical>
+		<MemoryStats.PeakUsedPhysical>0</MemoryStats.PeakUsedPhysical>
+		<MemoryStats.UsedVirtual>0</MemoryStats.UsedVirtual>
+		<MemoryStats.PeakUsedVirtual>0</MemoryStats.PeakUsedVirtual>
+		<MemoryStats.bIsOOM>0</MemoryStats.bIsOOM>
+		<MemoryStats.OOMAllocationSize>0</MemoryStats.OOMAllocationSize>
+		<MemoryStats.OOMAllocationAlignment>0</MemoryStats.OOMAllocationAlignment>
+		<NumMinidumpFramesToIgnore>0</NumMinidumpFramesToIgnore>
+		<CallStack />
+		<PCallStack>ProjectCoral-Win64-Shipping 0x0000000140000000 + ac2eb2 ProjectCoral-Win64-Shipping 0x0000000140000000 + a91094 ProjectCoral-Win64-Shipping 0x0000000140000000 + aea86a ProjectCoral-Win64-Shipping 0x0000000140000000 + ae0cf7 ProjectCoral-Win64-Shipping 0x0000000140000000 + ada6b4 ProjectCoral-Win64-Shipping 0x0000000140000000 + aea86a ProjectCoral-Win64-Shipping 0x0000000140000000 + af89f6 ProjectCoral-Win64-Shipping 0x0000000140000000 + af5172 ProjectCoral-Win64-Shipping 0x0000000140000000 + aeb19a</PCallStack>
+		<PCallStackHash>58191E0F0D284B923181BBF34749DF667DFC723C</PCallStackHash>
+		<Threads>
+			<Thread>
+				<CallStack />
+				<IsCrashed>true</IsCrashed>
+				<Registers />
+				<ThreadID>224</ThreadID>
+				<ThreadName>GameThread</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>328</ThreadID>
+				<ThreadName>FChunkCacheWorker</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>372</ThreadID>
+				<ThreadName>TaskGraphThreadNP 0</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>376</ThreadID>
+				<ThreadName>TaskGraphThreadNP 1</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>380</ThreadID>
+				<ThreadName>TaskGraphThreadNP 2</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>384</ThreadID>
+				<ThreadName>TaskGraphThreadNP 3</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>388</ThreadID>
+				<ThreadName>TaskGraphThreadNP 4</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>392</ThreadID>
+				<ThreadName>TaskGraphThreadNP 5</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>396</ThreadID>
+				<ThreadName>TaskGraphThreadHP 6</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>400</ThreadID>
+				<ThreadName>TaskGraphThreadHP 7</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>404</ThreadID>
+				<ThreadName>TaskGraphThreadHP 8</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>408</ThreadID>
+				<ThreadName>TaskGraphThreadHP 9</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>412</ThreadID>
+				<ThreadName>TaskGraphThreadHP 10</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>416</ThreadID>
+				<ThreadName>TaskGraphThreadHP 11</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>420</ThreadID>
+				<ThreadName>TaskGraphThreadBP 12</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>424</ThreadID>
+				<ThreadName>TaskGraphThreadBP 13</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>428</ThreadID>
+				<ThreadName>TaskGraphThreadBP 14</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>432</ThreadID>
+				<ThreadName>TaskGraphThreadBP 15</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>436</ThreadID>
+				<ThreadName>TaskGraphThreadBP 16</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>440</ThreadID>
+				<ThreadName>TaskGraphThreadBP 17</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>444</ThreadID>
+				<ThreadName>PoolThread 0</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>448</ThreadID>
+				<ThreadName>PoolThread 1</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>452</ThreadID>
+				<ThreadName>PoolThread 2</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>456</ThreadID>
+				<ThreadName>PoolThread 3</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>460</ThreadID>
+				<ThreadName>PoolThread 4</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>464</ThreadID>
+				<ThreadName>PoolThread 5</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>468</ThreadID>
+				<ThreadName>PoolThread 6</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>472</ThreadID>
+				<ThreadName>PoolThread 7</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>476</ThreadID>
+				<ThreadName>HttpManagerThread</ThreadName>
+			</Thread>
+			<Thread>
+				<CallStack />
+				<IsCrashed>false</IsCrashed>
+				<Registers />
+				<ThreadID>484</ThreadID>
+				<ThreadName>OnlineAsyncTaskThreadSteam DefaultInstance</ThreadName>
+			</Thread>
+		</Threads>
+		<TimeOfCrash>638943276901300000</TimeOfCrash>
+		<bAllowToBeContacted>1</bAllowToBeContacted>
+		<PlatformFullName>Win64 [Windows 10 (Release 2009)  64b]</PlatformFullName>
+		<CrashReportClientVersion>1.0</CrashReportClientVersion>
+	</RuntimeProperties>
+	<PlatformProperties>
+		<PlatformIsRunningWindows>1</PlatformIsRunningWindows>
+		<IsRunningOnBattery>false</IsRunningOnBattery>
+		<PlatformCallbackResult>0</PlatformCallbackResult>
+	</PlatformProperties>
+	<EngineData />
+	<GameData />
+</FGenericCrashContext>

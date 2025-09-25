@@ -1,0 +1,553 @@
+Mono path[0] = 'X:/.local/share/partydeck/gamesyms/dinkumblckink/Dinkum_Data/Managed'
+Mono config path = 'X:/.local/share/partydeck/gamesyms/dinkumblckink/MonoBleedingEdge/etc'
+Initialize engine version: 2020.3.48f1 (b805b124c6b7)
+[Subsystems] Discovering subsystems at path X:/.local/share/partydeck/gamesyms/dinkumblckink/Dinkum_Data/UnitySubsystems
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: AMD Custom GPU 0405 (RADV VANGOGH) (ID=0x163f)
+    Vendor:   
+    VRAM:     6144 MB
+    Driver:   31.0.21902.5
+Begin MonoManager ReloadAssembly
+- Completed reload, in  0.229 seconds
+D3D11 device created for Microsoft Media Foundation video decoding.
+<RI> Initializing input.
+New input system (experimental) initialized
+Using XInput
+<RI> Input initialized.
+<RI> Initialized touch support.
+Couldn't create a Convex Mesh from source mesh "SnowBall_Half" within the maximum polygons limit (256). The partial hull will be used. Consider simplifying your mesh.
+Couldn't create a Convex Mesh from source mesh "SnowBall_OtherHalf" within the maximum polygons limit (256). The partial hull will be used. Consider simplifying your mesh.
+UnloadTime: 2.562300 ms
+NullReferenceException: Object reference not set to an instance of an object
+  at WindowAnimator+<AnimateOpen>d__18.MoveNext () [0x0040b] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at UnityEngine.SetupCoroutine.InvokeMoveNext (System.Collections.IEnumerator enumerator, System.IntPtr returnValueAddress) [0x00026] in <4fae2288737c4dfda349689bbefabfcc>:0 
+UnityEngine.MonoBehaviour:StartCoroutineManaged2(IEnumerator)
+UnityEngine.MonoBehaviour:StartCoroutine(IEnumerator)
+WindowAnimator:OnEnable()
+
+Language being set from OS to English
+STEAM - Joining LobbyID 109775241253057766
+STEAM - Leaving Previous lobby
+STEAM - Leaving lobby 0
+STEAM - Disconnected
+STEAM - OnLobbyEntered
+Starting client [SteamSockets], target address 76561198073488212.
+Connection established.
+NullReferenceException: Object reference not set to an instance of an object
+  at CameraController+<playAmbientSounds>d__125.MoveNext () [0x00338] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at UnityEngine.SetupCoroutine.InvokeMoveNext (System.Collections.IEnumerator enumerator, System.IntPtr returnValueAddress) [0x00026] in <4fae2288737c4dfda349689bbefabfcc>:0 
+
+Only custom filters can be played. Please add a custom filter or an audioclip to the audiosource (VoiceChatSource).
+Only custom filters can be played. Please add a custom filter or an audioclip to the audiosource (VoiceChatSource).
+NullReferenceException: Object reference not set to an instance of an object
+  at StopLightStack.Awake () [0x00000] in <3108b7117e084879890fa70dedd0b61b>:0 
+UnityEngine.Object:Internal_InstantiateSingle_Injected(Object, Vector3&, Quaternion&)
+UnityEngine.Object:Internal_InstantiateSingle(Object, Vector3, Quaternion)
+UnityEngine.Object:Instantiate(Object, Vector3, Quaternion)
+UnityEngine.Object:Instantiate(GameObject, Vector3, Quaternion)
+WorldManager:getTileObject(Int32, Int32, Int32)
+Tile:checkOnTileObject()
+Tile:tileRefresh()
+Tile:refreshTile(Int32, Int32)
+Chunk:refreshChunk(Boolean)
+WorldManager:refreshAllChunksInUse(Int32, Int32, Boolean)
+ChunkUpdateDelay:checkAllAndRefreshTileIfNeeded()
+ChunkUpdateDelay:serverSetUp(Boolean, Boolean, Boolean, Boolean)
+NetworkMapSharer:UserCode_TargetRefreshChunkAfterSent(NetworkConnection, Int32, Int32, Boolean, Boolean, Boolean, Boolean)
+NetworkMapSharer:InvokeUserCode_TargetRefreshChunkAfterSent(NetworkBehaviour, NetworkReader, NetworkConnectionToClient)
+Mirror.RemoteCalls.RemoteCallHelper:InvokeHandlerDelegate(Int32, MirrorInvokeType, NetworkReader, NetworkBehaviour, NetworkConnectionToClient)
+Mirror.NetworkIdentity:HandleRemoteCall(Int32, Int32, MirrorInvokeType, NetworkReader, NetworkConnectionToClient)
+Mirror.NetworkClient:OnRPCMessage(RpcMessage)
+Mirror.<>c__DisplayClass51_0`1:<RegisterHandler>g__HandlerWrapped|0(NetworkConnection, RpcMessage)
+Mirror.<>c__DisplayClass6_0`2:<WrapHandler>b__0(NetworkConnection, NetworkReader, Int32)
+Mirror.NetworkClient:UnpackAndInvoke(NetworkReader, Int32)
+Mirror.NetworkClient:OnTransportData(ArraySegment`1, Int32)
+Mirror.FizzySteam.<>c__DisplayClass25_0:<CreateClient>b__2(Byte[], Int32)
+Mirror.FizzySteam.NextClient:ReceiveData()
+Mirror.FizzySteam.FizzySteamworks:ClientEarlyUpdate()
+Mirror.NetworkClient:NetworkEarlyUpdate()
+Mirror.NetworkLoop:NetworkEarlyUpdate()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at StopLightStack.Awake () [0x00000] in <3108b7117e084879890fa70dedd0b61b>:0 
+UnityEngine.Object:Internal_InstantiateSingle_Injected(Object, Vector3&, Quaternion&)
+UnityEngine.Object:Internal_InstantiateSingle(Object, Vector3, Quaternion)
+UnityEngine.Object:Instantiate(Object, Vector3, Quaternion)
+UnityEngine.Object:Instantiate(GameObject, Vector3, Quaternion)
+WorldManager:getTileObject(Int32, Int32, Int32)
+Tile:checkOnTileObject()
+Tile:tileRefresh()
+Tile:refreshTile(Int32, Int32)
+Chunk:refreshChunk(Boolean)
+WorldManager:refreshAllChunksInUse(Int32, Int32, Boolean)
+ChunkUpdateDelay:checkAllAndRefreshTileIfNeeded()
+ChunkUpdateDelay:serverSetUp(Boolean, Boolean, Boolean, Boolean)
+NetworkMapSharer:UserCode_TargetRefreshChunkAfterSent(NetworkConnection, Int32, Int32, Boolean, Boolean, Boolean, Boolean)
+NetworkMapSharer:InvokeUserCode_TargetRefreshChunkAfterSent(NetworkBehaviour, NetworkReader, NetworkConnectionToClient)
+Mirror.RemoteCalls.RemoteCallHelper:InvokeHandlerDelegate(Int32, MirrorInvokeType, NetworkReader, NetworkBehaviour, NetworkConnectionToClient)
+Mirror.NetworkIdentity:HandleRemoteCall(Int32, Int32, MirrorInvokeType, NetworkReader, NetworkConnectionToClient)
+Mirror.NetworkClient:OnRPCMessage(RpcMessage)
+Mirror.<>c__DisplayClass51_0`1:<RegisterHandler>g__HandlerWrapped|0(NetworkConnection, RpcMessage)
+Mirror.<>c__DisplayClass6_0`2:<WrapHandler>b__0(NetworkConnection, NetworkReader, Int32)
+Mirror.NetworkClient:UnpackAndInvoke(NetworkReader, Int32)
+Mirror.NetworkClient:OnTransportData(ArraySegment`1, Int32)
+Mirror.FizzySteam.<>c__DisplayClass25_0:<CreateClient>b__2(Byte[], Int32)
+Mirror.FizzySteam.NextClient:ReceiveData()
+Mirror.FizzySteam.FizzySteamworks:ClientEarlyUpdate()
+Mirror.NetworkClient:NetworkEarlyUpdate()
+Mirror.NetworkLoop:NetworkEarlyUpdate()
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.Component.get_transform(UnityEngine.Component)
+  at ConversationManager+<SelectPlayerOptionByKeys>d__58.MoveNext () [0x001a2] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at UnityEngine.SetupCoroutine.InvokeMoveNext (System.Collections.IEnumerator enumerator, System.IntPtr returnValueAddress) [0x00026] in <4fae2288737c4dfda349689bbefabfcc>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.Component.get_transform(UnityEngine.Component)
+  at ConversationManager+<SelectPlayerOptionByKeys>d__58.MoveNext () [0x001a2] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at UnityEngine.SetupCoroutine.InvokeMoveNext (System.Collections.IEnumerator enumerator, System.IntPtr returnValueAddress) [0x00026] in <4fae2288737c4dfda349689bbefabfcc>:0 
+
+STEAM - Leaving lobby 109775241253057766
+STEAM - Disconnected
+Sending Disconnect message
+Transport shut down - was client.
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.Transform.get_position_Injected(UnityEngine.Transform,UnityEngine.Vector3&)
+  at UnityEngine.Transform.get_position () [0x00000] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at TileHighlighter.Update () [0x0002b] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+Unloading 6 Unused Serialized files (Serialized files now loaded: 0)
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+UnityEngine.GameObject:SetActive(Boolean)
+ShowObjectOnTop:OnDisable()
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+UnityEngine.GameObject:SetActive(Boolean)
+ShowObjectOnTop:OnDisable()
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+UnityEngine.GameObject:SetActive(Boolean)
+ShowObjectOnTop:OnDisable()
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+ArgumentException: Value does not fall within the expected range.
+  at NetworkMapSharer.OnDestroy () [0x00000] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+UnityEngine.GameObject:SetActive(Boolean)
+ShowObjectOnTop:OnDisable()
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.MonoBehaviour.IsObjectMonoBehaviour(UnityEngine.Object)
+  at UnityEngine.MonoBehaviour.StartCoroutine (System.Collections.IEnumerator routine) [0x00014] in <4fae2288737c4dfda349689bbefabfcc>:0 
+  at LightStackManager.DoALightCheckNextFrame (UnityEngine.Vector3 checkPosition, System.Single checkDistance) [0x00009] in <3108b7117e084879890fa70dedd0b61b>:0 
+  at StopLightStack.OnDisable () [0x00010] in <3108b7117e084879890fa70dedd0b61b>:0 
+
+UnloadTime: 512.186200 ms
+
+Unloading 9976 unused Assets to reduce memory usage. Loaded Objects now: 234002.
+Total: 302.174000 ms (FindLiveObjects: 14.583500 ms CreateObjectMapping: 28.721500 ms MarkObjects: 215.622100 ms  DeleteObjects: 43.245700 ms)
+
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 2.704300 ms
+
+Unloading 151 unused Assets to reduce memory usage. Loaded Objects now: 285576.
+Total: 298.686600 ms (FindLiveObjects: 25.386700 ms CreateObjectMapping: 30.808400 ms MarkObjects: 241.372700 ms  DeleteObjects: 1.117900 ms)
+
+STEAM - Leaving lobby 0
+STEAM - Disconnected
+Setting up 4 worker threads for Enlighten.
+  Thread -> id: 460 -> priority: 1 
+  Thread -> id: 464 -> priority: 1 
+  Thread -> id: 468 -> priority: 1 
+  Thread -> id: 46c -> priority: 1 
+Coroutine 'cameraStop' couldn't be started because the the game object 'CameraContainer' is inactive!
