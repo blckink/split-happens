@@ -187,7 +187,7 @@ fn spawn_nemirtingas_log_mirror(
         offsets.retain(|path, _| path.exists());
         for (source, offset) in offsets {
             if let Ok(metadata) = fs::metadata(&source) {
-                let mut local_offset = offset.min(metadata.len());
+                let local_offset = offset.min(metadata.len());
                 if metadata.len() > local_offset {
                     if let Ok(mut src) = std::fs::File::open(&source) {
                         if src.seek(SeekFrom::Start(local_offset)).is_ok() {
