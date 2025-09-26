@@ -41,12 +41,22 @@ fn deterministic_hex_from_seed(seed: &str, len: usize) -> String {
     output
 }
 
-/// Validates that the provided identifier is a non-empty hexadecimal string; Nemirtingas
-/// rejects any other characters and regenerates the value if required.
-fn is_valid_hex(value: &str) -> bool {
-    // Allow callers to supply identifiers with an optional 0x/0X prefix before checking the remaining characters.
-    let trimmed = value.trim_start_matches("0x").trim_start_matches("0X");
-    !trimmed.is_empty() && trimmed.chars().all(|c| c.is_ascii_hexdigit())
+/// Normalizes optional Nemirtingas identifiers by trimming whitespace and removing the
+/// optional `0x`/`0X` prefix. Returns `None` when the payload still contains invalid
+/// characters after normalization.
+fn normalize_hex(value: &str) -> Option<String> {
+    let trimmed = value.trim();
+    let normalized = trimmed.trim_start_matches("0x").trim_start_matches("0X");
+
+    if normalized.is_empty() {
+        return None;
+    }
+
+    if normalized.chars().all(|c| c.is_ascii_hexdigit()) {
+        Some(normalized.to_string())
+    } else {
+        None
+    }
 }
 
 /// Logs a warning both to stdout and the persistent launch warning log so profile repairs are
@@ -114,8 +124,14 @@ pub fn ensure_nemirtingas_config(
     std::fs::create_dir_all(&nepice_dir)?;
     let path = nepice_dir.join("NemirtingasEpicEmu.json");
 
+    // Track whether a Nemirtingas config already existed so we can surface missing-ID repairs
+    // to the persistent launch log instead of silently regenerating values.
+    let had_existing_config = path.exists();
+
     let mut existing_epicid = None;
     let mut existing_productuserid = None;
+    let mut existing_accountid_raw = None;
+
     let mut existing_username = None;
     if let Ok(file) = std::fs::File::open(&path) {
         if let Ok(value) = serde_json::from_reader::<_, Value>(file) {
@@ -141,6 +157,16 @@ pub fn ensure_nemirtingas_config(
                         .and_then(|v| v.as_str())
                         .map(|s| s.to_string())
                 });
+            existing_accountid_raw = value
+                .pointer("/EOSEmu/User/AccountId")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+                .or_else(|| {
+                    value
+                        .get("accountid")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string())
+                });
             existing_username = value
                 .pointer("/EOSEmu/User/UserName")
                 .and_then(|v| v.as_str())
@@ -155,8 +181,8 @@ pub fn ensure_nemirtingas_config(
     }
 
     let existing_epicid = existing_epicid.and_then(|id| {
-        if is_valid_hex(&id) {
-            Some(id)
+        if let Some(clean) = normalize_hex(&id) {
+            Some(clean)
         } else {
             log_profile_warning(&format!(
                 "Profile {name} contained invalid Nemirtingas EpicId {id}; regenerating."
@@ -166,8 +192,8 @@ pub fn ensure_nemirtingas_config(
     });
 
     let existing_productuserid = existing_productuserid.and_then(|id| {
-        if is_valid_hex(&id) {
-            Some(id)
+        if let Some(clean) = normalize_hex(&id) {
+            Some(clean)
         } else {
             log_profile_warning(&format!(
                 "Profile {name} contained invalid Nemirtingas ProductUserId {id}; regenerating."
@@ -175,6 +201,23 @@ pub fn ensure_nemirtingas_config(
             None
         }
     });
+
+    let existing_accountid = existing_accountid_raw.clone().and_then(|id| {
+        if let Some(clean) = normalize_hex(&id) {
+            Some(clean)
+        } else {
+            log_profile_warning(&format!(
+                "Profile {name} contained invalid Nemirtingas AccountId {id}; regenerating."
+            ));
+            None
+        }
+    });
+
+    if existing_accountid.is_none() && had_existing_config && existing_accountid_raw.is_none() {
+        log_profile_warning(&format!(
+            "Profile {name} was missing a Nemirtingas AccountId; generating a new value."
+        ));
+    }
 
     let profile_username = existing_username
         .filter(|value| !value.trim().is_empty())
@@ -212,12 +255,35 @@ pub fn ensure_nemirtingas_config(
         new_id
     });
 
+    // Ensure the Nemirtingas AccountId exists alongside EpicId/ProductUserId so the emulator
+    // can satisfy EOS auth requests without falling back to 0x0 placeholders.
+    let account_id = existing_accountid.unwrap_or_else(|| {
+        let new_id = if uses_default_username {
+            generate_hex_id(32)
+        } else {
+            let seed = format!("account:{profile_username}");
+            deterministic_hex_from_seed(&seed, 32)
+        };
+        println!(
+            "[PARTYDECK] Generated Nemirtingas AccountId {} for profile {} using {} mode",
+            new_id,
+            name,
+            if uses_default_username {
+                "random"
+            } else {
+                "deterministic"
+            }
+        );
+        new_id
+    });
+
     // Build the Nemirtingas configuration with the expected nested layout.
     let mut user_obj = Map::new();
     user_obj.insert("Language".to_string(), json!("en"));
     user_obj.insert("UserName".to_string(), json!(profile_username.clone()));
     user_obj.insert("EpicId".to_string(), json!(epic_id.clone()));
     user_obj.insert("ProductUserId".to_string(), json!(product_user_id.clone()));
+    user_obj.insert("AccountId".to_string(), json!(account_id.clone()));
 
     let mut obj = Map::new();
     obj.insert(
@@ -274,6 +340,7 @@ pub fn ensure_nemirtingas_config(
     // Surface the generated IDs in the flat layout as well so legacy Nemirtingas builds read them consistently.
     obj.insert("epicid".to_string(), json!(epic_id));
     obj.insert("productuserid".to_string(), json!(product_user_id));
+    obj.insert("accountid".to_string(), json!(account_id));
 
     let data = serde_json::to_string_pretty(&Value::Object(obj))?;
     let mut file = OpenOptions::new()
@@ -412,24 +479,27 @@ pub static GUEST_NAMES: [&str; 31] = [
     "Ghost",
 ];
 
-// Unit tests verifying that profile utility helpers continue to validate identifiers correctly.
+// Unit tests to guarantee that Nemirtingas identifier parsing continues accepting both
+// raw hexadecimal IDs and variants prefixed with `0x`.
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn validates_hex_with_optional_prefix() {
-        // Accept hexadecimal identifiers without any prefix as a baseline expectation.
-        assert!(is_valid_hex("abcdef"));
-        assert!(is_valid_hex("ABCDEF123"));
+    fn normalize_hex_accepts_plain_hex() {
+        assert_eq!(normalize_hex("deadbeef"), Some("deadbeef".to_string()));
+    }
 
-        // Accept hexadecimal identifiers with the optional 0x/0X prefix so existing configs continue to load.
-        assert!(is_valid_hex("0xdeadBEEF"));
-        assert!(is_valid_hex("0X1234"));
+    #[test]
+    fn normalize_hex_accepts_prefixed_hex() {
+        assert_eq!(normalize_hex("0xABC123"), Some("ABC123".to_string()));
+        assert_eq!(normalize_hex("0Xff"), Some("ff".to_string()));
+    }
 
-        // Reject invalid identifiers, including empty strings or values with non-hex characters.
-        assert!(!is_valid_hex(""));
-        assert!(!is_valid_hex("0x"));
-        assert!(!is_valid_hex("0xGHI"));
+    #[test]
+    fn normalize_hex_rejects_invalid_values() {
+        assert_eq!(normalize_hex(""), None);
+        assert_eq!(normalize_hex("0xg"), None);
     }
 }

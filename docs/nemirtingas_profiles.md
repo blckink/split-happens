@@ -10,6 +10,11 @@ Dieser Überblick fasst zusammen, wie PartyDeck pro Profil die `NemirtingasEpicE
 ## Generierung eindeutiger IDs
 - Fehlen die IDs, werden 32-stellige Hex-Werte erzeugt. Profile mit dem Standardnamen `DefaultName` erhalten zufällige IDs, während individuelle Profilnamen deterministisch über den Usernamen gehasht werden. So bleiben Identitäten auf mehreren Rechnern synchron.
 - Die `ProductUserId` basiert deterministisch auf `appid` und der resultierenden `EpicId`, womit Multiplayer-Peers über Instanzen hinweg stabil bleiben.
+- Eine zusätzliche `AccountId` wird erzeugt (deterministisch aus dem Nutzernamen oder zufällig bei `DefaultName`), damit Nemirtingas Auth-Tokens bereitstellen kann und keine `0x0`-Platzhalter im Log erscheinen.
+
+## Validierung und Selbstheilung
+- Bereits vorhandene Hex-Werte werden akzeptiert, selbst wenn sie mit `0x` beginnen; beim Schreiben der Konfiguration werden sie automatisch normalisiert.
+- Ungültige `EpicId`-, `ProductUserId`- oder `AccountId`-Einträge führen zu einem Hinweis im PartyDeck-Log und werden neu generiert, damit parallele Instanzen sofort mit gültigen Identitäten starten.
 
 ## Netzwerk-Erkennung aktiviert
 - Der erzeugte JSON-Block aktiviert den Broadcast-Plugin-Kanal (`Enabled: true`, `LocalhostOnly: false`). So können sich Spieler innerhalb desselben LANs automatisch entdecken.
