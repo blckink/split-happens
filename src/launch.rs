@@ -93,6 +93,18 @@ fn spawn_nemirtingas_log_mirror(
         // Track how many bytes we have already mirrored for each discovered log file.
         let mut offsets: HashMap<PathBuf, u64> = HashMap::new();
 
+        // Build the set of Nemirtingas log roots that should be mirrored. Proton writes
+        // `NemirtingasEpicEmu` data under both `AppData/Roaming` and `AppData/Local`, so we
+        // inspect each location on every sweep to catch any new files as they appear.
+        let mut search_roots: Vec<PathBuf> = vec![appdata_root.clone()];
+        if let Some(local_root) = appdata_root
+            .parent()
+            .and_then(|roaming| roaming.parent())
+            .map(|appdata| appdata.join("Local").join("NemirtingasEpicEmu"))
+        {
+            search_roots.push(local_root);
+        }
+
         loop {
             // Drop offsets for files that were removed so we do not keep stale entries forever.
             offsets.retain(|path, _| path.exists());
@@ -100,7 +112,7 @@ fn spawn_nemirtingas_log_mirror(
             // Discover Nemirtingas log files under the Proton AppData directory. The emulator
             // currently writes verbose output into hashed subdirectories that contain either
             // `applogs.txt` or `NemirtingasEpicEmu.log`, so we look for both patterns.
-            let mut stack: Vec<PathBuf> = vec![appdata_root.clone()];
+            let mut stack: Vec<PathBuf> = search_roots.clone();
             let mut sources: Vec<PathBuf> = Vec::new();
             while let Some(dir) = stack.pop() {
                 if !dir.exists() {
