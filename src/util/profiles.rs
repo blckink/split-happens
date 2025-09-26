@@ -1,7 +1,7 @@
 use rand::prelude::*;
 use serde_json::{Map, Value, json};
 use sha1::{Digest, Sha1};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fs::{self, OpenOptions};
 use std::io::{self, Write};
@@ -266,6 +266,55 @@ fn deterministic_goldberg_port(game_id: &str) -> u16 {
 
     let raw = u16::from_be_bytes([digest[0], digest[1]]);
     20000 + (raw % 20000)
+}
+
+/// Computes a deterministic Nemirtingas LAN port based on the game, profile, and attempt
+/// counter so each player receives a stable yet unique UDP socket when multiple instances
+/// run on the same device.
+fn deterministic_nemirtingas_port(game_id: &str, profile: &str, attempt: u32) -> u16 {
+    let mut hasher = Sha1::new();
+    hasher.update(format!("partydeck-nemirtingas-port:{game_id}:{profile}:{attempt}").as_bytes());
+    let digest = hasher.finalize();
+
+    let raw = u16::from_be_bytes([digest[2], digest[3]]);
+    40000 + (raw % 20000)
+}
+
+/// Resolves stable Nemirtingas LAN ports for every provided profile while avoiding
+/// collisions with the Goldberg discovery socket and between different PartyDeck players.
+/// Each assigned port stays deterministic across launches so join codes remain valid.
+pub fn resolve_nemirtingas_ports(
+    profiles: &[String],
+    game_id: &str,
+    goldberg_port: Option<u16>,
+) -> HashMap<String, u16> {
+    let mut assignments = HashMap::new();
+    let mut used_ports: HashSet<u16> = HashSet::new();
+
+    if let Some(port) = goldberg_port {
+        used_ports.insert(port);
+    }
+
+    let mut sorted_profiles: Vec<String> = profiles.to_vec();
+    sorted_profiles.sort();
+
+    for profile in sorted_profiles {
+        let mut attempt: u32 = 0;
+        loop {
+            let port = deterministic_nemirtingas_port(game_id, &profile, attempt);
+
+            if used_ports.contains(&port) {
+                attempt = attempt.saturating_add(1);
+                continue;
+            }
+
+            used_ports.insert(port);
+            assignments.insert(profile.clone(), port);
+            break;
+        }
+    }
+
+    assignments
 }
 
 /// Ensures all active profiles expose the Goldberg LAN identity files expected by Coral

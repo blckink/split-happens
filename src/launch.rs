@@ -23,9 +23,6 @@ use nix::unistd::Pid;
 use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 
-/// Fixed LAN port that keeps Nemirtingas EOS beacons aligned with Goldberg UDP discovery.
-const NEMIRTINGAS_SHARED_LAN_PORT: u16 = 55789;
-
 fn prepare_working_tree(
     profname: &str,
     gamedir: &str,
@@ -487,24 +484,18 @@ pub fn launch_game(
         HandlerRef(h) => h.uid.clone(),
     };
 
+    let profile_names: Vec<String> = instances
+        .iter()
+        .map(|instance| instance.profname.clone())
+        .collect();
+
     let mut synchronized_goldberg_port: Option<u16> = None;
     if let HandlerRef(h) = game {
-        if !h.path_goldberg.is_empty() {
+        if !h.path_goldberg.is_empty() && !profile_names.is_empty() {
             // Normalize Goldberg LAN metadata so every running instance advertises the
             // same listen port and exposes required identity files for lobby discovery.
-            let profile_names: Vec<String> = instances
-                .iter()
-                .map(|instance| instance.profname.clone())
-                .collect();
-            if !profile_names.is_empty() {
-                let port_override = if !h.path_nemirtingas.is_empty() {
-                    Some(NEMIRTINGAS_SHARED_LAN_PORT)
-                } else {
-                    None
-                };
-                synchronized_goldberg_port =
-                    synchronize_goldberg_profiles(&profile_names, &game_id, port_override)?;
-            }
+            synchronized_goldberg_port =
+                synchronize_goldberg_profiles(&profile_names, &game_id, None)?;
         }
     }
 
@@ -514,7 +505,24 @@ pub fn launch_game(
             game_id, port
         );
     }
-    let synchronized_goldberg_port_env = synchronized_goldberg_port.map(|port| port.to_string());
+    let mut nemirtingas_ports: HashMap<String, u16> = HashMap::new();
+    if let HandlerRef(h) = game {
+        if !h.path_nemirtingas.is_empty() && !profile_names.is_empty() {
+            // Resolve deterministic Nemirtingas LAN ports per profile so each instance binds a
+            // unique UDP socket without fighting for the same override on the same machine.
+            nemirtingas_ports =
+                resolve_nemirtingas_ports(&profile_names, &game_id, synchronized_goldberg_port);
+
+            for profile in &profile_names {
+                if let Some(port) = nemirtingas_ports.get(profile) {
+                    println!(
+                        "[PARTYDECK] Nemirtingas LAN port for profile {} on {} resolved to {}",
+                        profile, game_id, port
+                    );
+                }
+            }
+        }
+    }
     let mut locks_vec = Vec::new();
     for instance in instances {
         let lock = ProfileLock::acquire(&game_id, &instance.profname)?;
@@ -614,8 +622,10 @@ pub fn launch_game(
     let mut children: Vec<Child> = Vec::new();
     let mut log_mirrors: Vec<(Arc<AtomicBool>, JoinHandle<()>)> = Vec::new();
     for (i, instance) in instances.iter().enumerate() {
+        let profile_port = nemirtingas_ports.get(&instance.profname).copied();
+
         let (nepice_dir, json_path, log_path, sha1_nemirtingas) =
-            ensure_nemirtingas_config(&instance.profname, &game_id, synchronized_goldberg_port)?;
+            ensure_nemirtingas_config(&instance.profname, &game_id, profile_port)?;
         let json_real = json_path.canonicalize()?;
 
         let instance_gamedir = if use_bwrap {
@@ -698,10 +708,10 @@ pub fn launch_game(
             }
             cmd.env("SDL_DYNAMIC_API", format!("{steam}/{path_sdl}"));
         }
-        if let Some(port) = &synchronized_goldberg_port_env {
-            // Align Nemirtingas LAN discovery with Goldberg by forcing both emulators to use
-            // the same UDP port so EOS beacons reach Goldberg listeners reliably.
-            cmd.env("EOS_OVERRIDE_LAN_PORT", port);
+        if let Some(port) = profile_port {
+            // Pin Nemirtingas LAN discovery to each profile's deterministic port so concurrent
+            // instances no longer contend for the same UDP socket and stop auto-incrementing.
+            cmd.env("EOS_OVERRIDE_LAN_PORT", port.to_string());
         }
         if win {
             let protonpath = if cfg.proton_version.is_empty() {
