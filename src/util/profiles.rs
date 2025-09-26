@@ -1,10 +1,11 @@
 use rand::prelude::*;
 use serde_json::{Map, Value, json};
 use sha1::{Digest, Sha1};
+use std::collections::HashSet;
 use std::error::Error;
-use std::fs::OpenOptions;
-use std::io::Write;
-use std::path::PathBuf;
+use std::fs::{self, OpenOptions};
+use std::io::{self, Write};
+use std::path::{Path, PathBuf};
 
 use crate::util::filesystem::copy_dir_recursive;
 use crate::util::sha1_file;
@@ -65,7 +66,7 @@ fn log_profile_warning(message: &str) {
     println!("[PARTYDECK][WARN] {message}");
 
     let log_dir = PATH_PARTY.join("logs");
-    if let Err(err) = std::fs::create_dir_all(&log_dir) {
+    if let Err(err) = fs::create_dir_all(&log_dir) {
         println!(
             "[PARTYDECK][WARN] Failed to prepare launch log directory {}: {}",
             log_dir.display(),
@@ -96,20 +97,233 @@ pub fn create_profile(name: &str) -> Result<(), std::io::Error> {
     if !profile_dir.exists() {
         println!("Creating profile {name}");
         let path_steam = profile_dir.join("steam/settings");
-        std::fs::create_dir_all(&path_steam)?;
+        fs::create_dir_all(&path_steam)?;
 
         let steam_id = format!("{:017}", rand::rng().random_range(u32::MIN..u32::MAX));
         let usersettings = format!(
             "[user::general]\naccount_name={name}\naccount_steamid={steam_id}\nlanguage=english\nip_country=US"
         );
-        std::fs::write(path_steam.join("configs.user.ini"), usersettings)?;
+        fs::write(path_steam.join("configs.user.ini"), usersettings)?;
 
         println!("Created successfully");
     }
 
-    std::fs::create_dir_all(profile_dir.join("nepice_settings"))?;
+    fs::create_dir_all(profile_dir.join("nepice_settings"))?;
 
     Ok(())
+}
+
+/// Writes a Goldberg configuration helper file only when the trimmed contents differ so
+/// we avoid spamming disk writes every launch while still guaranteeing consistent values.
+fn write_setting_if_changed(path: &Path, value: &str) -> io::Result<()> {
+    if let Ok(existing) = fs::read_to_string(path) {
+        if existing.trim() == value {
+            return Ok(());
+        }
+    }
+
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+
+    fs::write(path, format!("{value}\n"))
+}
+
+/// Ensures the Goldberg `listen_port` setting is present inside the provided INI file so
+/// the emulator binds the same UDP port that Nemirtingas will advertise over EOS. The
+/// helper keeps existing content intact, only updating or appending the target key inside
+/// the `main::connectivity` section when required.
+fn ensure_ini_listen_port(path: &Path, port: u16) -> io::Result<()> {
+    let desired_section = "[main::connectivity]";
+    let desired_key = format!("listen_port={port}");
+    let existing_contents = fs::read_to_string(path).ok();
+
+    let mut lines: Vec<String> = existing_contents
+        .as_deref()
+        .map(|contents| contents.lines().map(|line| line.to_string()).collect())
+        .unwrap_or_else(Vec::new);
+
+    let mut section_found = false;
+    let mut key_updated = false;
+    let mut in_desired_section = false;
+
+    for line in lines.iter_mut() {
+        let trimmed = line.trim();
+        if trimmed.starts_with('[') && trimmed.ends_with(']') {
+            in_desired_section = trimmed == desired_section;
+            if in_desired_section {
+                section_found = true;
+            }
+            continue;
+        }
+
+        if in_desired_section && trimmed.starts_with("listen_port") {
+            if trimmed != desired_key {
+                *line = desired_key.clone();
+            }
+            key_updated = true;
+            break;
+        }
+    }
+
+    if !section_found {
+        if !lines.is_empty() && !lines.last().unwrap().is_empty() {
+            lines.push(String::new());
+        }
+        lines.push(desired_section.to_string());
+        lines.push(desired_key.clone());
+        section_found = true;
+        key_updated = true;
+    } else if !key_updated {
+        let mut insert_index = lines.len();
+        let mut current_section = None;
+        for (idx, line) in lines.iter().enumerate() {
+            let trimmed = line.trim();
+            if trimmed.starts_with('[') && trimmed.ends_with(']') {
+                current_section = Some(trimmed.to_string());
+                if trimmed == desired_section {
+                    insert_index = idx + 1;
+                } else if insert_index != lines.len() {
+                    insert_index = idx;
+                    break;
+                }
+            } else if insert_index != lines.len()
+                && current_section.as_deref() == Some(desired_section)
+            {
+                insert_index = idx + 1;
+            }
+        }
+        if insert_index > lines.len() {
+            insert_index = lines.len();
+        }
+        lines.insert(insert_index, desired_key.clone());
+    }
+
+    if !lines.is_empty() && lines.last().map(|line| !line.is_empty()).unwrap_or(false) {
+        lines.push(String::new());
+    }
+
+    let mut new_contents = lines.join("\n");
+    if !new_contents.ends_with('\n') {
+        new_contents.push('\n');
+    }
+
+    if existing_contents.as_deref() == Some(new_contents.as_str()) {
+        return Ok(());
+    }
+
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+
+    fs::write(path, new_contents)
+}
+
+/// Extracts a `key=value` pair from Goldberg's `configs.user.ini`, returning `None` when
+/// the file cannot be read or the key was absent.
+fn read_config_value(config_path: &Path, key: &str) -> Option<String> {
+    let Ok(contents) = fs::read_to_string(config_path) else {
+        return None;
+    };
+
+    contents
+        .lines()
+        .find_map(|line| line.strip_prefix(&format!("{key}=")))
+        .map(|value| value.trim().to_string())
+}
+
+/// Computes a deterministic Goldberg listen port derived from the game identifier so all
+/// instances share a stable LAN discovery socket without clashing across different games.
+fn deterministic_goldberg_port(game_id: &str) -> u16 {
+    let mut hasher = Sha1::new();
+    hasher.update(format!("partydeck-goldberg-port:{game_id}").as_bytes());
+    let digest = hasher.finalize();
+
+    let raw = u16::from_be_bytes([digest[0], digest[1]]);
+    20000 + (raw % 20000)
+}
+
+/// Ensures all active profiles expose the Goldberg LAN identity files expected by Coral
+/// Island (account name, SteamID, language, invite toggles) and normalizes the shared
+/// `listen_port.txt` so every instance binds the same UDP socket during discovery.
+pub fn synchronize_goldberg_profiles(
+    profiles: &[String],
+    game_id: &str,
+) -> Result<u16, Box<dyn Error>> {
+    if profiles.is_empty() {
+        return Ok(0);
+    }
+
+    let port = deterministic_goldberg_port(game_id);
+    let mut seen_profiles: HashSet<String> = HashSet::new();
+
+    for name in profiles {
+        if !seen_profiles.insert(name.clone()) {
+            continue;
+        }
+
+        let profile_dir = PATH_PARTY.join(format!("profiles/{name}"));
+        fs::create_dir_all(&profile_dir)?;
+
+        let steam_settings = profile_dir.join("steam/settings");
+        fs::create_dir_all(&steam_settings)?;
+
+        let config_path = steam_settings.join("configs.user.ini");
+
+        // Prefer existing Goldberg overrides before falling back to deterministic defaults
+        // so custom LAN identities remain intact between launches.
+        let account_name = fs::read_to_string(steam_settings.join("account_name.txt"))
+            .ok()
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .or_else(|| read_config_value(&config_path, "account_name"))
+            .unwrap_or_else(|| name.clone());
+
+        let user_steam_id = fs::read_to_string(steam_settings.join("user_steam_id.txt"))
+            .ok()
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .or_else(|| read_config_value(&config_path, "account_steamid"))
+            .unwrap_or_else(|| {
+                let mut hasher = Sha1::new();
+                hasher.update(format!("partydeck-goldberg-steamid:{name}").as_bytes());
+                let digest = hasher.finalize();
+                let mut value = u128::from_be_bytes([
+                    digest[0], digest[1], digest[2], digest[3], digest[4], digest[5], digest[6],
+                    digest[7], digest[8], digest[9], digest[10], digest[11], digest[12],
+                    digest[13], digest[14], digest[15],
+                ])
+                .to_string();
+                if value.len() < 17 {
+                    value = format!("{value:0>17}");
+                }
+                value.truncate(17);
+                value
+            });
+
+        // Persist the individual identity files so Goldberg can resolve the LAN persona.
+        write_setting_if_changed(&steam_settings.join("account_name.txt"), &account_name)?;
+        write_setting_if_changed(&steam_settings.join("user_steam_id.txt"), &user_steam_id)?;
+        write_setting_if_changed(&steam_settings.join("language.txt"), "english")?;
+
+        // Toggle LAN discovery helpers to avoid requiring the Steam overlay for invites.
+        write_setting_if_changed(&steam_settings.join("auto_accept_invite.txt"), "1")?;
+        write_setting_if_changed(&steam_settings.join("disable_lan_only.txt"), "1")?;
+        write_setting_if_changed(&steam_settings.join("gc_token.txt"), "partydeck")?;
+
+        // Synchronize the listen port across every profile so Goldberg advertises/joins
+        // lobbies via the same UDP endpoint.
+        write_setting_if_changed(&steam_settings.join("listen_port.txt"), &port.to_string())?;
+        ensure_ini_listen_port(&steam_settings.join("configs.main.ini"), port)?;
+        ensure_ini_listen_port(&steam_settings.join("configs.user.ini"), port)?;
+
+        println!(
+            "[PARTYDECK] Goldberg LAN identity for profile {} set to {} / {} on port {}",
+            name, account_name, user_steam_id, port
+        );
+    }
+
+    Ok(port)
 }
 
 pub fn ensure_nemirtingas_config(
@@ -117,11 +331,11 @@ pub fn ensure_nemirtingas_config(
     appid: &str,
 ) -> Result<(PathBuf, PathBuf, PathBuf, String), Box<dyn Error>> {
     let profile_dir = PATH_PARTY.join(format!("profiles/{name}"));
-    std::fs::create_dir_all(&profile_dir)?;
+    fs::create_dir_all(&profile_dir)?;
     create_profile(name)?;
 
     let nepice_dir = profile_dir.join("nepice_settings");
-    std::fs::create_dir_all(&nepice_dir)?;
+    fs::create_dir_all(&nepice_dir)?;
     let path = nepice_dir.join("NemirtingasEpicEmu.json");
 
     // Track whether a Nemirtingas config already existed so we can surface missing-ID repairs
@@ -133,7 +347,7 @@ pub fn ensure_nemirtingas_config(
     let mut existing_accountid_raw = None;
 
     let mut existing_username = None;
-    if let Ok(file) = std::fs::File::open(&path) {
+    if let Ok(file) = fs::File::open(&path) {
         if let Ok(value) = serde_json::from_reader::<_, Value>(file) {
             // Support both the new nested structure and the legacy flat structure so that
             // previously generated profiles keep their IDs without interruption.
@@ -367,6 +581,11 @@ pub fn ensure_nemirtingas_config(
             err
         ),
     }
+
+    // Guarantee each profile exposes a dedicated Nemirtingas AppData root so concurrent
+    // instances cannot clobber shared EOS state while the emulator resolves LAN lobbies.
+    let appdata_dir = nepice_dir.join("appdata");
+    fs::create_dir_all(&appdata_dir)?;
 
     let sha1 = sha1_file(&path)?;
     Ok((nepice_dir, path, log_path, sha1))

@@ -483,6 +483,30 @@ pub fn launch_game(
         ExecRef(e) => e.filename().to_string(),
         HandlerRef(h) => h.uid.clone(),
     };
+
+    let mut synchronized_goldberg_port: Option<u16> = None;
+    if let HandlerRef(h) = game {
+        if !h.path_goldberg.is_empty() {
+            // Normalize Goldberg LAN metadata so every running instance advertises the
+            // same listen port and exposes required identity files for lobby discovery.
+            let profile_names: Vec<String> = instances
+                .iter()
+                .map(|instance| instance.profname.clone())
+                .collect();
+            if !profile_names.is_empty() {
+                synchronized_goldberg_port =
+                    Some(synchronize_goldberg_profiles(&profile_names, &game_id)?);
+            }
+        }
+    }
+
+    if let Some(port) = synchronized_goldberg_port {
+        println!(
+            "[PARTYDECK] Goldberg listen_port for {} synchronized to {}",
+            game_id, port
+        );
+    }
+    let synchronized_goldberg_port_env = synchronized_goldberg_port.map(|port| port.to_string());
     let mut locks_vec = Vec::new();
     for instance in instances {
         let lock = ProfileLock::acquire(&game_id, &instance.profname)?;
@@ -606,57 +630,43 @@ pub fn launch_game(
         if let HandlerRef(h) = game {
             if !h.path_nemirtingas.is_empty() {
                 let nemirtingas_rel = Path::new(&h.path_nemirtingas);
-                let dest_parent = nemirtingas_rel
-                    .parent()
-                    .map(|parent| PathBuf::from(&instance_gamedir).join(parent))
-                    .unwrap_or_else(|| PathBuf::from(&instance_gamedir));
-                if dest_parent.exists() && !dest_parent.is_dir() {
-                    std::fs::remove_file(&dest_parent)?;
+                let Some(parent_rel) = nemirtingas_rel.parent() else {
+                    return Err(format!(
+                        "Nemirtingas path {} has no parent directory; update the handler configuration.",
+                        h.path_nemirtingas
+                    )
+                    .into());
+                };
+
+                let dest_dir = PathBuf::from(&instance_gamedir).join(parent_rel);
+                if dest_dir.exists() && !dest_dir.is_dir() {
+                    fs::remove_file(&dest_dir)?;
                 }
-                std::fs::create_dir_all(&dest_parent)?;
-                let dest_path = PathBuf::from(&instance_gamedir).join(nemirtingas_rel);
-                if dest_path.exists() && dest_path.is_dir() {
-                    std::fs::remove_dir_all(&dest_path)?;
-                }
-                if !dest_path.exists() {
-                    // Ensure the destination file exists so that bubblewrap can bind over it.
-                    std::fs::File::create(&dest_path)?;
-                }
+                fs::create_dir_all(&dest_dir)?;
+
+                let dest_config = dest_dir.join(
+                    nemirtingas_rel
+                        .file_name()
+                        .unwrap_or_else(|| std::ffi::OsStr::new("NemirtingasEpicEmu.json")),
+                );
+
                 println!(
                     "Instance {}: Nemirtingas config {} (SHA1 {}) -> {} (user {} appid {})",
                     instance.profname,
                     json_real.display(),
                     sha1_nemirtingas,
-                    dest_path.display(),
+                    dest_config.display(),
                     instance.profname,
                     game_id
                 );
+
                 if use_bwrap {
-                    // Bind the per-profile JSON directly onto the handler's expected location.
-                    nemirtingas_binds.push((json_path.clone(), dest_path.clone()));
-                }
-
-                if let Some(runtime_parent) = nemirtingas_rel.parent() {
-                    let runtime_log = PathBuf::from(&instance_gamedir)
-                        .join(runtime_parent)
-                        .join("NemirtingasEpicEmu.log");
-
-                    if use_bwrap {
-                        if let Some(parent) = runtime_log.parent() {
-                            fs::create_dir_all(parent)?;
-                        }
-                        if runtime_log.exists() && runtime_log.is_dir() {
-                            std::fs::remove_dir_all(&runtime_log)?;
-                        }
-                        OpenOptions::new()
-                            .create(true)
-                            .write(true)
-                            .open(&runtime_log)?;
-                        nemirtingas_binds.push((log_path.clone(), runtime_log));
-                    } else {
-                        // Mirror the runtime log back into the profile tree via symlink for non-bwrap runs.
-                        ensure_profile_log_link(&log_path, &runtime_log)?;
-                    }
+                    // Bind the entire nepice_settings directory so Nemirtingas uses a unique
+                    // AppData root per profile instead of sharing a global emulator context.
+                    nemirtingas_binds.push((nepice_dir.clone(), dest_dir.clone()));
+                } else {
+                    let runtime_log = dest_dir.join("NemirtingasEpicEmu.log");
+                    ensure_profile_log_link(&log_path, &runtime_log)?;
                 }
             }
         }
@@ -679,6 +689,11 @@ pub fn launch_game(
                 }
             }
             cmd.env("SDL_DYNAMIC_API", format!("{steam}/{path_sdl}"));
+        }
+        if let Some(port) = &synchronized_goldberg_port_env {
+            // Align Nemirtingas LAN discovery with Goldberg by forcing both emulators to use
+            // the same UDP port so EOS beacons reach Goldberg listeners reliably.
+            cmd.env("EOS_OVERRIDE_LAN_PORT", port);
         }
         if win {
             let protonpath = if cfg.proton_version.is_empty() {
