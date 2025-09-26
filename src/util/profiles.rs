@@ -280,8 +280,17 @@ pub fn synchronize_goldberg_profiles(
         return Ok(None);
     }
 
+    // Resolve the Goldberg listen port shared across every profile. Handlers that bundle
+    // Nemirtingas request the fixed LAN port so EOS beacons and Goldberg discovery stay on
+    // the same socket, while other titles fall back to a deterministic hash of the game ID
+    // so multiple games do not collide yet every instance of the same game advertises the
+    // identical UDP endpoint.
     let port = port_override.unwrap_or_else(|| deterministic_goldberg_port(game_id));
-    let enforce_port = port_override.is_some();
+    let port_source = if port_override.is_some() {
+        "handler override"
+    } else {
+        "deterministic default"
+    };
     let mut seen_profiles: HashSet<String> = HashSet::new();
 
     for name in profiles {
@@ -368,27 +377,23 @@ pub fn synchronize_goldberg_profiles(
             "1",
         )?;
 
-        if enforce_port {
-            // Synchronize the listen port across every profile so Goldberg advertises/joins
-            // lobbies via the same UDP endpoint when Nemirtingas also expects the shared
-            // socket for EOS LAN discovery.
-            write_setting_if_changed(&steam_settings.join("listen_port.txt"), &port.to_string())?;
-            ensure_ini_listen_port(&steam_settings.join("configs.main.ini"), port)?;
-            ensure_ini_listen_port(&steam_settings.join("configs.user.ini"), port)?;
+        // Synchronize the listen port across every profile so Goldberg advertises/joins
+        // lobbies via the same UDP endpoint. Persist the port in both helper text files and
+        // the INI toggles so legacy builds that only inspect one location remain in sync and
+        // Nemirtingas can mirror the same socket when generating its JSON later.
+        write_setting_if_changed(&steam_settings.join("listen_port.txt"), &port.to_string())?;
+        ensure_ini_listen_port(&steam_settings.join("configs.main.ini"), port)?;
+        ensure_ini_listen_port(&steam_settings.join("configs.user.ini"), port)?;
 
-            println!(
-                "[PARTYDECK] Goldberg LAN identity for profile {} set to {} / {} on port {}",
-                name, account_name, user_steam_id, port
-            );
-        } else {
-            println!(
-                "[PARTYDECK] Goldberg LAN identity for profile {} set to {} / {}",
-                name, account_name, user_steam_id
-            );
-        }
+        println!(
+            "[PARTYDECK] Goldberg LAN identity for profile {} set to {} / {} on port {} ({})",
+            name, account_name, user_steam_id, port, port_source
+        );
     }
 
-    Ok(enforce_port.then_some(port))
+    // Expose the synchronized port so launch routines can mirror it into Nemirtingas configs
+    // and environment variables whenever required.
+    Ok(Some(port))
 }
 
 pub fn ensure_nemirtingas_config(
