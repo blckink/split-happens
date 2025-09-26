@@ -185,8 +185,6 @@ fn ensure_ini_setting(path: &Path, section: &str, key: &str, value: &str) -> io:
         }
         lines.push(desired_section.to_string());
         lines.push(desired_key.clone());
-        section_found = true;
-        key_updated = true;
     } else if !key_updated {
         let mut insert_index = lines.len();
         let mut current_section = None;
