@@ -1,46 +1,45 @@
-[21:12:07.980](224)[info] - Settings::load_settings{319} - Setting log level to: debug
-[21:12:07.980](224)[info] - Settings::load_settings{320} - Command line: X:\.local\share\partydeck\gamesyms\coralisland\ProjectCoral\Binaries\Win64\ProjectCoral-Win64-Shipping.exe -windowed -NoSplash
-[21:12:07.980](224)[info] - Settings::load_settings{321} - Emulator version 0.12.0-2d5df9d43202e1b58c68eb0668525d3f55e4c99a-Epic-win64
-[21:12:07.981](224)[info] - Settings::load_settings{330} - Configurations folder path: X:\.local\share\partydeck\gamesyms\coralisland\ProjectCoral\Binaries\Win64\nepice_settings
-[21:12:07.981](224)[info] - Settings::load_settings{331} - Emu settings path: X:\.local\share\partydeck\gamesyms\coralisland\ProjectCoral\Binaries\Win64\nepice_settings\NemirtingasEpicEmu.json
-[21:12:07.981](224)[info] - Settings::load_settings{457} - Emu root Path: C:\users\steamuser\AppData\Roaming\NemirtingasEpicEmu\746a555dc24562601531f6ddc69b8d74
-[21:12:07.981](224)[info] - Settings::load_settings{458} - Emu game Path: C:\users\steamuser\AppData\Roaming\NemirtingasEpicEmu\746a555dc24562601531f6ddc69b8d74\coralisland
-[21:12:07.981](224)[info] - Settings::save_settings{471} - Saving emu settings: X:\.local\share\partydeck\gamesyms\coralisland\ProjectCoral\Binaries\Win64\nepice_settings\NemirtingasEpicEmu.json
-[21:12:07.985](224)[info] - save_json{142} - Saving X:\.local\share\partydeck\gamesyms\coralisland\ProjectCoral\Binaries\Win64\nepice_settings\NemirtingasEpicEmu.json
-[21:12:07.985](224)[debug] - EOS_Initialize{133} - OverrideThreadAffinity   = 0x0
-[21:12:07.985](224)[debug] - EOS_Initialize{139} - SystemInitializeOptions  = 0x0
-[21:12:07.985](224)[debug] - EOS_Initialize{145} - Reserved                 = 0x0
-[21:12:07.985](224)[debug] - EOS_Initialize{151} - ApiVersion               = 4
-[21:12:07.985](224)[debug] - EOS_Initialize{152} - AllocateMemoryFunction   = 0x140a65500
-[21:12:07.985](224)[debug] - EOS_Initialize{153} - ReallocateMemoryFunction = 0x140a65510
-[21:12:07.985](224)[debug] - EOS_Initialize{154} - ReleaseMemoryFunction    = 0x140a654f0
-[21:12:07.985](224)[debug] - EOS_Initialize{155} - ProductName              = ProjectCoral
-[21:12:07.985](224)[debug] - EOS_Initialize{156} - ProductVersion           = 1.0.0
-[21:12:08.018](224)[debug] - sdk::EOSSDK_Platform::Init{160} - TickBudgetInMilliseconds = '0'
-[21:12:08.018](224)[debug] - sdk::EOSSDK_Platform::Init{168} - CacheDirectory = 'C:/users/steamuser/Documents/CacheDir'
-[21:12:08.018](224)[debug] - sdk::EOSSDK_Platform::Init{187} - EncryptionKey = '1111111111111111111111111111111111111111111111111111111111111111'
-[21:12:08.018](224)[debug] - sdk::EOSSDK_Platform::Init{188} - OverrideCountryCode = ''
-[21:12:08.018](224)[debug] - sdk::EOSSDK_Platform::Init{189} - OverrideLocaleCode = ''
-[21:12:08.018](224)[debug] - sdk::EOSSDK_Platform::Init{190} - DeploymentId = '90280308201b485cb3263fa478ac51df'
-[21:12:08.018](224)[debug] - sdk::EOSSDK_Platform::Init{191} - Flags = 6
-[21:12:08.018](224)[debug] - sdk::EOSSDK_Platform::Init{212} - ProductId = 'da7f53acab4546719096f62d7e8c6774'
-[21:12:08.018](224)[debug] - sdk::EOSSDK_Platform::Init{213} - SandboxId = 'b09266f8bc07456198873228091d4ddf'
-[21:12:08.018](224)[debug] - sdk::EOSSDK_Platform::Init{214} - ClientId = 'xyza7891zJ0agKcnPAOyXe7ZyYaC1sDF'
-[21:12:08.018](224)[debug] - sdk::EOSSDK_Platform::Init{215} - ClientSecret = '7+saWDdJPSsSg0aiHsbG0Ay0w3/nySfpJdHFnuUgkLs'
-[21:12:08.018](224)[debug] - sdk::EOSSDK_Platform::Init{216} - ApiVersion = 11
-[21:12:08.022](224)[info] - sdk::EOSSDK_PlayerDataStorage::EmuInit{45} - PlayerDataStorage files will be search in C:\users\steamuser\AppData\Roaming\NemirtingasEpicEmu\746a555dc24562601531f6ddc69b8d74\coralisland\remote
-[21:12:08.022](224)[warning] - sdk::EOSSDK_Achievements::_LoadAchievementsDb{86} - Failed to load achievements database: [json.exception.type_error.302] type must be array, but is null
-[21:12:08.022](224)[info] - sdk::EOSSDK_TitleStorage::EmuInit{44} - TitleStorage files will be search in C:\users\steamuser\AppData\Roaming\NemirtingasEpicEmu\746a555dc24562601531f6ddc69b8d74\coralisland\titlestorage
-[21:12:08.029](224)[info] - NetworkImpl::EnableLanSignaling{1172} - UDP signal started after on port: 55790
-[21:12:08.029](224)[debug] - NetworkImpl::StartNetwork{1189} - Starting network thread
-[21:12:10.149](520)[debug] - NetworkImpl::_CreatePeerConnection{784} - Connecting to peer 81163598a2e2c655a8512b12439de5c3.
-[21:12:10.152](520)[debug] - NetworkImpl::_CreateDataChannel{896} - Creating Data Channel with peer 81163598a2e2c655a8512b12439de5c3.
-[21:12:10.251](756)[debug] - NetworkImpl::_CreateLoopbackPeerConnection{708} - Loopback peer connection Connecting.
-[21:12:11.378](756)[debug] - NetworkImpl::_CreateLoopbackPeerConnection{709} - Loopback peer connection Connected.
-[21:12:11.387](768)[debug] - NetworkImpl::_CreateLoopbackPeerConnection{759} - Loopback data channel connected.
-[21:12:11.388](768)[debug] - NetworkImpl::_CreateDataChannel{910} - Data Channel connected
-[21:12:25.162](224)[debug] - Callback_Manager::run_callbacks{149} - Callback ready: EOS_Connect_LoginCallbackInfo
-[21:12:25.162](224)[debug] - sdk::EOSSDK_Auth::CopyUserAuthToken{500} - Accountid not found: 0x0
-[21:12:25.404](224)[debug] - Callback_Manager::run_callbacks{149} - Callback ready: EOS_Friends_QueryFriendsCallbackInfo
-[21:15:09.733](224)[debug] - Callback_Manager::run_callbacks{149} - Callback ready: EOS_LobbySearch_FindCallbackInfo
-[21:15:11.817](224)[debug] - Callback_Manager::run_callbacks{149} - Callback ready: EOS_LobbySearch_FindCallbackInfo
+[22:42:30.761](224)[info] - Settings::load_settings{319} - Setting log level to: debug
+[22:42:30.761](224)[info] - Settings::load_settings{320} - Command line: X:\.local\share\partydeck\gamesyms\coralisland\ProjectCoral\Binaries\Win64\ProjectCoral-Win64-Shipping.exe -windowed -NoSplash
+[22:42:30.761](224)[info] - Settings::load_settings{321} - Emulator version 0.12.0-2d5df9d43202e1b58c68eb0668525d3f55e4c99a-Epic-win64
+[22:42:30.761](224)[info] - Settings::load_settings{330} - Configurations folder path: X:\.local\share\partydeck\gamesyms\coralisland\ProjectCoral\Binaries\Win64\nepice_settings
+[22:42:30.761](224)[info] - Settings::load_settings{331} - Emu settings path: X:\.local\share\partydeck\gamesyms\coralisland\ProjectCoral\Binaries\Win64\nepice_settings\NemirtingasEpicEmu.json
+[22:42:30.761](224)[info] - Settings::load_settings{457} - Emu root Path: C:\users\steamuser\AppData\Roaming\NemirtingasEpicEmu\746a555dc24562601531f6ddc69b8d74
+[22:42:30.761](224)[info] - Settings::load_settings{458} - Emu game Path: C:\users\steamuser\AppData\Roaming\NemirtingasEpicEmu\746a555dc24562601531f6ddc69b8d74\coralisland
+[22:42:30.761](224)[info] - Settings::save_settings{471} - Saving emu settings: X:\.local\share\partydeck\gamesyms\coralisland\ProjectCoral\Binaries\Win64\nepice_settings\NemirtingasEpicEmu.json
+[22:42:30.766](224)[info] - save_json{142} - Saving X:\.local\share\partydeck\gamesyms\coralisland\ProjectCoral\Binaries\Win64\nepice_settings\NemirtingasEpicEmu.json
+[22:42:30.766](224)[debug] - EOS_Initialize{133} - OverrideThreadAffinity   = 0x0
+[22:42:30.766](224)[debug] - EOS_Initialize{139} - SystemInitializeOptions  = 0x0
+[22:42:30.766](224)[debug] - EOS_Initialize{145} - Reserved                 = 0x0
+[22:42:30.766](224)[debug] - EOS_Initialize{151} - ApiVersion               = 4
+[22:42:30.766](224)[debug] - EOS_Initialize{152} - AllocateMemoryFunction   = 0x140a65500
+[22:42:30.766](224)[debug] - EOS_Initialize{153} - ReallocateMemoryFunction = 0x140a65510
+[22:42:30.766](224)[debug] - EOS_Initialize{154} - ReleaseMemoryFunction    = 0x140a654f0
+[22:42:30.766](224)[debug] - EOS_Initialize{155} - ProductName              = ProjectCoral
+[22:42:30.766](224)[debug] - EOS_Initialize{156} - ProductVersion           = 1.0.0
+[22:42:30.802](224)[debug] - sdk::EOSSDK_Platform::Init{160} - TickBudgetInMilliseconds = '0'
+[22:42:30.802](224)[debug] - sdk::EOSSDK_Platform::Init{168} - CacheDirectory = 'C:/users/steamuser/Documents/CacheDir'
+[22:42:30.802](224)[debug] - sdk::EOSSDK_Platform::Init{187} - EncryptionKey = '1111111111111111111111111111111111111111111111111111111111111111'
+[22:42:30.802](224)[debug] - sdk::EOSSDK_Platform::Init{188} - OverrideCountryCode = ''
+[22:42:30.802](224)[debug] - sdk::EOSSDK_Platform::Init{189} - OverrideLocaleCode = ''
+[22:42:30.802](224)[debug] - sdk::EOSSDK_Platform::Init{190} - DeploymentId = '90280308201b485cb3263fa478ac51df'
+[22:42:30.802](224)[debug] - sdk::EOSSDK_Platform::Init{191} - Flags = 6
+[22:42:30.802](224)[debug] - sdk::EOSSDK_Platform::Init{212} - ProductId = 'da7f53acab4546719096f62d7e8c6774'
+[22:42:30.802](224)[debug] - sdk::EOSSDK_Platform::Init{213} - SandboxId = 'b09266f8bc07456198873228091d4ddf'
+[22:42:30.802](224)[debug] - sdk::EOSSDK_Platform::Init{214} - ClientId = 'xyza7891zJ0agKcnPAOyXe7ZyYaC1sDF'
+[22:42:30.802](224)[debug] - sdk::EOSSDK_Platform::Init{215} - ClientSecret = '7+saWDdJPSsSg0aiHsbG0Ay0w3/nySfpJdHFnuUgkLs'
+[22:42:30.802](224)[debug] - sdk::EOSSDK_Platform::Init{216} - ApiVersion = 11
+[22:42:30.806](224)[info] - sdk::EOSSDK_PlayerDataStorage::EmuInit{45} - PlayerDataStorage files will be search in C:\users\steamuser\AppData\Roaming\NemirtingasEpicEmu\746a555dc24562601531f6ddc69b8d74\coralisland\remote
+[22:42:30.806](224)[warning] - sdk::EOSSDK_Achievements::_LoadAchievementsDb{86} - Failed to load achievements database: [json.exception.type_error.302] type must be array, but is null
+[22:42:30.807](224)[info] - sdk::EOSSDK_TitleStorage::EmuInit{44} - TitleStorage files will be search in C:\users\steamuser\AppData\Roaming\NemirtingasEpicEmu\746a555dc24562601531f6ddc69b8d74\coralisland\titlestorage
+[22:42:30.812](224)[info] - NetworkImpl::EnableLanSignaling{1172} - UDP signal started after on port: 55790
+[22:42:30.812](224)[debug] - NetworkImpl::StartNetwork{1189} - Starting network thread
+[22:42:32.924](520)[debug] - NetworkImpl::_CreatePeerConnection{784} - Connecting to peer 81163598a2e2c655a8512b12439de5c3.
+[22:42:32.926](520)[debug] - NetworkImpl::_CreateDataChannel{896} - Creating Data Channel with peer 81163598a2e2c655a8512b12439de5c3.
+[22:42:33.006](768)[debug] - NetworkImpl::_CreateLoopbackPeerConnection{708} - Loopback peer connection Connecting.
+[22:42:33.092](760)[debug] - NetworkImpl::_CreateLoopbackPeerConnection{709} - Loopback peer connection Connected.
+[22:42:33.101](756)[debug] - NetworkImpl::_CreateLoopbackPeerConnection{759} - Loopback data channel connected.
+[22:42:33.104](768)[debug] - NetworkImpl::_CreateDataChannel{910} - Data Channel connected
+[22:42:47.072](224)[debug] - Callback_Manager::run_callbacks{149} - Callback ready: EOS_Connect_LoginCallbackInfo
+[22:42:47.072](224)[debug] - sdk::EOSSDK_Auth::CopyUserAuthToken{500} - Accountid not found: 0x0 
+[22:42:47.329](224)[debug] - Callback_Manager::run_callbacks{149} - Callback ready: EOS_Friends_QueryFriendsCallbackInfo
+[22:45:13.128](224)[debug] - Callback_Manager::run_callbacks{149} - Callback ready: EOS_LobbySearch_FindCallbackInfo

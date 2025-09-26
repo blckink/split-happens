@@ -1,34 +1,6 @@
 (deck@steamdeck suckmydeck)$ ./build.sh
    Compiling partydeck v0.6.2 (/home/deck/Desktop/suckmydeck)
-warning: variable does not need to be mutable
-   --> src/launch.rs:190:21
-    |
-190 |                 let mut local_offset = offset.min(metadata.len());
-    |                     ----^^^^^^^^^^^^
-    |                     |
-    |                     help: remove this `mut`
-    |
-    = note: `#[warn(unused_mut)]` on by default
-
-warning: value assigned to `section_found` is never read
-   --> src/util/profiles.rs:188:9
-    |
-188 |         section_found = true;
-    |         ^^^^^^^^^^^^^
-    |
-    = help: maybe it is overwritten before being read?
-    = note: `#[warn(unused_assignments)]` on by default
-
-warning: value assigned to `key_updated` is never read
-   --> src/util/profiles.rs:189:9
-    |
-189 |         key_updated = true;
-    |         ^^^^^^^^^^^
-    |
-    = help: maybe it is overwritten before being read?
-
-warning: `partydeck` (bin "partydeck") generated 3 warnings (run `cargo fix --bin "partydeck"` to apply 1 suggestion)
-    Finished `release` profile [optimized] target(s) in 12.93s
+    Finished `release` profile [optimized] target(s) in 13.02s
 (deck@steamdeck suckmydeck)$ cd build
 (deck@steamdeck build)$ ./partydeck
 Got screen resolution: 1280x800
@@ -42,53 +14,11 @@ tyde already has save for coralisland, continuing...
 treuhandtina already has save for coralisland, continuing...
 Reading paths.json for root path of coralisland
 Found root path for coralisland: /home/deck/.local/share/Steam/steamapps/common/Coral Island
-copy_dir_recursive - src: /home/deck/.local/share/Steam/steamapps/common/Coral Island, dest: /home/deck/.local/share/partydeck/gamesyms/coralisland
-src: /home/deck/.local/share/Steam/steamapps/common/Coral Island/ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe, dest: /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe
-Copying file: /home/deck/.local/share/Steam/steamapps/common/Coral Island/ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe
-src: /home/deck/.local/share/Steam/steamapps/common/Coral Island/ProjectCoral/Binaries/Win64/EOSSDK-Win64-Shipping.dll, dest: /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/EOSSDK-Win64-Shipping.dll
-Copying file: /home/deck/.local/share/Steam/steamapps/common/Coral Island/ProjectCoral/Binaries/Win64/EOSSDK-Win64-Shipping.dll
-copy_dir_recursive - src: /home/deck/.local/share/partydeck/handlers/coralisland/copy_to_symdir, dest: /home/deck/.local/share/partydeck/gamesyms/coralisland
-copy_dir_recursive - src: /home/deck/Desktop/suckmydeck/build/res/goldberg/win/x64, dest: /home/deck/.local/share/partydeck/gamesyms/coralisland/Engine/Binaries/ThirdParty/Steamworks/Steamv151/Win64
-Searching for 'STEAMAPPS_INTERFACE_VERSION\d+'...
-Searching for 'STEAMAPPLIST_INTERFACE_VERSION\d+'...
-Searching for 'STEAMAPPTICKET_INTERFACE_VERSION\d+'...
-Searching for 'SteamClient\d+'...
-Searching for 'STEAMCONTROLLER_INTERFACE_VERSION'...
-Searching for 'SteamController\d+'...
-Searching for 'SteamFriends\d+'...
-Searching for 'SteamGameServerStats\d+'...
-Searching for 'SteamGameCoordinator\d+'...
-Searching for 'SteamGameServer\d+'...
-Searching for 'STEAMHTMLSURFACE_INTERFACE_VERSION_\d+'...
-Searching for 'STEAMHTTP_INTERFACE_VERSION\d+'...
-Searching for 'SteamInput\d+'...
-Searching for 'STEAMINVENTORY_INTERFACE_V\d+'...
-Searching for 'SteamMatchMakingServers\d+'...
-Searching for 'SteamMatchMaking\d+'...
-Searching for 'SteamMatchGameSearch\d+'...
-Searching for 'SteamParties\d+'...
-Searching for 'STEAMMUSIC_INTERFACE_VERSION\d+'...
-Searching for 'STEAMMUSICREMOTE_INTERFACE_VERSION\d+'...
-Searching for 'SteamNetworkingMessages\d+'...
-Searching for 'SteamNetworkingSockets\d+'...
-Searching for 'SteamNetworkingUtils\d+'...
-Searching for 'SteamNetworking\d+'...
-Searching for 'STEAMPARENTALSETTINGS_INTERFACE_VERSION\d+'...
-Searching for 'STEAMREMOTEPLAY_INTERFACE_VERSION\d+'...
-Searching for 'STEAMREMOTESTORAGE_INTERFACE_VERSION\d+'...
-Searching for 'STEAMSCREENSHOTS_INTERFACE_VERSION\d+'...
-Searching for 'STEAMTIMELINE_INTERFACE_V\d+'...
-Searching for 'STEAMUGC_INTERFACE_VERSION\d+'...
-Searching for 'SteamUser\d+'...
-Searching for 'STEAMUSERSTATS_INTERFACE_VERSION\d+'...
-Searching for 'SteamUtils\d+'...
-Searching for 'STEAMVIDEO_INTERFACE_V\d+'...
-Searching for 'STEAMUNIFIEDMESSAGES_INTERFACE_VERSION\d+'...
-Searching for 'SteamMasterServerUpdater\d+'...
 [PARTYDECK] Goldberg LAN identity for profile tyde set to tyde / 76561198109449327 on port 20902 (deterministic default)
 [PARTYDECK] Goldberg LAN identity for profile treuhandtina set to treuhandtina / 76561198073488212 on port 20902 (deterministic default)
 [PARTYDECK] Goldberg listen_port for coralisland synchronized to 20902
-[PARTYDECK] Nemirtingas LAN port for coralisland resolved to 58859
+[PARTYDECK] Nemirtingas LAN port for profile tyde on coralisland resolved to 58655
+[PARTYDECK] Nemirtingas LAN port for profile treuhandtina on coralisland resolved to 47458
 [PARTYDECK] Handler coralisland uses executable /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe
 [PARTYDECK] Handler coralisland expects Nemirtingas config at /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json
 [PARTYDECK] Found EOS-related file for Nemirtingas: /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/EOSSDK-Win64-Shipping.dll
@@ -103,7 +33,7 @@ KWin script started.
 [PARTYDECK][WARN] Profile tyde was missing a Nemirtingas AccountId; generating a new value.
 [PARTYDECK] Generated Nemirtingas AccountId d88d64962a776fd93f07e779b6466426 for profile tyde using deterministic mode
 [PARTYDECK] Nemirtingas log for profile tyde will be written to /home/deck/.local/share/partydeck/profiles/tyde/nepice_settings/NemirtingasEpicEmu.log
-Instance tyde: Nemirtingas config /home/deck/.local/share/partydeck/profiles/tyde/nepice_settings/NemirtingasEpicEmu.json (SHA1 13e59d0fce1b517f4fcb95b7f5431f98f55beffd) -> /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json (user tyde appid coralisland)
+Instance tyde: Nemirtingas config /home/deck/.local/share/partydeck/profiles/tyde/nepice_settings/NemirtingasEpicEmu.json (SHA1 5a08d8c3bb3d496701d0e1023e200376a6d0fa77) -> /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json (user tyde appid coralisland)
 [gamescope] [Info]  console: gamescope version 3.16.14 (gcc 14.2.1)
 Tracing is enabled
 [gamescope] [Info]  scriptmgr: Loading scripts from: '/usr/share/gamescope/scripts'
@@ -151,7 +81,7 @@ Tracing is enabled
 [gamescope] [Info]  wlserver: [xwayland/server.c:107] Starting Xwayland on :1
 [gamescope] [Info]  pipewire: stream state changed: connecting
 [gamescope] [Info]  pipewire: stream state changed: paused
-[gamescope] [Info]  pipewire: stream available on node ID: 137
+[gamescope] [Info]  pipewire: stream available on node ID: 140
 [gamescope] [Info]  vblank: Using timerfd.
 [gamescope] [Warn]  launch: Failed to open systemd message bus, there will be no cgroup protection for focused windows.
 
@@ -160,14 +90,14 @@ INFO: No GAMEID set, using umu-default
 INFO: steamrt3 is up to date
 INFO: GE-Proton is up to date
 i386-linux-gnu-capsule-capture-libs: warning: Dependencies of /usr/lib32/libMangoHud.so not found, ignoring: Missing dependencies: Could not find "libxkbcommon.so.0" in LD_LIBRARY_PATH "", ld.so.cache, DT_RUNPATH or fallback /lib:/usr/lib
-ProtonFixes[30291] WARN: Skipping fix execution. We are probably running an unit test.
+ProtonFixes[33064] WARN: Skipping fix execution. We are probably running an unit test.
 Proton: /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe
 Proton: Executable a unix path, launching with /unix option.
 fsync: up and running.
 [PARTYDECK][WARN] Profile treuhandtina was missing a Nemirtingas AccountId; generating a new value.
 [PARTYDECK] Generated Nemirtingas AccountId d525792965725245fc3f76a8d9ed154c for profile treuhandtina using deterministic mode
 [PARTYDECK] Nemirtingas log for profile treuhandtina will be written to /home/deck/.local/share/partydeck/profiles/treuhandtina/nepice_settings/NemirtingasEpicEmu.log
-Instance treuhandtina: Nemirtingas config /home/deck/.local/share/partydeck/profiles/treuhandtina/nepice_settings/NemirtingasEpicEmu.json (SHA1 82c299477e73f9fc34bbff2d95a709e4bfd088ad) -> /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json (user treuhandtina appid coralisland)
+Instance treuhandtina: Nemirtingas config /home/deck/.local/share/partydeck/profiles/treuhandtina/nepice_settings/NemirtingasEpicEmu.json (SHA1 abd346433e184a643667a084cd8d409c40f89076) -> /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json (user treuhandtina appid coralisland)
 [gamescope] [Info]  console: gamescope version 3.16.14 (gcc 14.2.1)
 Tracing is enabled
 [gamescope] [Info]  scriptmgr: Loading scripts from: '/usr/share/gamescope/scripts'
@@ -216,7 +146,7 @@ Tracing is enabled
 [gamescope] [Info]  wlserver: [xwayland/server.c:107] Starting Xwayland on :2
 [gamescope] [Info]  pipewire: stream state changed: connecting
 [gamescope] [Info]  pipewire: stream state changed: paused
-[gamescope] [Info]  pipewire: stream available on node ID: 142
+[gamescope] [Info]  pipewire: stream available on node ID: 134
 [gamescope] [Info]  vblank: Using timerfd.
 [gamescope] [Warn]  launch: Failed to open systemd message bus, there will be no cgroup protection for focused windows.
 
@@ -226,7 +156,7 @@ INFO: GE-Proton is up to date
 INFO: steamrt3 is up to date
 ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
 i386-linux-gnu-capsule-capture-libs: warning: Dependencies of /usr/lib32/libMangoHud.so not found, ignoring: Missing dependencies: Could not find "libxkbcommon.so.0" in LD_LIBRARY_PATH "", ld.so.cache, DT_RUNPATH or fallback /lib:/usr/lib
-ProtonFixes[30525] WARN: Skipping fix execution. We are probably running an unit test.
+ProtonFixes[33282] WARN: Skipping fix execution. We are probably running an unit test.
 Proton: /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe
 Proton: Executable a unix path, launching with /unix option.
 fsync: up and running.
@@ -240,7 +170,6 @@ The XKEYBOARD keymap compiler (xkbcomp) reports:
 > Warning:          Could not resolve keysym XF86KbdInputAssistNextgrou
 Errors from xkbcomp are not fatal to the X server
 [gamescope] [Info]  vulkan: Creating Gamescope nested swapchain with format 44 and colorspace 0
-[gamescope] [Info]  vulkan: Creating Gamescope nested swapchain with format 44 and colorspace 0
 ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
 ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
 ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
@@ -253,6 +182,191 @@ The XKEYBOARD keymap compiler (xkbcomp) reports:
 Errors from xkbcomp are not fatal to the X server
 [gamescope] [Info]  vulkan: Creating Gamescope nested swapchain with format 44 and colorspace 0
 [gamescope] [Info]  vulkan: Creating Gamescope nested swapchain with format 44 and colorspace 0
+[gamescope] [Info]  vulkan: Creating Gamescope nested swapchain with format 44 and colorspace 0
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
 [gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
 [gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
 [gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
@@ -458,12 +572,41 @@ Errors from xkbcomp are not fatal to the X server
 [gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
 [gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
 [gamescope] [Info]  vulkan: Creating Gamescope nested swapchain with format 44 and colorspace 0
+[gamescope] [Info]  vulkan: Creating Gamescope nested swapchain with format 44 and colorspace 0
 [gamescope] [Info]  launch: Primary child shut down!
 terminate called without an active exception
-[gamescope] [Info]  launch: Primary child shut down!
-terminate called without an active exception
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
 (EE) failed to read Wayland events: Connection reset by peer
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Info]  launch: Primary child shut down!
+terminate called without an active exception
 (EE) failed to read Wayland events: Connection reset by peer
 Unloading splitscreen script...
 Script unloaded.
-
+(deck@steamdeck build)$ 
