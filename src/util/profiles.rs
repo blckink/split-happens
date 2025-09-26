@@ -268,6 +268,36 @@ fn deterministic_goldberg_port(game_id: &str) -> u16 {
     20000 + (raw % 20000)
 }
 
+/// Computes a deterministic Nemirtingas LAN port using a disjoint range so EOS beacons
+/// do not fight with Goldberg for the same UDP socket. The port stays stable per game so
+/// hosts and guests always listen on the same endpoint.
+fn deterministic_nemirtingas_port(game_id: &str) -> u16 {
+    let mut hasher = Sha1::new();
+    hasher.update(format!("partydeck-nemirtingas-port:{game_id}").as_bytes());
+    let digest = hasher.finalize();
+
+    let raw = u16::from_be_bytes([digest[2], digest[3]]);
+    40000 + (raw % 20000)
+}
+
+/// Resolves the Nemirtingas LAN port for the provided game while ensuring it does not
+/// collide with the Goldberg listen port. This keeps LAN discovery stable for all players
+/// without forcing the emulators to share a socket that they cannot jointly bind.
+pub fn resolve_nemirtingas_port(game_id: &str, goldberg_port: Option<u16>) -> u16 {
+    let mut port = deterministic_nemirtingas_port(game_id);
+
+    if let Some(goldberg) = goldberg_port {
+        if port == goldberg {
+            port = port.saturating_add(1);
+            if port >= u16::MAX {
+                port = 49152;
+            }
+        }
+    }
+
+    port
+}
+
 /// Ensures all active profiles expose the Goldberg LAN identity files expected by Coral
 /// Island (account name, SteamID, language, invite toggles) and normalizes the shared
 /// `listen_port.txt` so every instance binds the same UDP socket during discovery.
