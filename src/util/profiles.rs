@@ -117,7 +117,11 @@ pub fn create_profile(name: &str) -> Result<(), std::io::Error> {
 /// we avoid spamming disk writes every launch while still guaranteeing consistent values.
 fn write_setting_if_changed(path: &Path, value: &str) -> io::Result<()> {
     if let Ok(existing) = fs::read_to_string(path) {
-        if existing.trim() == value {
+        if value.is_empty() {
+            if existing.is_empty() {
+                return Ok(());
+            }
+        } else if existing.trim() == value {
             return Ok(());
         }
     }
@@ -126,16 +130,25 @@ fn write_setting_if_changed(path: &Path, value: &str) -> io::Result<()> {
         fs::create_dir_all(parent)?;
     }
 
-    fs::write(path, format!("{value}\n"))
+    // Maintain genuinely empty files (for helpers like auto_accept_invite.txt) when the
+    // desired value is blank; otherwise mirror Goldberg's newline-terminated format.
+    let contents = if value.is_empty() {
+        String::new()
+    } else {
+        format!("{value}\n")
+    };
+
+    fs::write(path, contents)
 }
 
-/// Ensures the Goldberg `listen_port` setting is present inside the provided INI file so
-/// the emulator binds the same UDP port that Nemirtingas will advertise over EOS. The
-/// helper keeps existing content intact, only updating or appending the target key inside
-/// the `main::connectivity` section when required.
-fn ensure_ini_listen_port(path: &Path, port: u16) -> io::Result<()> {
-    let desired_section = "[main::connectivity]";
-    let desired_key = format!("listen_port={port}");
+/// Ensures a Goldberg INI file exposes a specific `key=value` pair inside the target
+/// section without disturbing the rest of the configuration. The helper either updates
+/// an existing entry or appends it at the end of the section if missing, creating the
+/// section on demand when necessary.
+fn ensure_ini_setting(path: &Path, section: &str, key: &str, value: &str) -> io::Result<()> {
+    let desired_section = section;
+    let desired_key = format!("{key}={value}");
+    let key_prefix = format!("{key}=");
     let existing_contents = fs::read_to_string(path).ok();
 
     let mut lines: Vec<String> = existing_contents
@@ -157,7 +170,7 @@ fn ensure_ini_listen_port(path: &Path, port: u16) -> io::Result<()> {
             continue;
         }
 
-        if in_desired_section && trimmed.starts_with("listen_port") {
+        if in_desired_section && trimmed.starts_with(&key_prefix) {
             if trimmed != desired_key {
                 *line = desired_key.clone();
             }
@@ -219,6 +232,18 @@ fn ensure_ini_listen_port(path: &Path, port: u16) -> io::Result<()> {
     fs::write(path, new_contents)
 }
 
+/// Convenience wrapper that keeps the public API focused on the listen port while the
+/// underlying helper remains flexible for other Goldberg flags we might need in future
+/// updates.
+fn ensure_ini_listen_port(path: &Path, port: u16) -> io::Result<()> {
+    ensure_ini_setting(
+        path,
+        "[main::connectivity]",
+        "listen_port",
+        &port.to_string(),
+    )
+}
+
 /// Extracts a `key=value` pair from Goldberg's `configs.user.ini`, returning `None` when
 /// the file cannot be read or the key was absent.
 fn read_config_value(config_path: &Path, key: &str) -> Option<String> {
@@ -249,12 +274,14 @@ fn deterministic_goldberg_port(game_id: &str) -> u16 {
 pub fn synchronize_goldberg_profiles(
     profiles: &[String],
     game_id: &str,
-) -> Result<u16, Box<dyn Error>> {
+    port_override: Option<u16>,
+) -> Result<Option<u16>, Box<dyn Error>> {
     if profiles.is_empty() {
-        return Ok(0);
+        return Ok(None);
     }
 
-    let port = deterministic_goldberg_port(game_id);
+    let port = port_override.unwrap_or_else(|| deterministic_goldberg_port(game_id));
+    let enforce_port = port_override.is_some();
     let mut seen_profiles: HashSet<String> = HashSet::new();
 
     for name in profiles {
@@ -307,28 +334,67 @@ pub fn synchronize_goldberg_profiles(
         write_setting_if_changed(&steam_settings.join("language.txt"), "english")?;
 
         // Toggle LAN discovery helpers to avoid requiring the Steam overlay for invites.
-        write_setting_if_changed(&steam_settings.join("auto_accept_invite.txt"), "1")?;
+        write_setting_if_changed(&steam_settings.join("auto_accept_invite.txt"), "")?;
         write_setting_if_changed(&steam_settings.join("disable_lan_only.txt"), "1")?;
-        write_setting_if_changed(&steam_settings.join("gc_token.txt"), "partydeck")?;
+        write_setting_if_changed(&steam_settings.join("gc_token.txt"), "1")?;
+        write_setting_if_changed(&steam_settings.join("new_app_ticket.txt"), "1")?;
 
-        // Synchronize the listen port across every profile so Goldberg advertises/joins
-        // lobbies via the same UDP endpoint.
-        write_setting_if_changed(&steam_settings.join("listen_port.txt"), &port.to_string())?;
-        ensure_ini_listen_port(&steam_settings.join("configs.main.ini"), port)?;
-        ensure_ini_listen_port(&steam_settings.join("configs.user.ini"), port)?;
+        // Ensure the Goldberg INI toggles mirror the one-shot helpers so the emulator's
+        // internal logic also generates the new auth ticket and GC token expected by the
+        // experimental build now bundled with PartyDeck.
+        ensure_ini_setting(
+            &steam_settings.join("configs.main.ini"),
+            "[main::general]",
+            "new_app_ticket",
+            "1",
+        )?;
+        ensure_ini_setting(
+            &steam_settings.join("configs.main.ini"),
+            "[main::general]",
+            "gc_token",
+            "1",
+        )?;
 
-        println!(
-            "[PARTYDECK] Goldberg LAN identity for profile {} set to {} / {} on port {}",
-            name, account_name, user_steam_id, port
-        );
+        ensure_ini_setting(
+            &steam_settings.join("configs.user.ini"),
+            "[main::general]",
+            "new_app_ticket",
+            "1",
+        )?;
+        ensure_ini_setting(
+            &steam_settings.join("configs.user.ini"),
+            "[main::general]",
+            "gc_token",
+            "1",
+        )?;
+
+        if enforce_port {
+            // Synchronize the listen port across every profile so Goldberg advertises/joins
+            // lobbies via the same UDP endpoint when Nemirtingas also expects the shared
+            // socket for EOS LAN discovery.
+            write_setting_if_changed(&steam_settings.join("listen_port.txt"), &port.to_string())?;
+            ensure_ini_listen_port(&steam_settings.join("configs.main.ini"), port)?;
+            ensure_ini_listen_port(&steam_settings.join("configs.user.ini"), port)?;
+
+            println!(
+                "[PARTYDECK] Goldberg LAN identity for profile {} set to {} / {} on port {}",
+                name, account_name, user_steam_id, port
+            );
+        } else {
+            println!(
+                "[PARTYDECK] Goldberg LAN identity for profile {} set to {} / {}",
+                name, account_name, user_steam_id
+            );
+        }
     }
 
-    Ok(port)
+    Ok(enforce_port.then_some(port))
 }
 
 pub fn ensure_nemirtingas_config(
     name: &str,
     appid: &str,
+    lan_port: Option<u16>,
 ) -> Result<(PathBuf, PathBuf, PathBuf, String), Box<dyn Error>> {
     let profile_dir = PATH_PARTY.join(format!("profiles/{name}"));
     fs::create_dir_all(&profile_dir)?;
@@ -527,25 +593,40 @@ pub fn ensure_nemirtingas_config(
         }),
     );
     // Enable the broadcast plugin so Nemirtingas advertises the lobby over LAN, allowing
-    // other players on the local network to discover the host via invite codes.
-    obj.insert(
-        "Network".to_string(),
+    // other players on the local network to discover the host via invite codes. When a
+    // synchronized Goldberg listen port is available, also override the LAN beacon to the
+    // same UDP socket so EOS discovery and Goldberg stay aligned.
+    let mut network_plugins = Map::new();
+    network_plugins.insert(
+        "Broadcast".to_string(),
         json!({
-            "IceServers": [],
-            "Plugins": {
-                "Broadcast": {
-                    "EnableLog": false,
-                    "Enabled": true,
-                    "LocalhostOnly": false
-                },
-                "WebSocket": {
-                    "EnableLog": false,
-                    "Enabled": false,
-                    "SignalingServers": []
-                }
-            }
+            "EnableLog": false,
+            "Enabled": true,
+            "LocalhostOnly": false
         }),
     );
+    network_plugins.insert(
+        "WebSocket".to_string(),
+        json!({
+            "EnableLog": false,
+            "Enabled": false,
+            "SignalingServers": []
+        }),
+    );
+
+    let mut network_obj = Map::new();
+    network_obj.insert("IceServers".to_string(), json!([]));
+    network_obj.insert("Plugins".to_string(), Value::Object(network_plugins));
+    if let Some(port) = lan_port {
+        network_obj.insert(
+            "Lan".to_string(),
+            json!({
+                "Enabled": true,
+                "OverridePort": port
+            }),
+        );
+    }
+    obj.insert("Network".to_string(), Value::Object(network_obj));
     obj.insert("appid".to_string(), json!(appid));
     obj.insert("language".to_string(), json!("en"));
     // Mirror the nested debug verbosity in the legacy flat configuration for tools still reading the flat keys.
@@ -555,6 +636,11 @@ pub fn ensure_nemirtingas_config(
     obj.insert("epicid".to_string(), json!(epic_id));
     obj.insert("productuserid".to_string(), json!(product_user_id));
     obj.insert("accountid".to_string(), json!(account_id));
+    if let Some(port) = lan_port {
+        // Surface the synchronized LAN port in the flat schema so older Nemirtingas builds
+        // that only inspect top-level keys can still reuse Goldberg's UDP socket.
+        obj.insert("lan_port".to_string(), json!(port));
+    }
 
     let data = serde_json::to_string_pretty(&Value::Object(obj))?;
     let mut file = OpenOptions::new()
