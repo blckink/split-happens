@@ -484,19 +484,18 @@ pub fn launch_game(
         HandlerRef(h) => h.uid.clone(),
     };
 
+    let profile_names: Vec<String> = instances
+        .iter()
+        .map(|instance| instance.profname.clone())
+        .collect();
+
     let mut synchronized_goldberg_port: Option<u16> = None;
     if let HandlerRef(h) = game {
-        if !h.path_goldberg.is_empty() {
+        if !h.path_goldberg.is_empty() && !profile_names.is_empty() {
             // Normalize Goldberg LAN metadata so every running instance advertises the
             // same listen port and exposes required identity files for lobby discovery.
-            let profile_names: Vec<String> = instances
-                .iter()
-                .map(|instance| instance.profname.clone())
-                .collect();
-            if !profile_names.is_empty() {
-                synchronized_goldberg_port =
-                    synchronize_goldberg_profiles(&profile_names, &game_id, None)?;
-            }
+            synchronized_goldberg_port =
+                synchronize_goldberg_profiles(&profile_names, &game_id, None)?;
         }
     }
 
@@ -506,21 +505,24 @@ pub fn launch_game(
             game_id, port
         );
     }
-    let mut nemirtingas_lan_port: Option<u16> = None;
+    let mut nemirtingas_ports: HashMap<String, u16> = HashMap::new();
     if let HandlerRef(h) = game {
-        if !h.path_nemirtingas.is_empty() {
-            // Resolve a deterministic Nemirtingas LAN port that is stable per game while
-            // staying clear of the Goldberg listen socket so EOS beacons no longer clash
-            // and auto-increment across profiles.
-            let port = resolve_nemirtingas_port(&game_id, synchronized_goldberg_port);
-            println!(
-                "[PARTYDECK] Nemirtingas LAN port for {} resolved to {}",
-                game_id, port
-            );
-            nemirtingas_lan_port = Some(port);
+        if !h.path_nemirtingas.is_empty() && !profile_names.is_empty() {
+            // Resolve deterministic Nemirtingas LAN ports per profile so each instance binds a
+            // unique UDP socket without fighting for the same override on the same machine.
+            nemirtingas_ports =
+                resolve_nemirtingas_ports(&profile_names, &game_id, synchronized_goldberg_port);
+
+            for profile in &profile_names {
+                if let Some(port) = nemirtingas_ports.get(profile) {
+                    println!(
+                        "[PARTYDECK] Nemirtingas LAN port for profile {} on {} resolved to {}",
+                        profile, game_id, port
+                    );
+                }
+            }
         }
     }
-    let nemirtingas_port_env = nemirtingas_lan_port.map(|port| port.to_string());
     let mut locks_vec = Vec::new();
     for instance in instances {
         let lock = ProfileLock::acquire(&game_id, &instance.profname)?;
@@ -620,8 +622,10 @@ pub fn launch_game(
     let mut children: Vec<Child> = Vec::new();
     let mut log_mirrors: Vec<(Arc<AtomicBool>, JoinHandle<()>)> = Vec::new();
     for (i, instance) in instances.iter().enumerate() {
+        let profile_port = nemirtingas_ports.get(&instance.profname).copied();
+
         let (nepice_dir, json_path, log_path, sha1_nemirtingas) =
-            ensure_nemirtingas_config(&instance.profname, &game_id, nemirtingas_lan_port)?;
+            ensure_nemirtingas_config(&instance.profname, &game_id, profile_port)?;
         let json_real = json_path.canonicalize()?;
 
         let instance_gamedir = if use_bwrap {
@@ -704,10 +708,10 @@ pub fn launch_game(
             }
             cmd.env("SDL_DYNAMIC_API", format!("{steam}/{path_sdl}"));
         }
-        if let Some(port) = &nemirtingas_port_env {
-            // Pin Nemirtingas LAN discovery to the deterministic port shared across all
-            // profiles so EOS beacons remain stable for join-code lookups.
-            cmd.env("EOS_OVERRIDE_LAN_PORT", port);
+        if let Some(port) = profile_port {
+            // Pin Nemirtingas LAN discovery to each profile's deterministic port so concurrent
+            // instances no longer contend for the same UDP socket and stop auto-incrementing.
+            cmd.env("EOS_OVERRIDE_LAN_PORT", port.to_string());
         }
         if win {
             let protonpath = if cfg.proton_version.is_empty() {
