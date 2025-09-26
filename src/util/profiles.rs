@@ -131,6 +131,7 @@ pub fn ensure_nemirtingas_config(
     let mut existing_epicid = None;
     let mut existing_productuserid = None;
     let mut existing_accountid_raw = None;
+
     let mut existing_username = None;
     if let Ok(file) = std::fs::File::open(&path) {
         if let Ok(value) = serde_json::from_reader::<_, Value>(file) {
@@ -480,6 +481,7 @@ pub static GUEST_NAMES: [&str; 31] = [
 
 // Unit tests to guarantee that Nemirtingas identifier parsing continues accepting both
 // raw hexadecimal IDs and variants prefixed with `0x`.
+
 #[cfg(test)]
 mod tests {
     use super::*;

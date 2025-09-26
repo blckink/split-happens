@@ -5,6 +5,7 @@ Dieser Überblick fasst zusammen, wie PartyDeck pro Profil die `NemirtingasEpicE
 ## Stabiler Benutzerkontext pro Profil
 - `ensure_nemirtingas_config` erstellt für jedes Profil einen persistenten Speicherort unter `profiles/<name>/nepice_settings/` und pflegt vorhandene IDs weiter.
 - Bereits existierende `EpicId`- und `ProductUserId`-Werte werden übernommen, solange sie gültige Hex-Strings sind. Ungültige Werte führen zu einem Hinweis im Log und werden neu erzeugt, wodurch Konflikte verhindert werden.
+- Die Prüfung akzeptiert dabei wahlweise rohe Hex-Zeichenketten oder Varianten mit einem optionalen `0x`/`0X`-Präfix, damit sich bestehende Konfigurationen nicht ändern müssen.
 
 ## Generierung eindeutiger IDs
 - Fehlen die IDs, werden 32-stellige Hex-Werte erzeugt. Profile mit dem Standardnamen `DefaultName` erhalten zufällige IDs, während individuelle Profilnamen deterministisch über den Usernamen gehasht werden. So bleiben Identitäten auf mehreren Rechnern synchron.
