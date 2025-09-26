@@ -1,13 +1,14 @@
 use rand::prelude::*;
 use serde_json::{Map, Value, json};
+use sha1::{Digest, Sha1};
 use std::error::Error;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::PathBuf;
 
-use crate::util::sha1_file;
-
 use crate::util::filesystem::copy_dir_recursive;
+use crate::util::sha1_file;
+use crate::{handler::Handler, paths::*};
 
 /// Generates a random hexadecimal string of the requested length so Nemirtingas
 /// receives deterministic-looking IDs instead of regenerating them every boot.
@@ -17,7 +18,64 @@ fn generate_hex_id(len: usize) -> String {
         .map(|_| format!("{:x}", rng.random_range(0..16)))
         .collect()
 }
-use crate::{handler::Handler, paths::*};
+
+/// Creates a deterministic hexadecimal identifier by hashing the provided seed and
+/// extending it with a counter if additional entropy is required.
+fn deterministic_hex_from_seed(seed: &str, len: usize) -> String {
+    let mut output = String::new();
+    let mut counter: u32 = 0;
+
+    while output.len() < len {
+        let mut hasher = Sha1::new();
+        hasher.update(seed.as_bytes());
+        if counter > 0 {
+            hasher.update(counter.to_le_bytes());
+        }
+
+        let digest = hasher.finalize();
+        output.push_str(&format!("{:x}", digest));
+        counter = counter.saturating_add(1);
+    }
+
+    output.truncate(len);
+    output
+}
+
+/// Validates that the provided identifier is a non-empty hexadecimal string; Nemirtingas
+/// rejects any other characters and regenerates the value if required.
+fn is_valid_hex(value: &str) -> bool {
+    !value.is_empty() && value.chars().all(|c| c.is_ascii_hexdigit())
+}
+
+/// Logs a warning both to stdout and the persistent launch warning log so profile repairs are
+/// visible even after the session ends.
+fn log_profile_warning(message: &str) {
+    println!("[PARTYDECK][WARN] {message}");
+
+    let log_dir = PATH_PARTY.join("logs");
+    if let Err(err) = std::fs::create_dir_all(&log_dir) {
+        println!(
+            "[PARTYDECK][WARN] Failed to prepare launch log directory {}: {}",
+            log_dir.display(),
+            err
+        );
+        return;
+    }
+
+    let log_path = log_dir.join("launch_warnings.txt");
+    if let Err(err) = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&log_path)
+        .and_then(|mut file| writeln!(file, "[WARN] {message}"))
+    {
+        println!(
+            "[PARTYDECK][WARN] Failed to persist launch warning log {}: {}",
+            log_path.display(),
+            err
+        );
+    }
+}
 
 // Makes a folder and sets up Goldberg Steam Emu profile for Steam games
 pub fn create_profile(name: &str) -> Result<(), std::io::Error> {
@@ -56,6 +114,7 @@ pub fn ensure_nemirtingas_config(
 
     let mut existing_epicid = None;
     let mut existing_productuserid = None;
+    let mut existing_username = None;
     if let Ok(file) = std::fs::File::open(&path) {
         if let Ok(value) = serde_json::from_reader::<_, Value>(file) {
             // Support both the new nested structure and the legacy flat structure so that
@@ -80,35 +139,73 @@ pub fn ensure_nemirtingas_config(
                         .and_then(|v| v.as_str())
                         .map(|s| s.to_string())
                 });
+            existing_username = value
+                .pointer("/EOSEmu/User/UserName")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+                .or_else(|| {
+                    value
+                        .get("username")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string())
+                });
         }
     }
 
-    if let Some(ref epicid) = existing_epicid {
-        if !epicid.chars().all(|c| c.is_ascii_hexdigit()) {
-            return Err("Invalid epicid".into());
+    let existing_epicid = existing_epicid.and_then(|id| {
+        if is_valid_hex(&id) {
+            Some(id)
+        } else {
+            log_profile_warning(&format!(
+                "Profile {name} contained invalid Nemirtingas EpicId {id}; regenerating."
+            ));
+            None
         }
-    }
-    if let Some(ref productuserid) = existing_productuserid {
-        if !productuserid.chars().all(|c| c.is_ascii_hexdigit()) {
-            return Err("Invalid productuserid".into());
+    });
+
+    let existing_productuserid = existing_productuserid.and_then(|id| {
+        if is_valid_hex(&id) {
+            Some(id)
+        } else {
+            log_profile_warning(&format!(
+                "Profile {name} contained invalid Nemirtingas ProductUserId {id}; regenerating."
+            ));
+            None
         }
-    }
+    });
+
+    let profile_username = existing_username
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| name.to_string());
+    let uses_default_username = profile_username == "DefaultName";
 
     // Persistently assign Nemirtingas IDs when they are missing so invite codes do not
     // depend on the emulator regenerating identifiers on every launch.
     let epic_id = existing_epicid.unwrap_or_else(|| {
-        let new_id = generate_hex_id(32);
+        let new_id = if uses_default_username {
+            generate_hex_id(32)
+        } else {
+            deterministic_hex_from_seed(&profile_username, 32)
+        };
         println!(
-            "[PARTYDECK] Generated Nemirtingas EpicId {} for profile {}",
-            new_id, name
+            "[PARTYDECK] Generated Nemirtingas EpicId {} for profile {} using {} mode",
+            new_id,
+            name,
+            if uses_default_username {
+                "random"
+            } else {
+                "deterministic"
+            }
         );
         new_id
     });
     let product_user_id = existing_productuserid.unwrap_or_else(|| {
-        let new_id = generate_hex_id(32);
+        let seed = format!("{appid}:{epic_id}");
+        let new_id = deterministic_hex_from_seed(&seed, 32);
         println!(
-            "[PARTYDECK] Generated Nemirtingas ProductUserId {} for profile {}",
-            new_id, name
+            "[PARTYDECK] Generated Nemirtingas ProductUserId {} for profile {} using deterministic seed",
+            new_id,
+            name
         );
         new_id
     });
@@ -116,7 +213,7 @@ pub fn ensure_nemirtingas_config(
     // Build the Nemirtingas configuration with the expected nested layout.
     let mut user_obj = Map::new();
     user_obj.insert("Language".to_string(), json!("en"));
-    user_obj.insert("UserName".to_string(), json!(name));
+    user_obj.insert("UserName".to_string(), json!(profile_username.clone()));
     user_obj.insert("EpicId".to_string(), json!(epic_id.clone()));
     user_obj.insert("ProductUserId".to_string(), json!(product_user_id.clone()));
 
@@ -171,7 +268,7 @@ pub fn ensure_nemirtingas_config(
     obj.insert("language".to_string(), json!("en"));
     // Mirror the nested debug verbosity in the legacy flat configuration for tools still reading the flat keys.
     obj.insert("log_level".to_string(), json!("DEBUG"));
-    obj.insert("username".to_string(), json!(name));
+    obj.insert("username".to_string(), json!(profile_username));
     // Surface the generated IDs in the flat layout as well so legacy Nemirtingas builds read them consistently.
     obj.insert("epicid".to_string(), json!(epic_id));
     obj.insert("productuserid".to_string(), json!(product_user_id));
