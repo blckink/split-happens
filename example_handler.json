@@ -1,0 +1,29 @@
+{
+  "handler.uid": "coralisland",
+  "handler.name": "Coral Island",
+  "handler.author": "pdh-builder",
+  "handler.version": "1",
+  "handler.info": "UE4; windowed start; per-profile saves; Steamworks v151 Win64.",
+
+  "game.symlink_dir": true,
+  "game.win": true,
+  "game.32bit": false,
+  "game.exec": "ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe",
+  "game.args": ["-windowed", "-NoSplash"],
+
+  "game.copy_instead_paths": [
+    "ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe",
+    "ProjectCoral/Binaries/Win64/EOSSDK-Win64-Shipping.dll"
+  ],
+  "game.dll_overrides": {},
+  "eos.config_path": "ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json",
+
+  "steam.api_path": "Engine/Binaries/ThirdParty/Steamworks/Steamv151/Win64",
+  "steam.appid": "1158160",
+  "steam.gb_coldclient": false,
+  "profiles.unique_appdata": true,
+  "profiles.unique_documents": false,
+  "profiles.unique_localshare": false,
+  "profiles.unique_config": false,
+  "profiles.game_paths": []
+}
