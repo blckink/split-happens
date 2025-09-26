@@ -44,7 +44,9 @@ fn deterministic_hex_from_seed(seed: &str, len: usize) -> String {
 /// Validates that the provided identifier is a non-empty hexadecimal string; Nemirtingas
 /// rejects any other characters and regenerates the value if required.
 fn is_valid_hex(value: &str) -> bool {
-    !value.is_empty() && value.chars().all(|c| c.is_ascii_hexdigit())
+    // Allow callers to supply identifiers with an optional 0x/0X prefix before checking the remaining characters.
+    let trimmed = value.trim_start_matches("0x").trim_start_matches("0X");
+    !trimmed.is_empty() && trimmed.chars().all(|c| c.is_ascii_hexdigit())
 }
 
 /// Logs a warning both to stdout and the persistent launch warning log so profile repairs are
@@ -409,3 +411,25 @@ pub static GUEST_NAMES: [&str; 31] = [
     "Lich", "Smores", "Canary", "Trico", "Yorda", "Wander", "Agro", "Jak", "Daxter", "Soap",
     "Ghost",
 ];
+
+// Unit tests verifying that profile utility helpers continue to validate identifiers correctly.
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn validates_hex_with_optional_prefix() {
+        // Accept hexadecimal identifiers without any prefix as a baseline expectation.
+        assert!(is_valid_hex("abcdef"));
+        assert!(is_valid_hex("ABCDEF123"));
+
+        // Accept hexadecimal identifiers with the optional 0x/0X prefix so existing configs continue to load.
+        assert!(is_valid_hex("0xdeadBEEF"));
+        assert!(is_valid_hex("0X1234"));
+
+        // Reject invalid identifiers, including empty strings or values with non-hex characters.
+        assert!(!is_valid_hex(""));
+        assert!(!is_valid_hex("0x"));
+        assert!(!is_valid_hex("0xGHI"));
+    }
+}
