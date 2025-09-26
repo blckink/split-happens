@@ -1,0 +1,3 @@
+The contents of this folder get copied into the profile's save data the first time that profile runs the handler. For guest profiles, it gets copied every time the handler runs.
+
+If the game normally stores save data in a system folder (Appdata/Documents for Windows, .local/share and .config for Linux), you can make a folder named _AppData, _Documents, _share or _config to place relevant files in there. Otherwise, if the save data is in a subdirectory of the game folder, just create the folder and place files in there, e.g. if save data is at [game directory]/save, create a folder in here named save.

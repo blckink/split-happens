@@ -1,0 +1,1885 @@
+Mono path[0] = 'X:/.local/share/partydeck/gamesyms/lumaisland/Luma Island_Data/Managed'
+Mono config path = 'X:/.local/share/partydeck/gamesyms/lumaisland/MonoBleedingEdge/etc'
+[Physics::Module] Initialized MultithreadedJobDispatcher with {0} workers.
+Initialize engine version: 2021.3.45f1 (0da89fac8e79)
+[Subsystems] Discovering subsystems at path X:/.local/share/partydeck/gamesyms/lumaisland/Luma Island_Data/UnitySubsystems
+GfxDevice: creating device client; threaded=1; jobified=1
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: AMD Custom GPU 0405 (RADV VANGOGH) (ID=0x163f)
+    Vendor:   ATI
+    VRAM:     6144 MB
+    Driver:   32.0.21025.1024
+Begin MonoManager ReloadAssembly
+- Completed reload, in  0.652 seconds
+Shader 'Sprites/AzureSprites-Unlit': fallback shader 'Sprites/AzureSprites-Defaul' not found
+D3D11 device created for Microsoft Media Foundation video decoding.
+<RI> Initializing input.
+New input system (experimental) initialized
+Using XInput
+<RI> Initialized touch support.
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+UnloadTime: 1.829000 ms
+[AzureValleyInstaller] Installing Project Bindings
+[SteamPlatformBootstrapper] Configuring platformBindings
+[SteamCommandLineConfigProvider] Command Line Arguments:
+[0] X:\.local\share\partydeck\gamesyms\lumaisland\Luma Island.exe
+[SteamPlatformBootstrapper] configured application: {
+    "TargetPlatform": 4,
+    "DevRunAsHost": true,
+    "OverridePlayerID": "",
+    "InvitedSteamLobbyID": 0
+}
+[AzureValleyPlatformInstaller] Installing platformBindings for TargetPlatform: `Steam`
+[SteamWindowsFileInstaller] Installing platformBindings
+[SteamWorksAchievementsInstaller] Installing platformBindings
+[SteamWorksNetworkInstaller] Installing platformBindings
+[SteamWorksPlatformInstaller] Installing platformBindings
+WwiseUnity: Wwise(R) SDK Version 2022.1.9 Build 8365.
+WwiseUnity: Setting Plugin DLL path to: X:/.local/share/partydeck/gamesyms/lumaisland/Luma Island_Data\Plugins\x86_64
+WwiseUnity: Sound engine initialized successfully.
+[SteamManagerLoader] MarkPersistant SteamManager
+[SteamManagerLoader] InjectGameObject SteamManager
+[DBG] [SteamManager] : TargetPlatform Steam
+[DBG] [SteamManager] : Initializes the Steamworks API.
+[DBG] [SteamManager] : OnSteamInitialized Invoked.
+SteamFriendUtil: Finished grabbing all friend info
+[SteamLobbyController] Manager_OnSteamIntialized 
+[DBG] [SteamManager] : SteamAchievements: Received stats with result k_EResultOK
+Addressables.LoadSceneAsync: Scene(Bootstrap)
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+Unloading 5 Unused Serialized files (Serialized files now loaded: 97)
+WwiseUnity: There are multiple AkWwiseInitializationSettings objects instantiated; only one will be used.
+UnloadTime: 7.205800 ms
+Start: PlatformBootstrap
+[LaunchConfig] configured application: {
+    "TargetPlatform": 4,
+    "DevRunAsHost": true,
+    "OverridePlayerID": "",
+    "InvitedSteamLobbyID": 0
+}
+Target: Steam
+LoadStartMenu
+await GameData.Instance.Initialize(): 
+op.Result.ActivateAsync scene name: Bootstrap
+Unloading 32 unused Assets to reduce memory usage. Loaded Objects now: 6655.
+Total: 10.156100 ms (FindLiveObjects: 0.502900 ms CreateObjectMapping: 0.567500 ms MarkObjects: 8.940100 ms  DeleteObjects: 0.144200 ms)
+
+[DBG] [WindowsFileManager] : TryLoad file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\account`
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+The referenced script on this Behaviour (Game Object 'StartAchievement') is missing!
+Unloading 1 Unused Serialized files (Serialized files now loaded: 97)
+WwiseUnity: There are multiple AkWwiseInitializationSettings objects instantiated; only one will be used.
+UnloadTime: 11.421700 ms
+[LumaIslandControlSchemeParser] ControlScheme set to KeyboardAndMouse for device `UnityEngine.InputSystem.FastKeyboard`
+Releasing render texture that is set to be RenderTexture.active!
+[DBG] [UIController] : Initialize
+[DBG] [UIController] : Starting settings retrieval
+[DBG] [CachedSettingsRepository] : Start a new load operation
+[DBG] [WindowsFileManager] : TryLoad file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [CachedSettingsRepository] : Settings already requested, return promise
+[ActiveControlSchemeTracker] Detected change to KeyboardAndMouse
+[LumaIslandControlSchemeParser] ControlScheme set to XboxGamepad for device `UnityEngine.InputSystem.XInput.XInputControllerWindows`
+[ActiveControlSchemeTracker] Detected change to XboxGamepad
+[ActiveControlSchemeTracker] Detected input change to XboxGamepad
+[DBG] [CachedSettingsRepository] : Settings retrieved
+[DBG] [UIController] : Applying settings
+[DBG] [UIController] : Settings applied successfully
+Unloading 320 unused Assets to reduce memory usage. Loaded Objects now: 33026.
+Total: 249.216800 ms (FindLiveObjects: 6.523200 ms CreateObjectMapping: 13.383700 ms MarkObjects: 183.967600 ms  DeleteObjects: 45.340900 ms)
+
+[DBG] [SteamManager] : SteamAchievements: Received stats with result k_EResultOK
+[DBG] [OptionsMenu] : Found Settings File
+<color=#0099bc><b>DOTWEEN ► </b></color>DOTween initialization (useSafeMode: True, recycling: OFF, logBehaviour: Verbose)
+[DBG] [SettingsRepository] : Save settings file
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SettingsRepository] : Save settings file
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SettingsRepository] : Save settings file
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SettingsRepository] : Save settings file
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : TryLoad file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[FileSizeValidator] validation result : `True`
+[DBG] [SettingsRepository] : Save settings file
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SettingsRepository] : Save settings file
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SettingsRepository] : Save settings file
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SettingsRepository] : Save settings file
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SettingsRepository] : Save settings file
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SettingsRepository] : Save settings file
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : TryLoad file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[FileSizeValidator] validation result : `True`
+Starting Bootstrap procedure
+Starting Bootstrap as Host
+Bootstrap: Performing network initialization before starting game with layer Steam
+JoiningGameManager: Awake
+Bootstrap: Network initialzation success.
+GameData
+ClientJoinGame
+SaveGame
+[DBG] [WindowsFileManager] : TryLoad file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[FileSizeValidator] validation result : `True`
+[DBG] [WindowsFileManager] : TryLoad file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2`
+[FileSizeValidator] validation result : `True`
+Running Assets.Scripts.System.SaveGameRepository.GameLoadHandlers.MigrantionHandlers.hotfix_LumaAchievementStates
+Version masked match Assets.Scripts.System.SaveGameRepository.GameLoadHandlers.MigrantionHandlers.hotfix_LumaAchievementStates
+Running Assets.Scripts.System.SaveGameRepository.GameLoadHandlers.MigrantionHandlers.hotfix_Achievements
+Version masked match Assets.Scripts.System.SaveGameRepository.GameLoadHandlers.MigrantionHandlers.hotfix_Achievements
+CharacterCreate
+ClientGrabSave
+Bootstrap
+Globals
+The referenced script on this Behaviour (Game Object '<null>') is missing!
+WWise_Motion successfully initialized
+LevelManager
+Unloading 3 Unused Serialized files (Serialized files now loaded: 99)
+UnloadTime: 72.315100 ms
+Unloading 5212 unused Assets to reduce memory usage. Loaded Objects now: 34437.
+Total: 234.700400 ms (FindLiveObjects: 4.808300 ms CreateObjectMapping: 6.542800 ms MarkObjects: 199.942500 ms  DeleteObjects: 23.405000 ms)
+
+LocalPlayerCreate
+Vehicles
+Localization
+InitializeOfflineLevelData
+Shader 'Sprites/AzureSprites-Unlit': fallback shader 'Sprites/AzureSprites-Defaul' not found
+Shader 'Sprites/AzureSprites-Unlit': fallback shader 'Sprites/AzureSprites-Defaul' not found
+Shader 'Sprites/AzureSprites-Unlit': fallback shader 'Sprites/AzureSprites-Defaul' not found
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script on this Behaviour (Game Object 'PirateMapShortcut_05_Unfinished') is missing!
+The referenced script (MAST.Component.MASTPrefabSettings) on this Behaviour is missing!
+The referenced script on this Behaviour (Game Object '') is missing!
+GlobalNavGraph
+LevelLoad
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_Last') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_1') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_2') is missing!
+LevelInitializeBehaviours
+LevelInitialize
+Skipping LevelForest as it is already complete
+LevelGameObjects
+LevelFullyLoaded
+LevelMagneticLoot
+LevelNavmesh
+Pathfinding later: Finished initializing
+NPCs
+LevelUpdateDataLayers
+LevelComplete
+Level
+PlayerEnteredLevel
+LevelPostProcess
+Look rotation viewing vector is zero
+Can't add component 'Rigidbody' to Cat_1 (427) because such a component is already added to the game object!
+SetPlayerLevel
+TeleportPlayer
+StartDay
+Starting initial day after loading.
+[ActiveControlSchemeTracker] Detected change to KeyboardAndMouse
+[ActiveControlSchemeTracker] Detected input change to KeyboardAndMouse
+[ActiveControlSchemeTracker] Detected change to KeyboardAndMouse
+[ActiveControlSchemeTracker] Detected change to KeyboardAndMouse
+Initialized local player Tally
+[DBG] [UIController] : Initialize
+[DBG] [UIController] : Starting settings retrieval
+[DBG] [UIController] : Applying settings
+[DBG] [UIController] : Settings applied successfully
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\account`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\account`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [OptionsMenu] : Found Settings File
+CleanAfterLoad
+ActivateNPCs
+Lighting
+[DBG] [Default] : Auto Saving game `slot_0`
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SaveGameRepository] : Saved game success
+Look rotation viewing vector is zero
+[ActiveControlSchemeTracker] Detected change to KeyboardAndMouse
+[LumaIslandControlSchemeParser] ControlScheme set to XboxGamepad for device `UnityEngine.InputSystem.XInput.XInputControllerWindows`
+[ActiveControlSchemeTracker] Detected change to XboxGamepad
+[ActiveControlSchemeTracker] Detected input change to XboxGamepad
+Changed context from Player to Pause
+Changed context from Pause to UI
+Changed context from UI to Pause
+SteamLobbyController: Marking game as public.
+[SteamLobbyController] OnLobbyCreated 
+Lobby created with ID 109775242346324240
+[SteamLobbyController] OnLobbyEntered 
+Entered lobby with owner 76561198109449327. Starting game
+[SteamLobbyController] OnReceiveLobbyData 
+[SteamLobbyController] OnReceiveLobbyData 
+[SteamLobbyController] OnReceiveLobbyData 
+Connection status of 76561198073488212 changed to k_ESteamNetworkingConnectionState_Connecting
+Accepted new connection: 76561198073488212
+Connection status of 76561198073488212 changed to k_ESteamNetworkingConnectionState_Connected
+JoiningGameManager: 76561198073488212 started join process
+JoiningGameManager: Fetching save...
+JoiningGameManager: Grabbed player data, sending it back to player: treuhandtina
+JoiningGameManager: Creating JoinGameData.
+JoiningGameManager: Host sent JoinGameData to client 76561198073488212
+Host: 76561198073488212 joined
+Host sent serialized save: 2480356
+Completed sending start game data to 76561198073488212
+RemotePlayerCreate
+Skipping InitializeOfflineLevelData as it is already complete
+Skipping Lighting as it is already complete
+LevelLoad
+[SteamLobbyController] OnReceiveLobbyData 
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+Changed context from Pause to Player
+The referenced script on this Behaviour (Game Object 'Debug') is missing!
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_Last_1') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_Last') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_6') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_5') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_2') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_1') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_7') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_3') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_4') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake') is missing!
+LevelInitializeBehaviours
+LevelInitialize
+Skipping LevelForest as it is already complete
+LevelGameObjects
+LevelFullyLoaded
+LevelMagneticLoot
+LevelNavmesh
+Uploading Crash Report
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+NullReferenceException: Object reference not set to an instance of an object
+  at ClientPlayerDataSync.OnReceiveClientInventoryData (System.Byte[] data) [0x00029] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+  at NetworkMessenger.ReceiveMessage (NetworkMessageID messageID, System.Byte[] data) [0x0001c] in <27118df83b6c4f6b8cc3fad9ae147417>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+NetworkMessenger:ReceiveMessage(NetworkMessageID, Byte[])
+NetworkMessenger:ProcessMessageBeforeReceive(NetworkMessageID, Byte[])
+SteamSocketManager:Tick()
+SteamNetworkManager:Update()
+
+Pathfinding later: Finished initializing
+LevelUpdateDataLayers
+Host switching levels for treuhandtina to ForestMap
+treuhandtina waiting to load ForestMap with player queue size 1
+LevelComplete
+Level
+TeleportPlayer
+ActivateNetworkedPlayer
+PlayerEnteredLevel
+LevelPostProcess
+SwapLevels
+Host complete switching levels for treuhandtina to ForestMap
+Look rotation viewing vector is zero
+Can't add component 'Rigidbody' to PetWorm_1 (436) because such a component is already added to the game object!
+Look rotation viewing vector is zero
+Changed context from Player to UI
+Changed context from UI to Blueprint
+Changed context from Blueprint to Player
+Changed context from Player to UI
+Changed context from UI to Inventory
+Changed context from Inventory to Player
+Changed context from Player to UI
+Changed context from UI to Inventory
+Changed context from Inventory to Player
+Changed context from Player to Pause
+[DBG] [SettingsRepository] : Save settings file
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SettingsRepository] : Save settings file
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+Changed context from Pause to Player
+Changed context from Player to UI
+Changed context from UI to QuestLog
+[LumaIslandControlSchemeParser] ControlScheme set to KeyboardAndMouse for device `UnityEngine.InputSystem.FastKeyboard`
+[ActiveControlSchemeTracker] Detected change to KeyboardAndMouse
+[ActiveControlSchemeTracker] Detected input change to KeyboardAndMouse
+[LumaIslandControlSchemeParser] ControlScheme set to KeyboardAndMouse for device `UnityEngine.InputSystem.FastMouse`
+[ActiveControlSchemeTracker] Detected change to KeyboardAndMouse
+[ActiveControlSchemeTracker] Detected change to KeyboardAndMouse
+[ActiveControlSchemeTracker] Detected change to KeyboardAndMouse
+[LumaIslandControlSchemeParser] ControlScheme set to XboxGamepad for device `UnityEngine.InputSystem.XInput.XInputControllerWindows`
+[ActiveControlSchemeTracker] Detected change to XboxGamepad
+[ActiveControlSchemeTracker] Detected input change to XboxGamepad
+Changed context from QuestLog to Player
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to Pause
+Changed context from Pause to Player
+Changed context from Player to UI
+Changed context from UI to QuestLog
+Changed context from QuestLog to Player
+Changed context from Player to UI
+Changed context from UI to Inventory
+Changed context from Inventory to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Inventory
+Changed context from Inventory to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to Pause
+Changed context from Pause to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to Pause
+[DBG] [SettingsRepository] : Save settings file
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+Received treuhandtina ready to end the day
+d3d11: multiple uploads in flight for buffer 00000003D17F0330 of size 29184. Falling back to slow path
+[DBG] [Default] : Daily Saving game `slot_0`
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2.day26`
+[DBG] [WindowsFileManager] : Save file created successfully.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2.day26`
+[DBG] [WindowsFileManager] : Save file created successfully.
+[DBG] [Default] : Auto Saving game `slot_0`
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [GameSaveCleanupHandler] : cleanup file `slot_0.sav2.day21`
+[DBG] [GameSaveCleanupHandler] : cleanup file `slot_0_header.sav2.day21`
+[DBG] [SaveGameRepository] : Saved game success
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+[DBG] [SettingsRepository] : Save settings file
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Config/76561198109449327\settings`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+Changed context from Pause to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Blueprint
+Changed context from Blueprint to Player
+Changed context from Player to UI
+Changed context from UI to Blueprint
+Changed context from Blueprint to Player
+Switching levels from FarmMap to CottageHomeInterior
+Skipping ClientWaitForHostToLoad as it is already complete
+FadeOutCamera
+SwapLevels
+Skipping InitializeOfflineLevelData as it is already complete
+LevelUnload
+Unloading FarmMap
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+LevelLoad
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+LevelInitializeBehaviours
+LevelInitialize
+Skipping LevelForest as it is already complete
+LevelGameObjects
+LevelFullyLoaded
+LevelMagneticLoot
+LevelNavmesh
+Pathfinding later: Finished initializing
+LevelUpdateDataLayers
+LevelComplete
+Level
+PlayerEnteredLevel
+LevelPostProcess
+MinimumLevelSwitchDelay
+TeleportPlayer
+Uploading Crash Report
+NullReferenceException: Object reference not set to an instance of an object
+  at Culling.AddInclude (Culling+CullingData parent, System.Int32 index) [0x00052] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+Culling:AddInclude(CullingData, Int32)
+Culling:OnStateChanged(CullingData, CullingGroupEvent)
+<>c__DisplayClass17_0:<AddPlayer>b__0(CullingGroupEvent)
+UnityEngine.CullingGroup:SendEvents(CullingGroup, IntPtr, Int32)
+
+FinalizePlayer
+[DBG] [Default] : Auto Saving game `slot_0`
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SaveGameRepository] : Saved game success
+Lighting
+FadeInCamera
+Can't add component 'Rigidbody' to Cat_1 (427) because such a component is already added to the game object!
+Switching levels from CottageHomeInterior to CottageHomeInterior
+Skipping Level as it is already complete
+Skipping LevelPostProcess as it is already complete
+Skipping Lighting as it is already complete
+FadeOutCamera
+MinimumLevelSwitchDelay
+TeleportPlayer
+FinalizePlayer
+FadeInCamera
+Switching levels from CottageHomeInterior to CottageHomeInterior
+Skipping Level as it is already complete
+Skipping LevelPostProcess as it is already complete
+Skipping Lighting as it is already complete
+FadeOutCamera
+MinimumLevelSwitchDelay
+TeleportPlayer
+FinalizePlayer
+FadeInCamera
+Switching levels from CottageHomeInterior to FarmMap
+Skipping ClientWaitForHostToLoad as it is already complete
+FadeOutCamera
+SwapLevels
+Skipping InitializeOfflineLevelData as it is already complete
+LevelUnload
+Unloading CottageHomeInterior
+LevelLoad
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_Last') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_1') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_2') is missing!
+LevelInitializeBehaviours
+LevelInitialize
+Skipping LevelForest as it is already complete
+LevelGameObjects
+LevelFullyLoaded
+LevelMagneticLoot
+LevelNavmesh
+Pathfinding later: Finished initializing
+LevelUpdateDataLayers
+LevelComplete
+Level
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+PlayerEnteredLevel
+LevelPostProcess
+MinimumLevelSwitchDelay
+TeleportPlayer
+FinalizePlayer
+[DBG] [Default] : Auto Saving game `slot_0`
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SaveGameRepository] : Saved game success
+Lighting
+FadeInCamera
+Can't add component 'Rigidbody' to Cat_1 (427) because such a component is already added to the game object!
+Switching levels from FarmMap to TavernHomeInterior
+Skipping ClientWaitForHostToLoad as it is already complete
+FadeOutCamera
+SwapLevels
+Skipping InitializeOfflineLevelData as it is already complete
+LevelUnload
+Unloading FarmMap
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+LevelLoad
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+LevelInitializeBehaviours
+LevelInitialize
+Skipping LevelForest as it is already complete
+LevelGameObjects
+LevelFullyLoaded
+LevelMagneticLoot
+LevelNavmesh
+Pathfinding later: Finished initializing
+LevelUpdateDataLayers
+LevelComplete
+Level
+PlayerEnteredLevel
+LevelPostProcess
+MinimumLevelSwitchDelay
+TeleportPlayer
+FinalizePlayer
+[DBG] [Default] : Auto Saving game `slot_0`
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SaveGameRepository] : Saved game success
+Lighting
+FadeInCamera
+Can't add component 'Rigidbody' to Cat_1 (427) because such a component is already added to the game object!
+Switching levels from TavernHomeInterior to FarmMap
+Skipping ClientWaitForHostToLoad as it is already complete
+FadeOutCamera
+SwapLevels
+Skipping InitializeOfflineLevelData as it is already complete
+LevelUnload
+Unloading TavernHomeInterior
+LevelLoad
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_Last') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_1') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_2') is missing!
+LevelInitializeBehaviours
+LevelInitialize
+Skipping LevelForest as it is already complete
+LevelGameObjects
+LevelFullyLoaded
+LevelMagneticLoot
+LevelNavmesh
+Pathfinding later: Finished initializing
+LevelUpdateDataLayers
+LevelComplete
+Level
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+PlayerEnteredLevel
+LevelPostProcess
+MinimumLevelSwitchDelay
+TeleportPlayer
+FinalizePlayer
+[DBG] [Default] : Auto Saving game `slot_0`
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SaveGameRepository] : Saved game success
+Lighting
+FadeInCamera
+Can't add component 'Rigidbody' to Cat_1 (427) because such a component is already added to the game object!
+Switching levels from FarmMap to TavernHomeInterior
+Skipping ClientWaitForHostToLoad as it is already complete
+FadeOutCamera
+SwapLevels
+Skipping InitializeOfflineLevelData as it is already complete
+LevelUnload
+Unloading FarmMap
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+LevelLoad
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+LevelInitializeBehaviours
+LevelInitialize
+Skipping LevelForest as it is already complete
+LevelGameObjects
+LevelFullyLoaded
+LevelMagneticLoot
+LevelNavmesh
+Pathfinding later: Finished initializing
+LevelUpdateDataLayers
+LevelComplete
+Level
+PlayerEnteredLevel
+LevelPostProcess
+MinimumLevelSwitchDelay
+TeleportPlayer
+FinalizePlayer
+[DBG] [Default] : Auto Saving game `slot_0`
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SaveGameRepository] : Saved game success
+Lighting
+FadeInCamera
+Can't add component 'Rigidbody' to Cat_1 (427) because such a component is already added to the game object!
+Switching levels from TavernHomeInterior to FarmMap
+Skipping ClientWaitForHostToLoad as it is already complete
+FadeOutCamera
+SwapLevels
+Skipping InitializeOfflineLevelData as it is already complete
+LevelUnload
+Unloading TavernHomeInterior
+LevelLoad
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_Last') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_1') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_2') is missing!
+LevelInitializeBehaviours
+LevelInitialize
+Skipping LevelForest as it is already complete
+LevelGameObjects
+LevelFullyLoaded
+LevelMagneticLoot
+LevelNavmesh
+Pathfinding later: Finished initializing
+LevelUpdateDataLayers
+LevelComplete
+Level
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAIControlled
+PlayerEnteredLevel
+LevelPostProcess
+MinimumLevelSwitchDelay
+TeleportPlayer
+FinalizePlayer
+[DBG] [Default] : Auto Saving game `slot_0`
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SaveGameRepository] : Saved game success
+Lighting
+FadeInCamera
+Can't add component 'Rigidbody' to Cat_1 (427) because such a component is already added to the game object!
+Changed context from Player to UI
+Changed context from UI to Blueprint
+Host switching levels for treuhandtina to PirateMap
+treuhandtina waiting to load PirateMap with player queue size 1
+SwapLevels
+Skipping InitializeOfflineLevelData as it is already complete
+Skipping Lighting as it is already complete
+LevelUnload
+Unloading ForestMap
+LevelLoad
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+LevelInitializeBehaviours
+LevelInitialize
+Skipping LevelForest as it is already complete
+Found 2 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 14 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 97 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 82 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 42 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 2 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 76 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 167 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 5 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 4 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 8 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 152 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 83 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 41 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 29 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 5 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 115 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 9 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 107 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 12 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 78 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 3 objectData
+Set buffer to Material  Particles_Planks_02_Solid (Instance)
+Found 2082 objectData
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_StrongBeam_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_Lights_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid.001 (Instance)
+Set buffer to Material  PirateBaseDraftVC_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.004 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_Dressing_Solid (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.008 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.006 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.003 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.006 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_Wall_WindowA_2m_Solid (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.004 (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.007 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.005 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid.002 (Instance)
+Set buffer to Material  PirateBaseDraft_Solid (Instance)
+Found 1818 objectData
+Set buffer to Material  PirateBase_ModularKit_01_StrongBeam_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.004 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.008 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.006 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid (Instance)
+Set buffer to Material  PirateBaseDraftVC_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_Dressing_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_Lights_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.007 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.005 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.003 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.006 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_Wall_WindowA_2m_Solid (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.004 (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.005 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.003 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_Wall_Door_Solid (Instance)
+Found 1157 objectData
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_Lights_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_Dressing_Solid (Instance)
+Set buffer to Material  PirateBaseDraftVC_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.007 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.005 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.004 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.002 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.003 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.006 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_Wall_WindowA_2m_Solid (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.004 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.008 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.006 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid.002 (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_StrongBeam_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid.001 (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid.002 (Instance)
+Set buffer to Material  PirateBaseDraft_Solid (Instance)
+Found 1534 objectData
+Set buffer to Material  PirateBase_ModularKit_01_StrongBeam_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid (Instance)
+Set buffer to Material  PirateBaseDraftVC_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.004 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.003 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.006 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_Wall_WindowA_2m_Solid (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.004 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.008 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.006 (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_Lights_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.007 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.005 (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_Dressing_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid.001 (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid.002 (Instance)
+Found 2288 objectData
+Set buffer to Material  PirateBase_ModularKit_01_Lights_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_StrongBeam_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_Dressing_Solid (Instance)
+Set buffer to Material  PirateBaseDraftVC_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.002 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.004 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.002 (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.007 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.005 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.003 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.006 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_Wall_WindowA_2m_Solid (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.004 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.008 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.006 (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid.001 (Instance)
+Found 1289 objectData
+Set buffer to Material  PirateBase_ModularKit_01_Lights_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_StrongBeam_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.003 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.006 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_Wall_WindowA_2m_Solid (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.004 (Instance)
+Set buffer to Material  PirateBaseDraftVC_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.008 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.006 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.004 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.002 (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.007 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.005 (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_Dressing_Solid (Instance)
+Found 1367 objectData
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_StrongBeam_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_Lights_Solid (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_Dressing_Solid (Instance)
+Set buffer to Material  PirateBaseDraftVC_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.002 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_ShackRoofs_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.004 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.002 (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid.002 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.003 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.001 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.006 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_Wall_WindowA_2m_Solid (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.004 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.008 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.006 (Instance)
+Set buffer to Material  Pirate_ModularKit_01_TrimSheet_Solid.007 (Instance)
+Set buffer to Material  PirateBaseDraft_WoodWall_Solid.005 (Instance)
+Set buffer to Material  PirateBase_ModularKit_01_TrimSheet_Solid.001 (Instance)
+Found 3 objectData
+Set buffer to Material  WaterLilyPlant_01_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Found 4 objectData
+Set buffer to Material  WaterLilyPlant_01_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_05_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Found 4 objectData
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_02_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Found 34 objectData
+Set buffer to Material  WaterLilyPlant_01_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_05_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_02_Solid (Instance)
+Found 27 objectData
+Set buffer to Material  WaterLilyPlant_01_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_05_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_02_Solid (Instance)
+Found 17 objectData
+Set buffer to Material  WaterLilyPlant_01_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_05_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_02_Solid (Instance)
+Found 14 objectData
+Set buffer to Material  WaterLilyPlant_01_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_05_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_02_Solid (Instance)
+Found 5 objectData
+Set buffer to Material  WaterLilyPlant_01_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_05_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Found 4 objectData
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_02_Solid (Instance)
+Found 12 objectData
+Set buffer to Material  WaterLilyPlant_01_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_05_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_02_Solid (Instance)
+Found 11 objectData
+Set buffer to Material  WaterLilyPlant_01_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_05_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_02_Solid (Instance)
+Found 23 objectData
+Set buffer to Material  WaterLilyPlant_01_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_05_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_02_Solid (Instance)
+Found 3 objectData
+Set buffer to Material  WaterLilyPlant_01_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_02_Solid (Instance)
+Found 7 objectData
+Set buffer to Material  WaterLilyPlant_01_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_05_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_02_Solid (Instance)
+Found 10 objectData
+Set buffer to Material  WaterLilyPlant_01_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_05_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_02_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Found 4 objectData
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Found 4 objectData
+Set buffer to Material  WaterLilyPlant_01_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Found 7 objectData
+Set buffer to Material  WaterLilyPlant_03_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_02_Solid (Instance)
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Found 1 objectData
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Found 1 objectData
+Set buffer to Material  WaterLilyPlant_04_Solid (Instance)
+Found 121 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 94 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 95 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 138 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 90 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 100 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 47 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 94 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 94 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 112 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 40 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 6 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 31 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 67 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 61 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 93 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 76 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 91 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 33 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 55 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 72 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 65 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 11 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 134 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 86 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 52 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 78 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 107 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 98 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 21 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 57 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 61 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 64 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 28 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 95 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 156 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 28 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 53 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 82 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 45 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 66 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 33 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 63 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 3 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 2 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 64 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 80 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 49 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 24 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 15 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 1 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 35 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 68 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 83 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 66 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 17 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 39 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 61 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 122 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 28 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+Found 68 objectData
+Set buffer to Material  CaveFormations_Solid (Instance)
+LevelGameObjects
+The referenced script on this Behaviour (Game Object '<null>') is missing!
+The referenced script (MAST.Component.MASTPrefabSettings) on this Behaviour is missing!
+The referenced script on this Behaviour (Game Object 'PirateMapShortcut_05_Unfinished') is missing!
+The referenced script on this Behaviour (Game Object '<null>') is missing!
+The referenced script (MAST.Component.MASTPrefabSettings) on this Behaviour is missing!
+The referenced script on this Behaviour (Game Object 'PirateMapShortcut_04_Unfinished') is missing!
+LevelFullyLoaded
+LevelMagneticLoot
+LevelNavmesh
+Input mesh contained 2 degenerate triangles. These have been removed.
+A degenerate triangle is a triangle with zero area. It resembles a line or a point.
+Duplicate triangle edges were found in the input mesh. These have been removed. Are you sure your mesh is suitable for being used as a navmesh directly?
+This could be caused by the mesh's normals not being consistent.
+Pathfinding later: Finished initializing
+LevelUpdateDataLayers
+LevelComplete
+Level
+PlayerEnteredLevel
+LevelPostProcess
+Host complete switching levels for treuhandtina to PirateMap
+Can't add component 'Rigidbody' to PetWorm_1 (436) because such a component is already added to the game object!
+Host received 76561198073488212 save data
+Changed context from Blueprint to Placement
+Host switching levels for treuhandtina to ForestMap
+treuhandtina waiting to load ForestMap with player queue size 1
+SwapLevels
+Skipping InitializeOfflineLevelData as it is already complete
+Skipping Lighting as it is already complete
+LevelUnload
+Unloading PirateMap
+LevelLoad
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script on this Behaviour (Game Object 'Debug') is missing!
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_Last_1') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_Last') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_6') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_5') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_2') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_1') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_7') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_3') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_4') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake') is missing!
+LevelInitializeBehaviours
+LevelInitialize
+Skipping LevelForest as it is already complete
+LevelGameObjects
+LevelFullyLoaded
+LevelMagneticLoot
+LevelNavmesh
+Pathfinding later: Finished initializing
+LevelUpdateDataLayers
+LevelComplete
+Level
+PlayerEnteredLevel
+LevelPostProcess
+Host complete switching levels for treuhandtina to ForestMap
+Changed context from Placement to Player
+Changed context from Player to UI
+Changed context from UI to Blueprint
+Can't add component 'Rigidbody' to PetWorm_1 (436) because such a component is already added to the game object!
+Host received 76561198073488212 save data
+Changed context from Blueprint to Player
+Changed context from Player to UI
+Changed context from UI to Blueprint
+Changed context from Blueprint to Player
+Changed context from Player to UI
+Changed context from UI to Blueprint
+Changed context from Blueprint to Placement
+Changed context from Placement to Player
+Changed context from Player to UI
+Changed context from UI to Blueprint
+Changed context from Blueprint to Player
+Changed context from Player to UI
+Changed context from UI to Blueprint
+Changed context from Blueprint to Placement
+Changed context from Placement to Player
+Changed context from Player to UI
+Changed context from UI to Blueprint
+Changed context from Blueprint to Placement
+Changed context from Placement to Player
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAnimalHint
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Inventory
+Changed context from Inventory to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Received treuhandtina ready to end the day
+Changed context from UI to Player
+Uploading Crash Report
+NullReferenceException: Object reference not set to an instance of an object
+  at Culling.RemoveInclude (Culling+CullingData parent, System.Int32 index) [0x00058] in <0cbec5982610454f8ccd56eaf5b6b8cd>:0 
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:LogException(Exception, Object)
+LumaIslandLogHandler:UnityEngine.ILogHandler.LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:LogException(Exception)
+Culling:RemoveInclude(CullingData, Int32)
+Culling:OnStateChanged(CullingData, CullingGroupEvent)
+<>c__DisplayClass17_0:<AddPlayer>b__0(CullingGroupEvent)
+UnityEngine.CullingGroup:SendEvents(CullingGroup, IntPtr, Int32)
+
+[DBG] [Default] : Daily Saving game `slot_0`
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2.day27`
+[DBG] [WindowsFileManager] : Save file created successfully.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2.day27`
+[DBG] [WindowsFileManager] : Save file created successfully.
+[DBG] [Default] : Auto Saving game `slot_0`
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [GameSaveCleanupHandler] : cleanup file `slot_0.sav2.day22`
+[DBG] [GameSaveCleanupHandler] : cleanup file `slot_0_header.sav2.day22`
+[DBG] [SaveGameRepository] : Saved game success
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAIControlled
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Inventory
+Changed context from Inventory to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to QuestLog
+Changed context from QuestLog to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to QuestLog
+Changed context from QuestLog to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAnimalHint
+ScheduleNode type: NPCAnimalHint
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to QuestLog
+Changed context from QuestLog to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Inventory
+Changed context from Inventory to Player
+Changed context from Player to UI
+Changed context from UI to QuestLog
+Changed context from QuestLog to Player
+Changed context from Player to UI
+Changed context from UI to Blueprint
+Changed context from Blueprint to Player
+Changed context from Player to UI
+Changed context from UI to Inventory
+Changed context from Inventory to Player
+Changed context from Player to UI
+Changed context from UI to Blueprint
+Changed context from Blueprint to Player
+Changed context from Player to UI
+Changed context from UI to QuestLog
+Changed context from QuestLog to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Switching levels from FarmMap to Town
+Skipping ClientWaitForHostToLoad as it is already complete
+FadeOutCamera
+SwapLevels
+Skipping InitializeOfflineLevelData as it is already complete
+LevelUnload
+Unloading FarmMap
+LevelLoad
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+LevelInitializeBehaviours
+LevelInitialize
+Skipping LevelForest as it is already complete
+LevelGameObjects
+LevelFullyLoaded
+LevelMagneticLoot
+LevelNavmesh
+Pathfinding later: Finished initializing
+LevelUpdateDataLayers
+LevelComplete
+Level
+PlayerEnteredLevel
+LevelPostProcess
+MinimumLevelSwitchDelay
+TeleportPlayer
+FinalizePlayer
+[DBG] [Default] : Auto Saving game `slot_0`
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SaveGameRepository] : Saved game success
+Lighting
+FadeInCamera
+Can't add component 'Rigidbody' to Cat_1 (427) because such a component is already added to the game object!
+Switching levels from Town to ForestMap
+Skipping ClientWaitForHostToLoad as it is already complete
+FadeOutCamera
+SwapLevels
+Skipping InitializeOfflineLevelData as it is already complete
+Skipping Level as it is already complete
+LevelUnload
+Unloading Town
+PlayerEnteredLevel
+LevelPostProcess
+MinimumLevelSwitchDelay
+TeleportPlayer
+FinalizePlayer
+[DBG] [Default] : Auto Saving game `slot_0`
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SaveGameRepository] : Saved game success
+Lighting
+FadeInCamera
+Can't add component 'Rigidbody' to Cat_1 (427) because such a component is already added to the game object!
+Changed context from Player to UI
+Changed context from UI to Inventory
+Changed context from Inventory to Player
+Changed context from Player to UI
+Changed context from UI to QuestLog
+Changed context from QuestLog to Player
+Switching levels from ForestMap to Town
+Skipping ClientWaitForHostToLoad as it is already complete
+FadeOutCamera
+SwapLevels
+Skipping InitializeOfflineLevelData as it is already complete
+LevelLoad
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+LevelInitializeBehaviours
+LevelInitialize
+Skipping LevelForest as it is already complete
+LevelGameObjects
+LevelFullyLoaded
+LevelMagneticLoot
+LevelNavmesh
+Pathfinding later: Finished initializing
+LevelUpdateDataLayers
+LevelComplete
+Level
+PlayerEnteredLevel
+LevelPostProcess
+MinimumLevelSwitchDelay
+TeleportPlayer
+FinalizePlayer
+[DBG] [Default] : Auto Saving game `slot_0`
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [WindowsFileManager] : Saving to file `C:/users/steamuser/AppData/LocalLow/FeelFreeGames/Luma Island/Saves/76561198109449327/1.1\slot_0_header.sav2`
+[DBG] [WindowsFileManager] : Save file replaced successfully, with a backup created.
+[DBG] [SaveGameRepository] : Saved game success
+Lighting
+FadeInCamera
+Can't add component 'Rigidbody' to Cat_1 (427) because such a component is already added to the game object!
+Changed context from Player to UI
+Changed context from UI to Player
+Changed context from Player to UI
+Changed context from UI to Blueprint
+Changed context from Blueprint to Player
+Changed context from Player to UI
+Changed context from UI to Player
+Host switching levels for treuhandtina to Town
+treuhandtina waiting to load Town with player queue size 1
+SwapLevels
+Skipping InitializeOfflineLevelData as it is already complete
+Skipping Level as it is already complete
+Skipping Lighting as it is already complete
+LevelUnload
+Unloading ForestMap
+PlayerEnteredLevel
+LevelPostProcess
+Host complete switching levels for treuhandtina to Town
+Can't add component 'Rigidbody' to PetWorm_1 (436) because such a component is already added to the game object!
+Host received 76561198073488212 save data
+Host switching levels for treuhandtina to ForestMap
+treuhandtina waiting to load ForestMap with player queue size 1
+SwapLevels
+Skipping InitializeOfflineLevelData as it is already complete
+Skipping Lighting as it is already complete
+LevelLoad
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script (Unknown) on this Behaviour is missing!
+The referenced script on this Behaviour (Game Object 'Debug') is missing!
+The referenced script on this Behaviour (Game Object 'Prefab Indexer') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_Last_1') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_Last') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_6') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_5') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_2') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_1') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_7') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_3') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake_4') is missing!
+The referenced script on this Behaviour (Game Object 'VanishingChest_Fake') is missing!
+LevelInitializeBehaviours
+LevelInitialize
+Skipping LevelForest as it is already complete
+LevelGameObjects
+LevelFullyLoaded
+LevelMagneticLoot
+LevelNavmesh
+Pathfinding later: Finished initializing
+LevelUpdateDataLayers
+LevelComplete
+Level
+PlayerEnteredLevel
+LevelPostProcess
+Host complete switching levels for treuhandtina to ForestMap
+Can't add component 'Rigidbody' to PetWorm_1 (436) because such a component is already added to the game object!
+Host received 76561198073488212 save data
+Received treuhandtina ready to end the day

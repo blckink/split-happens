@@ -1,0 +1,1489 @@
+Initialize engine version: 2019.4.24f1 (5da6f0345e82)
+[Subsystems] Discovering subsystems at path X:/.local/share/partydeck/gamesyms/TheSurvivalists/The Survivalists_Data/UnitySubsystems
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: AMD Custom GPU 0405 (RADV VANGOGH) (ID=0x163f)
+    Vendor:   (null)
+    VRAM:     3072 MB
+    Driver:   31.0.21902.5
+Failed to save a temporary cursor file to 'C:\users\steamuser\AppData\Local\Temp\' because this directory does not exist. 
+(Filename:  Line: 244)
+
+D3D11 device created for Microsoft Media Foundation video decoding.
+<RI> Initializing input.
+<RI> Input initialized.
+<RI> Initialized touch support.
+UnloadTime: 0.554200 ms
+GarbageCollector disposing of ComputeBuffer. Please use ComputeBuffer.Release() or .Dispose() to manually release the buffer.
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.ComputeBuffer:Dispose(Boolean)
+UnityEngine.ComputeBuffer:Finalize()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+GarbageCollector disposing of ComputeBuffer. Please use ComputeBuffer.Release() or .Dispose() to manually release the buffer.
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.ComputeBuffer:Dispose(Boolean)
+UnityEngine.ComputeBuffer:Finalize()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+GarbageCollector disposing of ComputeBuffer. Please use ComputeBuffer.Release() or .Dispose() to manually release the buffer.
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.ComputeBuffer:Dispose(Boolean)
+UnityEngine.ComputeBuffer:Finalize()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+GarbageCollector disposing of ComputeBuffer. Please use ComputeBuffer.Release() or .Dispose() to manually release the buffer.
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.ComputeBuffer:Dispose(Boolean)
+UnityEngine.ComputeBuffer:Finalize()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Shader 'Legacy Shaders/Diffuse': fallback shader 'Legacy Shaders/VertexLit' not found
+SpriteAtlasManager.atlasRequested wasn't listened to while BossFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while BossFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while BossFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while BossFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while Baby_Deer requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while Baby_Boar requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while Baby_Boar requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while Baby_Boar requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+The referenced script (Unknown) on this Behaviour is missing! 
+(Filename:  Line: 199)
+
+The referenced script on this Behaviour (Game Object '<null>') is missing! 
+(Filename:  Line: 334)
+
+The referenced script (Unknown) on this Behaviour is missing! 
+(Filename:  Line: 199)
+
+The referenced script on this Behaviour (Game Object '<null>') is missing! 
+(Filename:  Line: 334)
+
+The referenced script (Unknown) on this Behaviour is missing! 
+(Filename:  Line: 199)
+
+The referenced script on this Behaviour (Game Object '<null>') is missing! 
+(Filename:  Line: 334)
+
+The referenced script (Unknown) on this Behaviour is missing! 
+(Filename:  Line: 199)
+
+The referenced script on this Behaviour (Game Object '<null>') is missing! 
+(Filename:  Line: 334)
+
+The referenced script (Unknown) on this Behaviour is missing! 
+(Filename:  Line: 199)
+
+The referenced script on this Behaviour (Game Object '<null>') is missing! 
+(Filename:  Line: 334)
+
+The referenced script (Unknown) on this Behaviour is missing! 
+(Filename:  Line: 199)
+
+The referenced script on this Behaviour (Game Object '<null>') is missing! 
+(Filename:  Line: 334)
+
+The referenced script (Unknown) on this Behaviour is missing! 
+(Filename:  Line: 199)
+
+The referenced script on this Behaviour (Game Object '<null>') is missing! 
+(Filename:  Line: 334)
+
+The referenced script (Unknown) on this Behaviour is missing! 
+(Filename:  Line: 199)
+
+The referenced script on this Behaviour (Game Object '<null>') is missing! 
+(Filename:  Line: 334)
+
+Rewired: Searching for compatible XInput library...
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(String, Object)
+Rewired.Logger:LogNow(Object, Boolean)
+Rewired.Logger:Log(Object, Boolean)
+Rewired.Logger:Log(Object)
+XnyduvkjhhHugnTTEznkSbKGPUw:.ctor(Boolean, UpdateLoopSetting, Func`2, Func`1)
+UXeHpNOyhJnofLjuYriGTUmHavX:uKEQekXUZxpjtXQkrlZkPjXNxzg(ConfigVars, Boolean)
+UXeHpNOyhJnofLjuYriGTUmHavX:.ctor(ConfigVars, Func`2, Func`1)
+Rewired.InputManagers.Initializer:Initialize(ConfigVars)
+jvnTizFfuAWTUaGHNGnMaDSOCJec:GSGlKfdGhQrRnwYnYsDvGMRuAmNC(String, List`1, ConfigVars)
+Rewired.InputManager_Base:InitializePlatform(ConfigVars)
+System.Func`2:Invoke(T)
+Rewired.ReInput:bXimeEtAgBQScXSoYNMnNUJIMuV(Func`2)
+Rewired.ReInput:GSGlKfdGhQrRnwYnYsDvGMRuAmNC(InputManager_Base, Func`2, ConfigVars, ControllerDataFiles, UserData)
+Rewired.InputManager_Base:Initialize()
+Rewired.InputManager_Base:Awake()
+UnityEngine.Object:Internal_CloneSingle(Object)
+UnityEngine.Object:Instantiate(T)
+Services:Awake()
+UnityEngine.Object:Internal_CloneSingle(Object)
+UnityEngine.Object:Instantiate(T)
+UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters:Instantiate(TObject)
+UnityEngine.ResourceManagement.ResourceProviders.InstanceProvider:ProvideInstance(ResourceManager, AsyncOperationHandle`1, InstantiationParameters)
+UnityEngine.ResourceManagement.InstanceOperation:Execute()
+UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationBase`1:InvokeExecute()
+UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationBase`1:<.ctor>b__34_0(AsyncOperationHandle)
+System.Action`1:Invoke(T)
+UnityEngine.ResourceManagement.AsyncOperations.<>c__DisplayClass55_0:<add_CompletedTypeless>b__0(AsyncOperationHandle`1)
+System.Action`1:Invoke(T)
+DelegateList`1:Invoke(T)
+UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationBase`1:InvokeCompletionEvent()
+UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationBase`1:Complete(TObject, Boolean, String, Boolean)
+UnityEngine.ResourceManagement.AsyncOperations.ProviderOperation`1:ProviderCompleted(T, Boolean, Exception)
+UnityEngine.ResourceManagement.ResourceProviders.ProvideHandle:Complete(T, Boolean, Exception)
+UnityEngine.ResourceManagement.ResourceProviders.InternalOp:ActionComplete(AsyncOperation)
+System.Action`1:Invoke(T)
+UnityEngine.AsyncOperation:InvokeCompletionEvent()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Rewired: Found Xinput1_4.dll.
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(String, Object)
+Rewired.Logger:LogNow(Object, Boolean)
+Rewired.Logger:Log(Object, Boolean)
+Rewired.Logger:Log(Object)
+XnyduvkjhhHugnTTEznkSbKGPUw:.ctor(Boolean, UpdateLoopSetting, Func`2, Func`1)
+UXeHpNOyhJnofLjuYriGTUmHavX:uKEQekXUZxpjtXQkrlZkPjXNxzg(ConfigVars, Boolean)
+UXeHpNOyhJnofLjuYriGTUmHavX:.ctor(ConfigVars, Func`2, Func`1)
+Rewired.InputManagers.Initializer:Initialize(ConfigVars)
+jvnTizFfuAWTUaGHNGnMaDSOCJec:GSGlKfdGhQrRnwYnYsDvGMRuAmNC(String, List`1, ConfigVars)
+Rewired.InputManager_Base:InitializePlatform(ConfigVars)
+System.Func`2:Invoke(T)
+Rewired.ReInput:bXimeEtAgBQScXSoYNMnNUJIMuV(Func`2)
+Rewired.ReInput:GSGlKfdGhQrRnwYnYsDvGMRuAmNC(InputManager_Base, Func`2, ConfigVars, ControllerDataFiles, UserData)
+Rewired.InputManager_Base:Initialize()
+Rewired.InputManager_Base:Awake()
+UnityEngine.Object:Internal_CloneSingle(Object)
+UnityEngine.Object:Instantiate(T)
+Services:Awake()
+UnityEngine.Object:Internal_CloneSingle(Object)
+UnityEngine.Object:Instantiate(T)
+UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters:Instantiate(TObject)
+UnityEngine.ResourceManagement.ResourceProviders.InstanceProvider:ProvideInstance(ResourceManager, AsyncOperationHandle`1, InstantiationParameters)
+UnityEngine.ResourceManagement.InstanceOperation:Execute()
+UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationBase`1:InvokeExecute()
+UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationBase`1:<.ctor>b__34_0(AsyncOperationHandle)
+System.Action`1:Invoke(T)
+UnityEngine.ResourceManagement.AsyncOperations.<>c__DisplayClass55_0:<add_CompletedTypeless>b__0(AsyncOperationHandle`1)
+System.Action`1:Invoke(T)
+DelegateList`1:Invoke(T)
+UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationBase`1:InvokeCompletionEvent()
+UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationBase`1:Complete(TObject, Boolean, String, Boolean)
+UnityEngine.ResourceManagement.AsyncOperations.ProviderOperation`1:ProviderCompleted(T, Boolean, Exception)
+UnityEngine.ResourceManagement.ResourceProviders.ProvideHandle:Complete(T, Boolean, Exception)
+UnityEngine.ResourceManagement.ResourceProviders.InternalOp:ActionComplete(AsyncOperation)
+System.Action`1:Invoke(T)
+UnityEngine.AsyncOperation:InvokeCompletionEvent()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+[FMOD] Cannot open network port for Live Update (in-use), restarting with Live Update disabled.
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:LogWarning(Object)
+FMODUnity.RuntimeManager:Initialize()
+FMODUnity.RuntimeManager:get_Instance()
+FMODUnity.RuntimeManager:PathToGUID(String)
+FMODUnity.RuntimeManager:GetEventDescription(String)
+FMODAudioProvider:GetEventDescription(AudioEvent)
+FMODAudioProvider:CreateEvent(AudioEvent)
+PersistentAudioService:Initialise()
+Services:Awake()
+UnityEngine.Object:Internal_CloneSingle(Object)
+UnityEngine.Object:Instantiate(T)
+UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters:Instantiate(TObject)
+UnityEngine.ResourceManagement.ResourceProviders.InstanceProvider:ProvideInstance(ResourceManager, AsyncOperationHandle`1, InstantiationParameters)
+UnityEngine.ResourceManagement.InstanceOperation:Execute()
+UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationBase`1:InvokeExecute()
+UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationBase`1:<.ctor>b__34_0(AsyncOperationHandle)
+System.Action`1:Invoke(T)
+UnityEngine.ResourceManagement.AsyncOperations.<>c__DisplayClass55_0:<add_CompletedTypeless>b__0(AsyncOperationHandle`1)
+System.Action`1:Invoke(T)
+DelegateList`1:Invoke(T)
+UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationBase`1:InvokeCompletionEvent()
+UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationBase`1:Complete(TObject, Boolean, String, Boolean)
+UnityEngine.ResourceManagement.AsyncOperations.ProviderOperation`1:ProviderCompleted(T, Boolean, Exception)
+UnityEngine.ResourceManagement.ResourceProviders.ProvideHandle:Complete(T, Boolean, Exception)
+UnityEngine.ResourceManagement.ResourceProviders.InternalOp:ActionComplete(AsyncOperation)
+System.Action`1:Invoke(T)
+UnityEngine.AsyncOperation:InvokeCompletionEvent()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Callback registered Steamworks.GameLobbyJoinRequested_t
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+Steamworks.CallbackHub`1:RegisterCallback(DispatchDelegate)
+Team17.Online.SteamOnlinePlatformManager:Start()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Callback registered Steamworks.LobbyMatchList_t
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+Steamworks.CallbackHub`1:RegisterCallback(DispatchDelegate)
+Team17.Online.SteamOnlineMultiplayerSessionEnumerateCoordinator:Initialize(OnlineMultiplayerSessionPropertyCoordinator)
+Team17.Online.SteamOnlinePlatformManager:Start()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Callback registered Steamworks.P2PSessionConnectFail_t
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+Steamworks.CallbackHub`1:RegisterCallback(DispatchDelegate)
+Team17.Online.SteamOnlineMultiplayerSessionCoordinator:Initialize(OnlineMultiplayerSessionPropertyCoordinator, OnlineMultiplayerTransportStats)
+Team17.Online.SteamOnlinePlatformManager:Start()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Callback registered Steamworks.P2PSessionRequest_t
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+Steamworks.CallbackHub`1:RegisterCallback(DispatchDelegate)
+Team17.Online.SteamOnlineMultiplayerSessionCoordinator:Initialize(OnlineMultiplayerSessionPropertyCoordinator, OnlineMultiplayerTransportStats)
+Team17.Online.SteamOnlinePlatformManager:Start()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Callback registered Steamworks.LobbyCreated_t
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+Steamworks.CallbackHub`1:RegisterCallback(DispatchDelegate)
+Team17.Online.SteamOnlineMultiplayerSessionCoordinator:Initialize(OnlineMultiplayerSessionPropertyCoordinator, OnlineMultiplayerTransportStats)
+Team17.Online.SteamOnlinePlatformManager:Start()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Callback registered Steamworks.LobbyEnter_t
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+Steamworks.CallbackHub`1:RegisterCallback(DispatchDelegate)
+Team17.Online.SteamOnlineMultiplayerSessionCoordinator:Initialize(OnlineMultiplayerSessionPropertyCoordinator, OnlineMultiplayerTransportStats)
+Team17.Online.SteamOnlinePlatformManager:Start()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Callback registered Steamworks.LobbyChatUpdate_t
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+Steamworks.CallbackHub`1:RegisterCallback(DispatchDelegate)
+Team17.Online.SteamOnlineMultiplayerSessionCoordinator:Initialize(OnlineMultiplayerSessionPropertyCoordinator, OnlineMultiplayerTransportStats)
+Team17.Online.SteamOnlinePlatformManager:Start()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Callback registered Steamworks.PersonaStateChange_t
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+Steamworks.CallbackHub`1:RegisterCallback(DispatchDelegate)
+Team17.Online.SteamOnlinePlatformManager:Start()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Callback registered Steamworks.AvatarImageLoaded_t
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+Steamworks.CallbackHub`1:RegisterCallback(DispatchDelegate)
+Team17.Online.SteamOnlinePlatformManager:Start()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Callback registered Steamworks.DlcInstalled_t
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+Steamworks.CallbackHub`1:RegisterCallback(DispatchDelegate)
+DLC.DLCPlatform_Steam:InitialisePlatform()
+DLCService:Start()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+[FMOD] Please add an 'FMOD Studio Listener' component to your a camera in the scene for correct 3D positioning of sounds
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:LogWarning(Object)
+FMODUnity.RuntimeManager:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+Unloading 5 Unused Serialized files (Serialized files now loaded: 83)
+
+Unloading 114 unused Assets to reduce memory usage. Loaded Objects now: 160875.
+Total: 584.904200 ms (FindLiveObjects: 11.947100 ms CreateObjectMapping: 14.479500 ms MarkObjects: 557.359900 ms  DeleteObjects: 1.116800 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 70)
+
+Unloading 4605 unused Assets to reduce memory usage. Loaded Objects now: 149351.
+Total: 582.448300 ms (FindLiveObjects: 11.776400 ms CreateObjectMapping: 13.002900 ms MarkObjects: 551.134800 ms  DeleteObjects: 6.533100 ms)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(False)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(True) Initialising(False)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Internal: JobTempAlloc has allocations that are more than 4 frames old - this is not allowed and likely a leak 
+(Filename:  Line: 554)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 5) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 5) 
+(Filename:  Line: 310)
+
+Internal: JobTempAlloc has allocations that are more than 4 frames old - this is not allowed and likely a leak 
+(Filename:  Line: 554)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 13) 
+(Filename:  Line: 310)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 78)
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 153637.
+Total: 481.464400 ms (FindLiveObjects: 15.833100 ms CreateObjectMapping: 15.938000 ms MarkObjects: 449.535600 ms  DeleteObjects: 0.156700 ms)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+Unloading 1 Unused Serialized files (Serialized files now loaded: 80)
+UnloadTime: 1.937700 ms
+Setting up 4 worker threads for Enlighten.
+  Thread -> id: 398 -> priority: 1 
+  Thread -> id: 39c -> priority: 1 
+  Thread -> id: 3a0 -> priority: 1 
+  Thread -> id: 3a4 -> priority: 1 
+
+Unloading 2958 unused Assets to reduce memory usage. Loaded Objects now: 153772.
+Total: 535.547500 ms (FindLiveObjects: 12.715300 ms CreateObjectMapping: 12.295600 ms MarkObjects: 505.997900 ms  DeleteObjects: 4.537600 ms)
+
+Unloading 1 Unused Serialized files (Serialized files now loaded: 80)
+UnloadTime: 1.916200 ms
+
+Unloading 1 unused Assets to reduce memory usage. Loaded Objects now: 153782.
+Total: 491.214500 ms (FindLiveObjects: 10.996400 ms CreateObjectMapping: 10.676500 ms MarkObjects: 469.341800 ms  DeleteObjects: 0.198800 ms)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(False)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(True) Initialising(False)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Internal: JobTempAlloc has allocations that are more than 4 frames old - this is not allowed and likely a leak 
+(Filename:  Line: 554)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: JobTempAlloc has allocations that are more than 4 frames old - this is not allowed and likely a leak 
+(Filename:  Line: 554)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 12) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 12) 
+(Filename:  Line: 310)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 78)
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 153783.
+Total: 630.484900 ms (FindLiveObjects: 13.366700 ms CreateObjectMapping: 12.753300 ms MarkObjects: 604.218500 ms  DeleteObjects: 0.145400 ms)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+Material Worldmap doesn't have _Stencil property
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object, Object)
+UnityEngine.Debug:LogWarning(Object, Object)
+UnityEngine.UI.StencilMaterial:Add(Material, Int32, StencilOp, CompareFunction, ColorWriteMask, Int32, Int32)
+UnityEngine.UI.MaskableGraphic:GetModifiedMaterial(Material)
+UnityEngine.UI.Graphic:get_materialForRendering()
+UnityEngine.UI.Graphic:UpdateMaterial()
+UnityEngine.UI.Graphic:Rebuild(CanvasUpdate)
+UnityEngine.UI.CanvasUpdateRegistry:PerformUpdate()
+UnityEngine.SkinChangedDelegate:Invoke()
+UnityEngine.Canvas:SendWillRenderCanvases()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Material WorldMapFog doesn't have _Stencil property
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object, Object)
+UnityEngine.Debug:LogWarning(Object, Object)
+UnityEngine.UI.StencilMaterial:Add(Material, Int32, StencilOp, CompareFunction, ColorWriteMask, Int32, Int32)
+UnityEngine.UI.MaskableGraphic:GetModifiedMaterial(Material)
+UnityEngine.UI.Graphic:get_materialForRendering()
+UnityEngine.UI.Graphic:UpdateMaterial()
+UnityEngine.UI.Graphic:Rebuild(CanvasUpdate)
+UnityEngine.UI.CanvasUpdateRegistry:PerformUpdate()
+UnityEngine.SkinChangedDelegate:Invoke()
+UnityEngine.Canvas:SendWillRenderCanvases()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+Unloading 1 Unused Serialized files (Serialized files now loaded: 88)
+UnloadTime: 1.745000 ms
+
+Unloading 53475 unused Assets to reduce memory usage. Loaded Objects now: 175175.
+Total: 679.918100 ms (FindLiveObjects: 16.533000 ms CreateObjectMapping: 21.754700 ms MarkObjects: 522.512700 ms  DeleteObjects: 119.116400 ms)
+
+Unloading 1 Unused Serialized files (Serialized files now loaded: 88)
+UnloadTime: 1.796400 ms
+
+Unloading 1 unused Assets to reduce memory usage. Loaded Objects now: 175185.
+Total: 499.838200 ms (FindLiveObjects: 11.252500 ms CreateObjectMapping: 11.613100 ms MarkObjects: 476.704200 ms  DeleteObjects: 0.267300 ms)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(False)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(False) Initialising(True)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+ZXZX: CreateGenerationCosmeticState.OnStart - Initialised(True) Initialising(False)
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+CreateGenerationCosmeticsState:OnStart(Single, Type)
+GameContext:Update()
+TheEntireGameState:UpdateState(Single)
+FrameworkContext:Update()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+Internal: JobTempAlloc has allocations that are more than 4 frames old - this is not allowed and likely a leak 
+(Filename:  Line: 554)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 5) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 5) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 5) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 5) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 5) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 5) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 5) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 5) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 5) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 5) 
+(Filename:  Line: 310)
+
+Internal: JobTempAlloc has allocations that are more than 4 frames old - this is not allowed and likely a leak 
+(Filename:  Line: 554)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 6) 
+(Filename:  Line: 310)
+
+Internal: deleting an allocation that is older than its permitted lifetime of 4 frames (age = 12) 
+(Filename:  Line: 310)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 86)
+
+Unloading 1 unused Assets to reduce memory usage. Loaded Objects now: 175186.
+Total: 635.785900 ms (FindLiveObjects: 13.709500 ms CreateObjectMapping: 13.091300 ms MarkObjects: 608.796400 ms  DeleteObjects: 0.187500 ms)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+SpriteAtlasManager.atlasRequested wasn't listened to while AxeFanaticBodyAnimData requested. 
+(Filename:  Line: 251)
+
+Callback unregistered Steamworks.DlcInstalled_t
+UnityEngine.DebugLogHandler:LogFormat(LogType, Object, String, Object[])
+UnityEngine.Logger:Log(LogType, Object)
+UnityEngine.Debug:Log(Object)
+Steamworks.CallbackHub`1:UnregisterCallback(DispatchDelegate)
+DLC.DLCPlatform_Steam:CleanUpPlatform()
+DLC.DLCPlatformCommon:CleanUp()
+DLCService:OnDestroy()
+ 
+(Filename: C:\buildslave\unity\build\Runtime/Export/Debug/Debug.bindings.h Line: 39)
+
+NullReferenceException: Object reference not set to an instance of an object.
+  at UnityEngine.ParticleSystem.Stop (System.Boolean withChildren, UnityEngine.ParticleSystemStopBehavior stopBehavior) [0x00000] in <00000000000000000000000000000000>:0 
+  at ParticleManager.ReleaseHandle (ParticleSystemID particleInstanceHandle, System.Boolean stopWithChildren, UnityEngine.ParticleSystemStopBehavior stopBehaviour) [0x00000] in <00000000000000000000000000000000>:0 
+  at ParticleSystemHandle.Dispose () [0x00000] in <00000000000000000000000000000000>:0 
+  at CulledParticleSystemHandle.Dispose () [0x00000] in <00000000000000000000000000000000>:0 
+  at CosmeticEntityWaterEffects.DisableAllWaterEffects () [0x00000] in <00000000000000000000000000000000>:0 
+  at CosmeticEntityWaterEffects.OnDestroyEntity (Entity+DestructType destructType, Entity& entity) [0x00000] in <00000000000000000000000000000000>:0 
+  at EntityManager.DestroyAllEntities () [0x00000] in <00000000000000000000000000000000>:0 
+  at EntityManager.OnDestroy () [0x00000] in <00000000000000000000000000000000>:0 
+  at GameWorld.OnDestroy () [0x00000] in <00000000000000000000000000000000>:0 
+  at BootServices.OnDestroy () [0x00000] in <00000000000000000000000000000000>:0 
+ 
+(Filename: currently not available on il2cpp Line: -1)
+
