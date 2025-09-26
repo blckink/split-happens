@@ -1,3 +1,37 @@
+(deck@steamdeck build)$ cd ..
+(deck@steamdeck suckmydeck)$ ./build.sh
+   Compiling partydeck v0.6.2 (/home/deck/Desktop/suckmydeck)
+warning: variable does not need to be mutable
+   --> src/launch.rs:193:21
+    |
+193 |                 let mut local_offset = offset.min(metadata.len());
+    |                     ----^^^^^^^^^^^^
+    |                     |
+    |                     help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: value assigned to `section_found` is never read
+   --> src/util/profiles.rs:188:9
+    |
+188 |         section_found = true;
+    |         ^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` on by default
+
+warning: value assigned to `key_updated` is never read
+   --> src/util/profiles.rs:189:9
+    |
+189 |         key_updated = true;
+    |         ^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: `partydeck` (bin "partydeck") generated 3 warnings (run `cargo fix --bin "partydeck"` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 13.05s
+(deck@steamdeck suckmydeck)$ cd build
+(deck@steamdeck build)$ ./partydeck
 Got screen resolution: 1280x800
 
 [PARTYDECK] starting...
@@ -52,8 +86,8 @@ Searching for 'SteamUtils\d+'...
 Searching for 'STEAMVIDEO_INTERFACE_V\d+'...
 Searching for 'STEAMUNIFIEDMESSAGES_INTERFACE_VERSION\d+'...
 Searching for 'SteamMasterServerUpdater\d+'...
-[PARTYDECK] Goldberg LAN identity for profile tyde set to tyde / 76561198109449327 on port 55789
-[PARTYDECK] Goldberg LAN identity for profile treuhandtina set to treuhandtina / 76561198073488212 on port 55789
+[PARTYDECK] Goldberg LAN identity for profile tyde set to tyde / 76561198109449327 on port 55789 (handler override)
+[PARTYDECK] Goldberg LAN identity for profile treuhandtina set to treuhandtina / 76561198073488212 on port 55789 (handler override)
 [PARTYDECK] Goldberg listen_port for coralisland synchronized to 55789
 [PARTYDECK] Handler coralisland uses executable /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe
 [PARTYDECK] Handler coralisland expects Nemirtingas config at /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json
@@ -117,7 +151,7 @@ Tracing is enabled
 [gamescope] [Info]  wlserver: [xwayland/server.c:107] Starting Xwayland on :1
 [gamescope] [Info]  pipewire: stream state changed: connecting
 [gamescope] [Info]  pipewire: stream state changed: paused
-[gamescope] [Info]  pipewire: stream available on node ID: 120
+[gamescope] [Info]  pipewire: stream available on node ID: 137
 [gamescope] [Info]  vblank: Using timerfd.
 [gamescope] [Warn]  launch: Failed to open systemd message bus, there will be no cgroup protection for focused windows.
 
@@ -126,11 +160,10 @@ INFO: No GAMEID set, using umu-default
 INFO: steamrt3 is up to date
 INFO: GE-Proton is up to date
 i386-linux-gnu-capsule-capture-libs: warning: Dependencies of /usr/lib32/libMangoHud.so not found, ignoring: Missing dependencies: Could not find "libxkbcommon.so.0" in LD_LIBRARY_PATH "", ld.so.cache, DT_RUNPATH or fallback /lib:/usr/lib
-ProtonFixes[24268] WARN: Skipping fix execution. We are probably running an unit test.
+ProtonFixes[27396] WARN: Skipping fix execution. We are probably running an unit test.
 Proton: /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe
 Proton: Executable a unix path, launching with /unix option.
 fsync: up and running.
-ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
 [PARTYDECK][WARN] Profile treuhandtina was missing a Nemirtingas AccountId; generating a new value.
 [PARTYDECK] Generated Nemirtingas AccountId d525792965725245fc3f76a8d9ed154c for profile treuhandtina using deterministic mode
 [PARTYDECK] Nemirtingas log for profile treuhandtina will be written to /home/deck/.local/share/partydeck/profiles/treuhandtina/nepice_settings/NemirtingasEpicEmu.log
@@ -183,32 +216,33 @@ Tracing is enabled
 [gamescope] [Info]  wlserver: [xwayland/server.c:107] Starting Xwayland on :2
 [gamescope] [Info]  pipewire: stream state changed: connecting
 [gamescope] [Info]  pipewire: stream state changed: paused
-[gamescope] [Info]  pipewire: stream available on node ID: 136
+[gamescope] [Info]  pipewire: stream available on node ID: 126
 [gamescope] [Info]  vblank: Using timerfd.
 [gamescope] [Warn]  launch: Failed to open systemd message bus, there will be no cgroup protection for focused windows.
 
 INFO: umu-launcher version 1.2.9 (3.13.1 (main, Dec  4 2024, 18:05:56) [GCC 14.2.1 20240910])
 INFO: No GAMEID set, using umu-default
-ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
 INFO: GE-Proton is up to date
-ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
-ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
 INFO: steamrt3 is up to date
-The XKEYBOARD keymap compiler (xkbcomp) reports:
-> Warning:          Unsupported maximum keycode 708, clipping.
->                   X11 cannot support keycodes above 255.
-> Warning:          Could not resolve keysym XF86KbdInputAssistPrevgrou
-> Warning:          Could not resolve keysym XF86KbdInputAssistNextgrou
-Errors from xkbcomp are not fatal to the X server
-[gamescope] [Info]  vulkan: Creating Gamescope nested swapchain with format 44 and colorspace 0
+ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
 i386-linux-gnu-capsule-capture-libs: warning: Dependencies of /usr/lib32/libMangoHud.so not found, ignoring: Missing dependencies: Could not find "libxkbcommon.so.0" in LD_LIBRARY_PATH "", ld.so.cache, DT_RUNPATH or fallback /lib:/usr/lib
-ProtonFixes[24630] WARN: Skipping fix execution. We are probably running an unit test.
+ProtonFixes[27645] WARN: Skipping fix execution. We are probably running an unit test.
 Proton: /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe
 Proton: Executable a unix path, launching with /unix option.
 fsync: up and running.
 ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
 ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
 ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
+The XKEYBOARD keymap compiler (xkbcomp) reports:
+> Warning:          Unsupported maximum keycode 708, clipping.
+>                   X11 cannot support keycodes above 255.
+> Warning:          Could not resolve keysym XF86KbdInputAssistPrevgrou
+> Warning:          Could not resolve keysym XF86KbdInputAssistNextgrou
+Errors from xkbcomp are not fatal to the X server
+[gamescope] [Info]  vulkan: Creating Gamescope nested swapchain with format 44 and colorspace 0
+ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
+ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
+ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
 ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.
 The XKEYBOARD keymap compiler (xkbcomp) reports:
 > Warning:          Unsupported maximum keycode 708, clipping.
@@ -397,376 +431,15 @@ Errors from xkbcomp are not fatal to the X server
 [gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
 [gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
 [gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
 [gamescope] [Info]  vulkan: Creating Gamescope nested swapchain with format 44 and colorspace 0
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Info]  vulkan: Creating Gamescope nested swapchain with format 44 and colorspace 0
 [gamescope] [Info]  launch: Primary child shut down!
 terminate called without an active exception
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
+[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
 (EE) failed to read Wayland events: Connection reset by peer
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
-[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
 [gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
 [gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
 [gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.
