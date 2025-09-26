@@ -23,6 +23,9 @@ use nix::unistd::Pid;
 use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 
+/// Fixed LAN port that keeps Nemirtingas EOS beacons aligned with Goldberg UDP discovery.
+const NEMIRTINGAS_SHARED_LAN_PORT: u16 = 55789;
+
 fn prepare_working_tree(
     profname: &str,
     gamedir: &str,
@@ -494,8 +497,13 @@ pub fn launch_game(
                 .map(|instance| instance.profname.clone())
                 .collect();
             if !profile_names.is_empty() {
+                let port_override = if !h.path_nemirtingas.is_empty() {
+                    Some(NEMIRTINGAS_SHARED_LAN_PORT)
+                } else {
+                    None
+                };
                 synchronized_goldberg_port =
-                    Some(synchronize_goldberg_profiles(&profile_names, &game_id)?);
+                    synchronize_goldberg_profiles(&profile_names, &game_id, port_override)?;
             }
         }
     }
@@ -607,7 +615,7 @@ pub fn launch_game(
     let mut log_mirrors: Vec<(Arc<AtomicBool>, JoinHandle<()>)> = Vec::new();
     for (i, instance) in instances.iter().enumerate() {
         let (nepice_dir, json_path, log_path, sha1_nemirtingas) =
-            ensure_nemirtingas_config(&instance.profname, &game_id)?;
+            ensure_nemirtingas_config(&instance.profname, &game_id, synchronized_goldberg_port)?;
         let json_real = json_path.canonicalize()?;
 
         let instance_gamedir = if use_bwrap {
