@@ -23,9 +23,6 @@ use nix::unistd::Pid;
 use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 
-/// Fixed LAN port that keeps Nemirtingas EOS beacons aligned with Goldberg UDP discovery.
-const NEMIRTINGAS_SHARED_LAN_PORT: u16 = 55789;
-
 fn prepare_working_tree(
     profname: &str,
     gamedir: &str,
@@ -497,13 +494,8 @@ pub fn launch_game(
                 .map(|instance| instance.profname.clone())
                 .collect();
             if !profile_names.is_empty() {
-                let port_override = if !h.path_nemirtingas.is_empty() {
-                    Some(NEMIRTINGAS_SHARED_LAN_PORT)
-                } else {
-                    None
-                };
                 synchronized_goldberg_port =
-                    synchronize_goldberg_profiles(&profile_names, &game_id, port_override)?;
+                    synchronize_goldberg_profiles(&profile_names, &game_id, None)?;
             }
         }
     }
@@ -514,7 +506,21 @@ pub fn launch_game(
             game_id, port
         );
     }
-    let synchronized_goldberg_port_env = synchronized_goldberg_port.map(|port| port.to_string());
+    let mut nemirtingas_lan_port: Option<u16> = None;
+    if let HandlerRef(h) = game {
+        if !h.path_nemirtingas.is_empty() {
+            // Resolve a deterministic Nemirtingas LAN port that is stable per game while
+            // staying clear of the Goldberg listen socket so EOS beacons no longer clash
+            // and auto-increment across profiles.
+            let port = resolve_nemirtingas_port(&game_id, synchronized_goldberg_port);
+            println!(
+                "[PARTYDECK] Nemirtingas LAN port for {} resolved to {}",
+                game_id, port
+            );
+            nemirtingas_lan_port = Some(port);
+        }
+    }
+    let nemirtingas_port_env = nemirtingas_lan_port.map(|port| port.to_string());
     let mut locks_vec = Vec::new();
     for instance in instances {
         let lock = ProfileLock::acquire(&game_id, &instance.profname)?;
@@ -615,7 +621,7 @@ pub fn launch_game(
     let mut log_mirrors: Vec<(Arc<AtomicBool>, JoinHandle<()>)> = Vec::new();
     for (i, instance) in instances.iter().enumerate() {
         let (nepice_dir, json_path, log_path, sha1_nemirtingas) =
-            ensure_nemirtingas_config(&instance.profname, &game_id, synchronized_goldberg_port)?;
+            ensure_nemirtingas_config(&instance.profname, &game_id, nemirtingas_lan_port)?;
         let json_real = json_path.canonicalize()?;
 
         let instance_gamedir = if use_bwrap {
@@ -698,9 +704,9 @@ pub fn launch_game(
             }
             cmd.env("SDL_DYNAMIC_API", format!("{steam}/{path_sdl}"));
         }
-        if let Some(port) = &synchronized_goldberg_port_env {
-            // Align Nemirtingas LAN discovery with Goldberg by forcing both emulators to use
-            // the same UDP port so EOS beacons reach Goldberg listeners reliably.
+        if let Some(port) = &nemirtingas_port_env {
+            // Pin Nemirtingas LAN discovery to the deterministic port shared across all
+            // profiles so EOS beacons remain stable for join-code lookups.
             cmd.env("EOS_OVERRIDE_LAN_PORT", port);
         }
         if win {
