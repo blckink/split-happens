@@ -1,12 +1,8 @@
 use std::collections::HashMap;
 use std::fs::{self, OpenOptions};
-use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
+use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
-use std::sync::{
-    Arc, Mutex,
-    atomic::{AtomicBool, Ordering},
-};
-use std::thread::JoinHandle;
+use std::sync::{Arc, Mutex};
 
 use crate::app::PartyConfig;
 use crate::game::Game;
@@ -58,155 +54,6 @@ fn prepare_working_tree(
         std::os::unix::fs::symlink(src, &dest_dir)?;
     }
     Ok(run_fs)
-}
-
-/// Links the runtime Nemirtingas log location back into the profile tree so each
-/// player receives an isolated log even when the emulator writes next to the DLLs.
-fn ensure_profile_log_link(
-    profile_log: &Path,
-    runtime_log: &Path,
-) -> Result<(), Box<dyn std::error::Error>> {
-    if runtime_log == profile_log {
-        return Ok(());
-    }
-
-    if let Some(parent) = runtime_log.parent() {
-        fs::create_dir_all(parent)?;
-    }
-
-    if runtime_log.exists() || runtime_log.is_symlink() {
-        std::fs::remove_file(runtime_log)?;
-    }
-
-    std::os::unix::fs::symlink(profile_log, runtime_log)?;
-    Ok(())
-}
-
-/// Mirrors Nemirtingas logs emitted inside the Proton AppData tree back into the
-/// PartyDeck profile log so each player receives a populated `NemirtingasEpicEmu.log`.
-fn spawn_nemirtingas_log_mirror(
-    appdata_root: PathBuf,
-    profile_log: PathBuf,
-    stop_flag: Arc<AtomicBool>,
-) -> JoinHandle<()> {
-    std::thread::spawn(move || {
-        // Track how many bytes we have already mirrored for each discovered log file.
-        let mut offsets: HashMap<PathBuf, u64> = HashMap::new();
-
-        // Build the set of Nemirtingas log roots that should be mirrored. Proton writes
-        // `NemirtingasEpicEmu` data under both `AppData/Roaming` and `AppData/Local`, so we
-        // inspect each location on every sweep to catch any new files as they appear.
-        let mut search_roots: Vec<PathBuf> = vec![appdata_root.clone()];
-        if let Some(local_root) = appdata_root
-            .parent()
-            .and_then(|roaming| roaming.parent())
-            .map(|appdata| appdata.join("Local").join("NemirtingasEpicEmu"))
-        {
-            search_roots.push(local_root);
-        }
-
-        loop {
-            // Drop offsets for files that were removed so we do not keep stale entries forever.
-            offsets.retain(|path, _| path.exists());
-
-            // Discover Nemirtingas log files under the Proton AppData directory. The emulator
-            // currently writes verbose output into hashed subdirectories that contain either
-            // `applogs.txt` or `NemirtingasEpicEmu.log`, so we look for both patterns.
-            let mut stack: Vec<PathBuf> = search_roots.clone();
-            let mut sources: Vec<PathBuf> = Vec::new();
-            while let Some(dir) = stack.pop() {
-                if !dir.exists() {
-                    continue;
-                }
-                if let Ok(entries) = fs::read_dir(&dir) {
-                    for entry in entries.flatten() {
-                        let path = entry.path();
-                        if path.is_dir() {
-                            stack.push(path);
-                            continue;
-                        }
-                        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                            let name_lower = name.to_ascii_lowercase();
-                            let is_log =
-                                name_lower.ends_with(".log") || name_lower.ends_with(".txt");
-                            let matches_prefix =
-                                name_lower.contains("nemirtingas") || name_lower.contains("applog");
-                            if is_log && matches_prefix {
-                                sources.push(path);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Mirror any newly appended data back into the per-profile Nemirtingas log.
-            for source in sources {
-                if let Ok(metadata) = fs::metadata(&source) {
-                    let entry = offsets.entry(source.clone()).or_insert(0);
-                    if metadata.len() < *entry {
-                        *entry = 0;
-                    }
-                    if metadata.len() > *entry {
-                        if let Ok(mut src) = std::fs::File::open(&source) {
-                            if src.seek(SeekFrom::Start(*entry)).is_ok() {
-                                let mut buffer = Vec::new();
-                                if src.read_to_end(&mut buffer).is_ok() && !buffer.is_empty() {
-                                    if let Ok(mut dest) = OpenOptions::new()
-                                        .create(true)
-                                        .append(true)
-                                        .open(&profile_log)
-                                    {
-                                        if let Err(err) = dest.write_all(&buffer) {
-                                            println!(
-                                                "[PARTYDECK][WARN] Failed to mirror Nemirtingas log {} into {}: {}",
-                                                source.display(),
-                                                profile_log.display(),
-                                                err
-                                            );
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        *entry = metadata.len();
-                    }
-                }
-            }
-
-            // Exit once the launcher signals the stop flag; perform one last sweep before leaving
-            // so any buffered log data is captured even if the game just exited.
-            if stop_flag.load(Ordering::Relaxed) {
-                break;
-            }
-
-            std::thread::sleep(Duration::from_millis(500));
-        }
-
-        // Final mirror pass after receiving the stop signal to capture any trailing bytes written
-        // during shutdown (skip sleeping so we do not delay teardown).
-        offsets.retain(|path, _| path.exists());
-        for (source, offset) in offsets {
-            if let Ok(metadata) = fs::metadata(&source) {
-                let local_offset = offset.min(metadata.len());
-                if metadata.len() > local_offset {
-                    if let Ok(mut src) = std::fs::File::open(&source) {
-                        if src.seek(SeekFrom::Start(local_offset)).is_ok() {
-                            let mut buffer = Vec::new();
-                            if src.read_to_end(&mut buffer).is_ok() && !buffer.is_empty() {
-                                if let Ok(mut dest) = OpenOptions::new()
-                                    .create(true)
-                                    .append(true)
-                                    .open(&profile_log)
-                                {
-                                    let _ = dest.write_all(&buffer);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    })
 }
 
 /// Appends launch diagnostics to a persistent log so users can inspect warnings after the game exits.
@@ -620,11 +467,10 @@ pub fn launch_game(
     }
 
     let mut children: Vec<Child> = Vec::new();
-    let mut log_mirrors: Vec<(Arc<AtomicBool>, JoinHandle<()>)> = Vec::new();
     for (i, instance) in instances.iter().enumerate() {
         let profile_port = nemirtingas_ports.get(&instance.profname).copied();
 
-        let (nepice_dir, json_path, log_path, sha1_nemirtingas) =
+        let (nepice_dir, json_path, _log_path, sha1_nemirtingas) =
             ensure_nemirtingas_config(&instance.profname, &game_id, profile_port)?;
         let json_real = json_path.canonicalize()?;
 
@@ -682,9 +528,6 @@ pub fn launch_game(
                     // Bind the entire nepice_settings directory so Nemirtingas uses a unique
                     // AppData root per profile instead of sharing a global emulator context.
                     nemirtingas_binds.push((nepice_dir.clone(), dest_dir.clone()));
-                } else {
-                    let runtime_log = dest_dir.join("NemirtingasEpicEmu.log");
-                    ensure_profile_log_link(&log_path, &runtime_log)?;
                 }
             }
         }
@@ -749,20 +592,6 @@ pub fn launch_game(
             std::fs::create_dir_all(&pfx)?;
             cmd.env("WINEPREFIX", &pfx);
             cmd.env("STEAM_COMPAT_DATA_PATH", &pfx);
-
-            // Spawn a background mirror so Proton's AppData logs are copied back into the
-            // PartyDeck profile tree, keeping per-player Nemirtingas logs populated.
-            let appdata_root = PathBuf::from(&pfx)
-                .join("drive_c")
-                .join("users")
-                .join("steamuser")
-                .join("AppData")
-                .join("Roaming")
-                .join("NemirtingasEpicEmu");
-            let stop_flag = Arc::new(AtomicBool::new(false));
-            let handle =
-                spawn_nemirtingas_log_mirror(appdata_root, log_path.clone(), stop_flag.clone());
-            log_mirrors.push((stop_flag, handle));
         }
 
         cmd.arg("-W").arg(instance.width.to_string());
@@ -920,11 +749,6 @@ pub fn launch_game(
 
     for mut child in children {
         let _ = child.wait();
-    }
-
-    for (flag, handle) in log_mirrors {
-        flag.store(true, Ordering::Relaxed);
-        let _ = handle.join();
     }
 
     if let Ok(pids) = child_pids.lock() {

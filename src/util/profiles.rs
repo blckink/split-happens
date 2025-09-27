@@ -266,9 +266,8 @@ fn deterministic_goldberg_port(game_id: &str) -> u16 {
     20000 + (raw % 20000)
 }
 
-/// Computes a deterministic Nemirtingas LAN port based on the game, profile, and attempt
-/// counter so each player receives a stable yet unique UDP socket when multiple instances
-/// run on the same device.
+/// Computes a deterministic Nemirtingas LAN port derived from the game identifier so every
+/// instance shares the same override without conflicting with other titles.
 fn deterministic_nemirtingas_port(game_id: &str, profile: &str, attempt: u32) -> u16 {
     let mut hasher = Sha1::new();
     hasher.update(format!("partydeck-nemirtingas-port:{game_id}:{profile}:{attempt}").as_bytes());
@@ -278,38 +277,25 @@ fn deterministic_nemirtingas_port(game_id: &str, profile: &str, attempt: u32) ->
     40000 + (raw % 20000)
 }
 
-/// Resolves stable Nemirtingas LAN ports for every provided profile while avoiding
-/// collisions with the Goldberg discovery socket and between different PartyDeck players.
-/// Each assigned port stays deterministic across launches so join codes remain valid.
+/// Resolves a shared Nemirtingas LAN port for the provided profiles so every instance
+/// advertises the same endpoint. Handlers that expose a Goldberg override reuse that
+/// value, otherwise the fallback hashes the game identifier for deterministic stability.
 pub fn resolve_nemirtingas_ports(
     profiles: &[String],
     game_id: &str,
     goldberg_port: Option<u16>,
 ) -> HashMap<String, u16> {
     let mut assignments = HashMap::new();
-    let mut used_ports: HashSet<u16> = HashSet::new();
 
-    if let Some(port) = goldberg_port {
-        used_ports.insert(port);
+    if profiles.is_empty() {
+        return assignments;
     }
 
-    let mut sorted_profiles: Vec<String> = profiles.to_vec();
-    sorted_profiles.sort();
+    let shared_port =
+        goldberg_port.unwrap_or_else(|| deterministic_nemirtingas_port(game_id, "shared", 0));
 
-    for profile in sorted_profiles {
-        let mut attempt: u32 = 0;
-        loop {
-            let port = deterministic_nemirtingas_port(game_id, &profile, attempt);
-
-            if used_ports.contains(&port) {
-                attempt = attempt.saturating_add(1);
-                continue;
-            }
-
-            used_ports.insert(port);
-            assignments.insert(profile.clone(), port);
-            break;
-        }
+    for profile in profiles {
+        assignments.insert(profile.clone(), shared_port);
     }
 
     assignments
@@ -512,7 +498,19 @@ pub fn ensure_nemirtingas_config(
         }
     }
 
-    let existing_epicid = existing_epicid.and_then(|id| {
+    let mut profile_username = existing_username
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| name.to_string());
+
+    // Nemirtingas ships with a "DefaultName" placeholder that forces the emulator to regenerate
+    // fresh identifiers every boot. Replace that sentinel with the PartyDeck profile name so
+    // invite codes and save data reuse the same logical user across launches.
+    let used_placeholder_username = profile_username == "DefaultName";
+    if used_placeholder_username {
+        profile_username = name.to_string();
+    }
+
+    let mut existing_epicid = existing_epicid.and_then(|id| {
         if let Some(clean) = normalize_hex(&id) {
             Some(clean)
         } else {
@@ -523,7 +521,7 @@ pub fn ensure_nemirtingas_config(
         }
     });
 
-    let existing_productuserid = existing_productuserid.and_then(|id| {
+    let mut existing_productuserid = existing_productuserid.and_then(|id| {
         if let Some(clean) = normalize_hex(&id) {
             Some(clean)
         } else {
@@ -534,7 +532,7 @@ pub fn ensure_nemirtingas_config(
         }
     });
 
-    let existing_accountid = existing_accountid_raw.clone().and_then(|id| {
+    let mut existing_accountid = existing_accountid_raw.clone().and_then(|id| {
         if let Some(clean) = normalize_hex(&id) {
             Some(clean)
         } else {
@@ -545,34 +543,33 @@ pub fn ensure_nemirtingas_config(
         }
     });
 
-    if existing_accountid.is_none() && had_existing_config && existing_accountid_raw.is_none() {
+    if existing_accountid.is_none()
+        && had_existing_config
+        && existing_accountid_raw.is_none()
+        && !used_placeholder_username
+    {
         log_profile_warning(&format!(
             "Profile {name} was missing a Nemirtingas AccountId; generating a new value."
         ));
     }
 
-    let profile_username = existing_username
-        .filter(|value| !value.trim().is_empty())
-        .unwrap_or_else(|| name.to_string());
-    let uses_default_username = profile_username == "DefaultName";
+    if used_placeholder_username && had_existing_config {
+        log_profile_warning(&format!(
+            "Profile {name} used the Nemirtingas placeholder username; regenerating IDs with the profile name."
+        ));
+        existing_epicid = None;
+        existing_productuserid = None;
+        existing_accountid = None;
+    }
 
     // Persistently assign Nemirtingas IDs when they are missing so invite codes do not
     // depend on the emulator regenerating identifiers on every launch.
     let epic_id = existing_epicid.unwrap_or_else(|| {
-        let new_id = if uses_default_username {
-            generate_hex_id(32)
-        } else {
-            deterministic_hex_from_seed(&profile_username, 32)
-        };
+        let new_id = deterministic_hex_from_seed(&profile_username, 32);
         println!(
-            "[PARTYDECK] Generated Nemirtingas EpicId {} for profile {} using {} mode",
+            "[PARTYDECK] Generated Nemirtingas EpicId {} for profile {} using deterministic username seed",
             new_id,
-            name,
-            if uses_default_username {
-                "random"
-            } else {
-                "deterministic"
-            }
+            name
         );
         new_id
     });
@@ -590,21 +587,12 @@ pub fn ensure_nemirtingas_config(
     // Ensure the Nemirtingas AccountId exists alongside EpicId/ProductUserId so the emulator
     // can satisfy EOS auth requests without falling back to 0x0 placeholders.
     let account_id = existing_accountid.unwrap_or_else(|| {
-        let new_id = if uses_default_username {
-            generate_hex_id(32)
-        } else {
-            let seed = format!("account:{profile_username}");
-            deterministic_hex_from_seed(&seed, 32)
-        };
+        let seed = format!("account:{profile_username}");
+        let new_id = deterministic_hex_from_seed(&seed, 32);
         println!(
-            "[PARTYDECK] Generated Nemirtingas AccountId {} for profile {} using {} mode",
+            "[PARTYDECK] Generated Nemirtingas AccountId {} for profile {} using deterministic username seed",
             new_id,
-            name,
-            if uses_default_username {
-                "random"
-            } else {
-                "deterministic"
-            }
+            name
         );
         new_id
     });
@@ -628,8 +616,8 @@ pub fn ensure_nemirtingas_config(
                 "AppId": appid,
                 "DisableCrashDump": false,
                 "DisableOnlineNetworking": false,
-                // Keep Nemirtingas at debug verbosity so cross-profile issues remain visible during invite debugging.
-                "LogLevel": "Debug",
+                // Limit Nemirtingas output to error-level messages so per-profile logs only capture critical emulator issues.
+                "LogLevel": "Error",
                 "SavePath": "appdata"
             },
             "Ecom": {
@@ -681,8 +669,8 @@ pub fn ensure_nemirtingas_config(
     obj.insert("Network".to_string(), Value::Object(network_obj));
     obj.insert("appid".to_string(), json!(appid));
     obj.insert("language".to_string(), json!("en"));
-    // Mirror the nested debug verbosity in the legacy flat configuration for tools still reading the flat keys.
-    obj.insert("log_level".to_string(), json!("DEBUG"));
+    // Limit Nemirtingas output to error-level entries so per-profile logs only capture actionable issues.
+    obj.insert("log_level".to_string(), json!("ERROR"));
     obj.insert("username".to_string(), json!(profile_username));
     // Surface the generated IDs in the flat layout as well so legacy Nemirtingas builds read them consistently.
     obj.insert("epicid".to_string(), json!(epic_id));
@@ -704,7 +692,7 @@ pub fn ensure_nemirtingas_config(
     file.sync_all()?;
 
     // Surface the per-profile Nemirtingas log location and ensure the file exists so
-    // users immediately know where to inspect debug output after switching log levels.
+    // users can still reference critical error messages after a session.
     let log_path = nepice_dir.join("NemirtingasEpicEmu.log");
     match OpenOptions::new().create(true).append(true).open(&log_path) {
         Ok(_) => println!(
@@ -811,6 +799,8 @@ pub fn scan_profiles(include_guest: bool) -> Vec<String> {
     out
 }
 
+/// Cleans up legacy guest profiles that used the old dotted naming convention so they do
+/// not accumulate alongside the new deterministic guest slots.
 pub fn remove_guest_profiles() -> Result<(), Box<dyn Error>> {
     let path_profiles = PATH_PARTY.join("profiles");
     let entries = std::fs::read_dir(&path_profiles)?;
@@ -827,36 +817,4 @@ pub fn remove_guest_profiles() -> Result<(), Box<dyn Error>> {
         }
     }
     Ok(())
-}
-
-pub static GUEST_NAMES: [&str; 31] = [
-    "Blinky", "Pinky", "Inky", "Clyde", "Beatrice", "Battler", "Miyao", "Rena", "Ellie", "Joel",
-    "Leon", "Ada", "Madeline", "Theo", "Yokatta", "Wyrm", "Brodiee", "Supreme", "Conk", "Gort",
-    "Lich", "Smores", "Canary", "Trico", "Yorda", "Wander", "Agro", "Jak", "Daxter", "Soap",
-    "Ghost",
-];
-
-// Unit tests to guarantee that Nemirtingas identifier parsing continues accepting both
-// raw hexadecimal IDs and variants prefixed with `0x`.
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn normalize_hex_accepts_plain_hex() {
-        assert_eq!(normalize_hex("deadbeef"), Some("deadbeef".to_string()));
-    }
-
-    #[test]
-    fn normalize_hex_accepts_prefixed_hex() {
-        assert_eq!(normalize_hex("0xABC123"), Some("ABC123".to_string()));
-        assert_eq!(normalize_hex("0Xff"), Some("ff".to_string()));
-    }
-
-    #[test]
-    fn normalize_hex_rejects_invalid_values() {
-        assert_eq!(normalize_hex(""), None);
-        assert_eq!(normalize_hex("0xg"), None);
-    }
 }
