@@ -8,7 +8,7 @@ mod updates;
 
 // Re-export functions from profiles
 pub use profiles::{
-    GUEST_NAMES, create_gamesave, create_profile, ensure_nemirtingas_config, remove_guest_profiles,
+    create_gamesave, create_profile, ensure_nemirtingas_config, remove_guest_profiles,
     resolve_nemirtingas_ports, scan_profiles, synchronize_goldberg_profiles,
 };
 

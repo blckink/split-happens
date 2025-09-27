@@ -3356,7 +3356,6 @@ dependencies = [
  "egui_extras",
  "env_logger",
  "evdev",
- "fastrand",
  "fs2",
  "image",
  "nix 0.28.0",

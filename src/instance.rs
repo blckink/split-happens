@@ -1,4 +1,3 @@
-use crate::GUEST_NAMES;
 use crate::app::PartyConfig;
 use crate::util::get_screen_resolution;
 
@@ -41,15 +40,26 @@ pub fn set_instance_resolutions(instances: &mut Vec<Instance>, cfg: &PartyConfig
 }
 
 pub fn set_instance_names(instances: &mut Vec<Instance>, profiles: &[String]) {
-    let mut guests = GUEST_NAMES.to_vec();
+    // Track how many guest slots have been assigned so we can number them sequentially even
+    // when non-guest profiles appear between guest instances.
+    let mut next_guest_index = 1usize;
 
-    for instance in instances {
-        if instance.profselection == 0 {
-            let i = fastrand::usize(..guests.len());
-            instance.profname = format!(".{}", guests[i]);
-            guests.swap_remove(i);
-        } else {
-            instance.profname = profiles[instance.profselection].to_owned();
+    for instance in instances.iter_mut() {
+        // Resolve the selected profile name and gracefully handle stale indices by
+        // falling back to a fresh guest slot. This keeps long-standing profiles from being
+        // misidentified as guests when the profile picker omits the synthetic "Guest" entry.
+        match profiles.get(instance.profselection) {
+            Some(selected) if selected == "Guest" => {
+                instance.profname = format!("Guest{next_guest_index}");
+                next_guest_index += 1;
+            }
+            Some(selected) => {
+                instance.profname = selected.to_owned();
+            }
+            None => {
+                instance.profname = format!("Guest{next_guest_index}");
+                next_guest_index += 1;
+            }
         }
     }
 }
