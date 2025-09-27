@@ -56,6 +56,133 @@ fn prepare_working_tree(
     Ok(run_fs)
 }
 
+/// Tracks Nemirtingas logging metadata for an instance so we can surface the
+/// persisted emulator output once the Proton processes terminate.
+struct NemirtingasLogContext {
+    profile_log: PathBuf,
+    appdata_root: Option<PathBuf>,
+}
+
+/// Scans the Proton AppData roots for Nemirtingas log files and copies their
+/// contents into the PartyDeck profile log so the advertised path always
+/// contains the most recent emulator errors for the user.
+fn collect_nemirtingas_logs(contexts: &[NemirtingasLogContext]) {
+    for context in contexts {
+        let mut sources: Vec<PathBuf> = Vec::new();
+
+        if let Some(appdata_root) = &context.appdata_root {
+            let mut search_roots = vec![appdata_root.clone()];
+            if let Some(local_root) = appdata_root
+                .parent()
+                .and_then(|roaming| roaming.parent())
+                .map(|appdata| appdata.join("Local").join("NemirtingasEpicEmu"))
+            {
+                search_roots.push(local_root);
+            }
+
+            let mut stack = search_roots;
+            while let Some(path) = stack.pop() {
+                if !path.exists() {
+                    continue;
+                }
+                if path.is_dir() {
+                    match fs::read_dir(&path) {
+                        Ok(entries) => {
+                            for entry in entries.flatten() {
+                                let child = entry.path();
+                                if child.is_dir() {
+                                    stack.push(child);
+                                    continue;
+                                }
+                                if let Some(name) = child.file_name().and_then(|n| n.to_str()) {
+                                    let lower = name.to_ascii_lowercase();
+                                    let is_log = lower.ends_with(".log") || lower.ends_with(".txt");
+                                    let matches_prefix =
+                                        lower.contains("nemirtingas") || lower.contains("applog");
+                                    if is_log && matches_prefix {
+                                        sources.push(child);
+                                    }
+                                }
+                            }
+                        }
+                        Err(err) => {
+                            println!(
+                                "[PARTYDECK][WARN] Failed to enumerate Nemirtingas logs under {}: {}",
+                                path.display(),
+                                err
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        sources.sort();
+        sources.dedup();
+
+        let mut aggregated: Vec<u8> = Vec::new();
+        for source in sources {
+            match fs::read(&source) {
+                Ok(data) => {
+                    let header = format!("===== {} =====\n", source.display());
+                    aggregated.extend_from_slice(header.as_bytes());
+                    aggregated.extend_from_slice(&data);
+                    if !data.ends_with(b"\n") {
+                        aggregated.push(b'\n');
+                    }
+                    aggregated.push(b'\n');
+                }
+                Err(err) => {
+                    println!(
+                        "[PARTYDECK][WARN] Failed to read Nemirtingas log {}: {}",
+                        source.display(),
+                        err
+                    );
+                }
+            }
+        }
+
+        if aggregated.is_empty() {
+            continue;
+        }
+
+        if let Some(parent) = context.profile_log.parent() {
+            if let Err(err) = fs::create_dir_all(parent) {
+                println!(
+                    "[PARTYDECK][WARN] Failed to prepare Nemirtingas log directory {}: {}",
+                    parent.display(),
+                    err
+                );
+                continue;
+            }
+        }
+
+        match OpenOptions::new()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .open(&context.profile_log)
+        {
+            Ok(mut dest) => {
+                if let Err(err) = dest.write_all(&aggregated) {
+                    println!(
+                        "[PARTYDECK][WARN] Failed to persist Nemirtingas log {}: {}",
+                        context.profile_log.display(),
+                        err
+                    );
+                }
+            }
+            Err(err) => {
+                println!(
+                    "[PARTYDECK][WARN] Failed to open Nemirtingas log {}: {}",
+                    context.profile_log.display(),
+                    err
+                );
+            }
+        }
+    }
+}
+
 /// Appends launch diagnostics to a persistent log so users can inspect warnings after the game exits.
 fn append_launch_log(level: &str, message: &str) {
     let log_dir = PATH_PARTY.join("logs");
@@ -467,12 +594,17 @@ pub fn launch_game(
     }
 
     let mut children: Vec<Child> = Vec::new();
+    let mut nemirtingas_logs: Vec<NemirtingasLogContext> = Vec::new();
     for (i, instance) in instances.iter().enumerate() {
         let profile_port = nemirtingas_ports.get(&instance.profname).copied();
 
-        let (nepice_dir, json_path, _log_path, sha1_nemirtingas) =
+        let (nepice_dir, json_path, log_path, sha1_nemirtingas) =
             ensure_nemirtingas_config(&instance.profname, &game_id, profile_port)?;
         let json_real = json_path.canonicalize()?;
+        let mut log_context = NemirtingasLogContext {
+            profile_log: log_path.clone(),
+            appdata_root: None,
+        };
 
         let instance_gamedir = if use_bwrap {
             gamedir.clone()
@@ -592,6 +724,15 @@ pub fn launch_game(
             std::fs::create_dir_all(&pfx)?;
             cmd.env("WINEPREFIX", &pfx);
             cmd.env("STEAM_COMPAT_DATA_PATH", &pfx);
+            log_context.appdata_root = Some(
+                PathBuf::from(&pfx)
+                    .join("drive_c")
+                    .join("users")
+                    .join("steamuser")
+                    .join("AppData")
+                    .join("Roaming")
+                    .join("NemirtingasEpicEmu"),
+            );
         }
 
         cmd.arg("-W").arg(instance.width.to_string());
@@ -741,6 +882,7 @@ pub fn launch_game(
         }
 
         children.push(child);
+        nemirtingas_logs.push(log_context);
 
         if i < instances.len() - 1 {
             std::thread::sleep(Duration::from_secs(6));
@@ -750,6 +892,8 @@ pub fn launch_game(
     for mut child in children {
         let _ = child.wait();
     }
+
+    collect_nemirtingas_logs(&nemirtingas_logs);
 
     if let Ok(pids) = child_pids.lock() {
         for pid in pids.iter() {
