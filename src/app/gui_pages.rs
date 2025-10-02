@@ -1,9 +1,16 @@
-use super::app::{MenuPage, PartyApp, SettingsPage};
+use super::app::{AnimationState, MenuPage, PartyApp, SettingsPage};
 use super::config::*;
 use crate::game::Game::*;
 use crate::input::*;
 use crate::paths::*;
 use crate::util::*;
+
+use std::collections::{HashMap, HashSet};
+use std::path::PathBuf;
+use std::time::{Duration, Instant};
+
+// Duration for each idle frame to mirror in-game looping cadence.
+const IDLE_FRAME_DURATION: Duration = Duration::from_millis(120);
 
 use dialog::DialogBox;
 use eframe::egui::RichText;
@@ -13,6 +20,102 @@ macro_rules! cur_game {
     ($self:expr) => {
         &$self.games[$self.selected_game]
     };
+}
+
+/// Represents either a looping idle animation or a static promotional image.
+#[derive(Clone)]
+struct AnimationGroup {
+    id: String,
+    frames: Vec<PathBuf>,
+    animate: bool,
+}
+
+/// Builds ordered frame groups so idle sequences animate while other art stays static.
+fn group_animation_frames(paths: &[PathBuf]) -> Vec<AnimationGroup> {
+    let mut groups: Vec<AnimationGroup> = Vec::new();
+    let mut idle_indices: HashMap<String, usize> = HashMap::new();
+
+    for path in paths {
+        let stem = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or_default()
+            .to_string();
+        let is_idle = stem.to_lowercase().contains("idle");
+
+        if is_idle {
+            let key = derive_animation_key(path);
+            let entry_index = match idle_indices.get(&key) {
+                Some(index) => *index,
+                None => {
+                    let new_index = groups.len();
+                    groups.push(AnimationGroup {
+                        id: key.clone(),
+                        frames: Vec::new(),
+                        animate: true,
+                    });
+                    idle_indices.insert(key.clone(), new_index);
+                    new_index
+                }
+            };
+            groups[entry_index].frames.push(path.clone());
+        } else {
+            groups.push(AnimationGroup {
+                id: stem,
+                frames: vec![path.clone()],
+                animate: false,
+            });
+        }
+    }
+
+    groups
+}
+
+/// Advances the idle playback timer without skipping the first frame after load.
+fn advance_animation_state(state: &mut AnimationState, frame_count: usize) {
+    if frame_count == 0 {
+        state.frame_index = 0;
+        state.last_switch = None;
+        return;
+    }
+
+    if state.frame_index >= frame_count {
+        state.frame_index = 0;
+    }
+
+    if frame_count == 1 {
+        if state.last_switch.is_none() {
+            state.last_switch = Some(Instant::now());
+        }
+        return;
+    }
+
+    let now = Instant::now();
+    if let Some(last) = state.last_switch {
+        if now.duration_since(last) >= IDLE_FRAME_DURATION {
+            state.frame_index = (state.frame_index + 1) % frame_count;
+            state.last_switch = Some(now);
+        }
+    } else {
+        state.last_switch = Some(now);
+    }
+}
+
+/// Removes trailing frame counters so frames belonging to one character stay grouped.
+fn derive_animation_key(path: &PathBuf) -> String {
+    let stem = path
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or_default();
+    let trimmed_digits = stem.trim_end_matches(|c: char| c.is_ascii_digit());
+    let trimmed_separators =
+        trimmed_digits.trim_end_matches(|c: char| c == '_' || c == '-' || c == ' ');
+
+    if trimmed_separators.is_empty() {
+        stem.to_string()
+    } else {
+        trimmed_separators.to_string()
+    }
 }
 
 impl PartyApp {
@@ -142,20 +245,56 @@ impl PartyApp {
         });
 
         if let HandlerRef(h) = cur_game!(self) {
+            let animation_groups = group_animation_frames(&h.img_paths);
+
+            // Drop stale animation keys tied to this handler when art changes on disk.
+            let valid_keys: HashSet<String> = animation_groups
+                .iter()
+                .filter(|group| group.animate && group.frames.len() > 1)
+                .map(|group| format!("{}::{}", h.uid, group.id))
+                .collect();
+            let handler_prefix = format!("{}::", h.uid);
+            self.animation_states
+                .retain(|key, _| !key.starts_with(&handler_prefix) || valid_keys.contains(key));
+
             egui::ScrollArea::horizontal()
                 .max_width(f32::INFINITY)
                 .show(ui, |ui| {
                     let available_height = ui.available_height();
                     ui.horizontal(|ui| {
-                        for img in h.img_paths.iter() {
+                        for group in animation_groups {
+                            if group.frames.is_empty() {
+                                continue;
+                            }
+
+                            let frame_index = if group.animate && group.frames.len() > 1 {
+                                let state_key = format!("{}::{}", h.uid, group.id);
+                                let state = self
+                                    .animation_states
+                                    .entry(state_key)
+                                    .or_insert_with(AnimationState::default);
+                                advance_animation_state(state, group.frames.len());
+                                state.frame_index
+                            } else {
+                                0
+                            };
+
+                            if frame_index >= group.frames.len() {
+                                continue;
+                            }
+
+                            let frame_path = &group.frames[frame_index];
+
                             ui.add(
-                                egui::Image::new(format!("file://{}", img.display()))
+                                egui::Image::new(format!("file://{}", frame_path.display()))
                                     .fit_to_exact_size(egui::vec2(
                                         available_height * 1.77,
                                         available_height,
                                     ))
                                     .maintain_aspect_ratio(true),
                             );
+
+                            ui.add_space(12.0);
                         }
                     });
                 });

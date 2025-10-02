@@ -1,4 +1,6 @@
+use std::collections::HashMap;
 use std::thread::sleep;
+use std::time::Instant;
 
 use super::config::*;
 use crate::game::*;
@@ -38,10 +40,20 @@ pub struct PartyApp {
     pub selected_game: usize,
     pub profiles: Vec<String>,
 
+    // Tracks frame playback for animated handler artwork sequences on the game page.
+    pub animation_states: HashMap<String, AnimationState>,
+
     pub loading_msg: Option<String>,
     pub loading_since: Option<std::time::Instant>,
     #[allow(dead_code)]
     pub task: Option<std::thread::JoinHandle<()>>,
+}
+
+/// Stores the current frame index and timestamp for animated handler art loops.
+#[derive(Default)]
+pub struct AnimationState {
+    pub frame_index: usize,
+    pub last_switch: Option<Instant>,
 }
 
 macro_rules! cur_game {
@@ -66,6 +78,7 @@ impl Default for PartyApp {
             games: scan_all_games(),
             selected_game: 0,
             profiles: Vec::new(),
+            animation_states: HashMap::new(),
             loading_msg: None,
             loading_since: None,
             task: None,
