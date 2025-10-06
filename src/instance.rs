@@ -27,10 +27,21 @@ pub fn set_instance_resolutions(instances: &mut Vec<Instance>, cfg: &PartyConfig
             }
             _ => (basewidth / 2, baseheight / 2),
         };
+        // Round the calculated viewport down to even dimensions so Gamescope avoids
+        // fractional scaling that can introduce subtle frame pacing hitches.
+        if w % 2 == 1 && w > 1 {
+            w -= 1;
+        }
+        if h % 2 == 1 && h > 1 {
+            h -= 1;
+        }
         if h < 600 && cfg.gamescope_fix_lowres {
             let ratio = w as f32 / h as f32;
             h = 600;
             w = (h as f32 * ratio) as u32;
+            if w % 2 == 1 && w > 1 {
+                w -= 1;
+            }
         }
         println!("Resolution for instance {}/{playercount}: {w}x{h}", i + 1);
         instance.width = w;

@@ -14,6 +14,7 @@ use crate::paths::*;
 use crate::util::*;
 
 use ctrlc;
+use nix::sched::{CpuSet, sched_setaffinity};
 use nix::sys::signal::{Signal, kill};
 use nix::unistd::Pid;
 use std::process::{Child, Command, Stdio};
@@ -179,6 +180,124 @@ fn collect_nemirtingas_logs(contexts: &[NemirtingasLogContext]) {
                     err
                 );
             }
+        }
+    }
+}
+
+/// Distributes CPU cores across running instances while keeping the affinity sets
+/// as balanced as possible. The first few players (host included) receive a single
+/// extra logical core whenever the CPU count is not perfectly divisible so hosting
+/// retains a light advantage without starving other instances.
+fn apply_instance_cpu_affinity(pid: u32, instance_index: usize, total_instances: usize) {
+    if total_instances <= 1 {
+        return;
+    }
+
+    let Ok(cpu_count) = std::thread::available_parallelism() else {
+        println!(
+            "[PARTYDECK][WARN] Unable to query CPU core count for affinity; leaving instance {} unpinned.",
+            instance_index + 1
+        );
+        return;
+    };
+    let cpu_count = cpu_count.get();
+
+    if cpu_count == 0 {
+        println!(
+            "[PARTYDECK][WARN] Reported CPU core count was zero; skipping affinity for instance {}.",
+            instance_index + 1
+        );
+        return;
+    }
+
+    if cpu_count < total_instances {
+        println!(
+            "[PARTYDECK][WARN] Only {} CPU cores available for {} instances; skipping affinity to avoid starving players.",
+            cpu_count, total_instances
+        );
+        return;
+    }
+
+    let base = cpu_count / total_instances;
+    if base == 0 {
+        return;
+    }
+    let remainder = cpu_count % total_instances;
+    let extra = if instance_index < remainder { 1 } else { 0 };
+    let target_width = base + extra;
+
+    if target_width == 0 {
+        println!(
+            "[PARTYDECK][WARN] Calculated empty CPU set for instance {}; affinity skipped.",
+            instance_index + 1
+        );
+        return;
+    }
+
+    let mut cpuset = match CpuSet::new() {
+        Ok(set) => set,
+        Err(err) => {
+            println!(
+                "[PARTYDECK][WARN] Failed to allocate CPU set for instance {}: {}",
+                instance_index + 1,
+                err
+            );
+            return;
+        }
+    };
+
+    // Assign logical cores in a round-robin pattern so each instance stays close in size
+    // while the first few players receive the leftover cores.
+    let mut assigned: Vec<usize> = Vec::with_capacity(target_width);
+    for core in (instance_index..cpu_count).step_by(total_instances) {
+        assigned.push(core);
+        if assigned.len() == target_width {
+            break;
+        }
+    }
+
+    if assigned.is_empty() {
+        println!(
+            "[PARTYDECK][WARN] No CPU cores mapped to instance {}; affinity skipped.",
+            instance_index + 1
+        );
+        return;
+    }
+
+    for &core in &assigned {
+        if let Err(err) = cpuset.set(core) {
+            println!(
+                "[PARTYDECK][WARN] Unable to add core {} to affinity set for instance {}: {}",
+                core,
+                instance_index + 1,
+                err
+            );
+            return;
+        }
+    }
+
+    let target_pid = Pid::from_raw(pid as i32);
+    match sched_setaffinity(target_pid, &cpuset) {
+        Ok(_) => {
+            let core_list = assigned
+                .iter()
+                .map(|core| core.to_string())
+                .collect::<Vec<_>>()
+                .join(", ");
+            println!(
+                "[PARTYDECK] Bound instance {}/{} (PID {}) to CPU cores [{}]",
+                instance_index + 1,
+                total_instances,
+                pid,
+                core_list
+            );
+        }
+        Err(err) => {
+            println!(
+                "[PARTYDECK][WARN] Failed to set CPU affinity for instance {}: {}",
+                instance_index + 1,
+                err
+            );
         }
     }
 }
@@ -872,7 +991,11 @@ pub fn launch_game(
         cmd.stderr(Stdio::piped());
 
         let mut child = cmd.spawn()?;
-        child_pids.lock().unwrap().push(child.id());
+        let raw_pid = child.id();
+        child_pids.lock().unwrap().push(raw_pid);
+        // Apply the CPU affinity policy immediately so each instance starts with its
+        // dedicated share of cores instead of fighting for resources mid-boot.
+        apply_instance_cpu_affinity(raw_pid, i, instances.len());
 
         if let Some(stdout) = child.stdout.take() {
             forward_child_output(stdout);
