@@ -26,4 +26,4 @@ semver = "1.0.26"
 sha1 = "0.10"
 fs2 = "0.4"
 ctrlc = "3.4"
-nix = { version = "0.28", features = ["signal"] }
+nix = { version = "0.28", features = ["sched", "signal"] }
