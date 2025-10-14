@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::{self, OpenOptions};
 use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
@@ -179,6 +179,49 @@ fn collect_nemirtingas_logs(contexts: &[NemirtingasLogContext]) {
                     context.profile_log.display(),
                     err
                 );
+            }
+        }
+    }
+}
+
+/// Ensures the targeted Proton prefix is not held by lingering Wine processes
+/// by issuing a graceful shutdown and waiting for cleanup.
+fn drain_stale_proton_session(prefix: &str, proton_env: &ProtonEnvironment) {
+    let prefix_path = Path::new(prefix);
+    if !prefix_path.exists() {
+        return;
+    }
+
+    let actions = [("-k", "terminate"), ("-w", "wait for cleanup")];
+    for (flag, description) in actions {
+        let mut helper = Command::new(&*BIN_UMU_RUN);
+        helper.env("PROTON_VERB", "run");
+        helper.env("PROTONPATH", proton_env.env_value.clone());
+        helper.env("WINEPREFIX", prefix);
+        helper.env("STEAM_COMPAT_DATA_PATH", prefix);
+        helper.env("SDL_JOYSTICK_HIDAPI", "0");
+        helper.env("ENABLE_GAMESCOPE_WSI", "0");
+        helper.env("PROTON_DISABLE_HIDRAW", "1");
+        helper.arg("--");
+        helper.arg("wineserver");
+        helper.arg(flag);
+
+        match helper.status() {
+            Ok(status) => {
+                if !status.success() {
+                    log_launch_warning(&format!(
+                        "wineserver {flag} failed to {description} prefix {} (status: {status})",
+                        prefix_path.display(),
+                    ));
+                }
+            }
+            Err(err) => {
+                log_launch_warning(&format!(
+                    "Failed to run wineserver {flag} while preparing prefix {}: {}",
+                    prefix_path.display(),
+                    err
+                ));
+                break;
             }
         }
     }
@@ -668,6 +711,25 @@ pub fn launch_game(
         HandlerRef(h) => h.exec.clone(),
     };
 
+    let proton_env = if win {
+        let resolved = resolve_proton_environment(cfg.proton_version.as_str());
+        if resolved.root_path.is_none() {
+            log_launch_warning(&format!(
+                "Unable to verify Proton build '{}' on disk; continuing with the provided hint.",
+                resolved.env_value
+            ));
+        } else if let Some(path) = &resolved.root_path {
+            println!(
+                "[PARTYDECK] Using Proton build {} at {}",
+                resolved.env_value,
+                path.display()
+            );
+        }
+        Some(resolved)
+    } else {
+        None
+    };
+
     let runtime = if win {
         BIN_UMU_RUN.to_string_lossy().to_string()
     } else if let HandlerRef(h) = game {
@@ -714,6 +776,7 @@ pub fn launch_game(
 
     let mut children: Vec<Child> = Vec::new();
     let mut nemirtingas_logs: Vec<NemirtingasLogContext> = Vec::new();
+    let mut drained_prefixes: HashSet<String> = HashSet::new();
     for (i, instance) in instances.iter().enumerate() {
         let profile_port = nemirtingas_ports.get(&instance.profname).copied();
 
@@ -808,13 +871,10 @@ pub fn launch_game(
             cmd.env("EOS_OVERRIDE_LAN_PORT", port.to_string());
         }
         if win {
-            let protonpath = if cfg.proton_version.is_empty() {
-                "GE-Proton".to_string()
-            } else {
-                cfg.proton_version.clone()
-            };
-            cmd.env("PROTON_VERB", "run");
-            cmd.env("PROTONPATH", protonpath);
+            if let Some(env) = &proton_env {
+                cmd.env("PROTON_VERB", "run");
+                cmd.env("PROTONPATH", env.env_value.clone());
+            }
             if let HandlerRef(h) = game {
                 if !h.dll_overrides.is_empty() {
                     let mut overrides = String::new();
@@ -843,6 +903,11 @@ pub fn launch_game(
             std::fs::create_dir_all(&pfx)?;
             cmd.env("WINEPREFIX", &pfx);
             cmd.env("STEAM_COMPAT_DATA_PATH", &pfx);
+            if let Some(env) = &proton_env {
+                if drained_prefixes.insert(pfx.clone()) {
+                    drain_stale_proton_session(&pfx, env);
+                }
+            }
             log_context.appdata_root = Some(
                 PathBuf::from(&pfx)
                     .join("drive_c")

@@ -37,6 +37,7 @@ pub struct PartyApp {
     pub games: Vec<Game>,
     pub selected_game: usize,
     pub profiles: Vec<String>,
+    pub proton_versions: Vec<ProtonInstall>,
 
     pub loading_msg: Option<String>,
     pub loading_since: Option<std::time::Instant>,
@@ -66,6 +67,7 @@ impl Default for PartyApp {
             games: scan_all_games(),
             selected_game: 0,
             profiles: Vec::new(),
+            proton_versions: discover_proton_versions(),
             loading_msg: None,
             loading_since: None,
             task: None,
@@ -220,6 +222,51 @@ impl PartyApp {
                 repeat: false,
                 modifiers: egui::Modifiers::default(),
             });
+        }
+    }
+
+    /// Refreshes the cached Proton installation list so users can discover new
+    /// compatibility tools without restarting PartyDeck.
+    pub fn refresh_proton_versions(&mut self) {
+        self.proton_versions = discover_proton_versions();
+    }
+
+    /// Returns the Proton installation that matches the current settings
+    /// value, accounting for the implicit GE-Proton default.
+    pub fn selected_proton_install(&self) -> Option<&ProtonInstall> {
+        let trimmed = self.options.proton_version.trim();
+        if trimmed.is_empty() {
+            return self
+                .proton_versions
+                .iter()
+                .find(|install| install.matches("GE-Proton"));
+        }
+
+        self.proton_versions
+            .iter()
+            .find(|install| install.matches(trimmed))
+    }
+
+    /// Generates the label shown in the Proton selection combo box so users can
+    /// easily identify whether a custom path or a discovered build is active.
+    pub fn proton_dropdown_label(&self) -> String {
+        if let Some(install) = self.selected_proton_install() {
+            return install.display_label();
+        }
+
+        let trimmed = self.options.proton_version.trim();
+        if trimmed.is_empty() {
+            if self
+                .proton_versions
+                .iter()
+                .any(|install| install.matches("GE-Proton"))
+            {
+                "Auto (GE-Proton)".to_string()
+            } else {
+                "Auto (GE-Proton missing)".to_string()
+            }
+        } else {
+            format!("Custom: {trimmed}")
         }
     }
 
