@@ -330,15 +330,63 @@ impl PartyApp {
             }
         });
 
+        // Present the Proton selector as a combo box backed by the discovered
+        // installations, followed by a manual override text field.
         ui.horizontal(|ui| {
-        let proton_ver_label = ui.label("Proton version");
-        let proton_ver_editbox = ui.add(
-            egui::TextEdit::singleline(&mut self.options.proton_version)
-                .hint_text("GE-Proton"),
-        );
-        if proton_ver_label.hovered() || proton_ver_editbox.hovered() {
-            self.infotext = "Specify a Proton version. This can be a path, e.g. \"/path/to/proton\" or just a name, e.g. \"GE-Proton\" for the latest version of Proton-GE. If left blank, this will default to \"GE-Proton\". If unsure, leave this blank.".to_string();
-        }
+            let proton_ver_label = ui.label("Proton version");
+            ui.vertical(|ui| {
+                ui.spacing_mut().item_spacing.y = 4.0;
+                ui.horizontal(|ui| {
+                    let combo_response = egui::ComboBox::from_id_source("settings_proton_combo")
+                        .selected_text(self.proton_dropdown_label())
+                        .width(260.0)
+                        .show_ui(ui, |combo_ui| {
+                            combo_ui.selectable_value(
+                                &mut self.options.proton_version,
+                                String::new(),
+                                "Auto (GE-Proton)",
+                            );
+
+                            if self.proton_versions.is_empty() {
+                                combo_ui.label("No Proton builds detected");
+                            } else {
+                                for install in &self.proton_versions {
+                                    combo_ui.selectable_value(
+                                        &mut self.options.proton_version,
+                                        install.id.clone(),
+                                        install.display_label(),
+                                    );
+                                }
+                            }
+
+                            combo_ui.separator();
+                            combo_ui.label(
+                                "Select a build above or keep using the custom path below.",
+                            );
+                        })
+                        .response;
+
+                    let refresh_btn = ui.small_button("Refresh");
+                    if refresh_btn.clicked() {
+                        self.refresh_proton_versions();
+                    }
+
+                    if proton_ver_label.hovered()
+                        || combo_response.hovered()
+                        || refresh_btn.hovered()
+                    {
+                        self.infotext = "Choose an installed Proton build or refresh the list after installing a new compatibility tool. Keep the field below blank for the default GE-Proton.".to_string();
+                    }
+                });
+
+                let proton_ver_editbox = ui.add(
+                    egui::TextEdit::singleline(&mut self.options.proton_version)
+                        .hint_text("GE-Proton or /path/to/proton"),
+                );
+                if proton_ver_editbox.hovered() {
+                    self.infotext = "Enter a custom Proton identifier or absolute path. Leave empty to auto-select GE-Proton.".to_string();
+                }
+            });
         });
 
         let proton_separate_pfxs_check = ui.checkbox(
