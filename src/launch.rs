@@ -716,12 +716,12 @@ pub fn launch_game(
         if resolved.root_path.is_none() {
             log_launch_warning(&format!(
                 "Unable to verify Proton build '{}' on disk; continuing with the provided hint.",
-                resolved.env_value
+                resolved.display_name
             ));
         } else if let Some(path) = &resolved.root_path {
             println!(
                 "[PARTYDECK] Using Proton build {} at {}",
-                resolved.env_value,
+                resolved.display_name,
                 path.display()
             );
         }
@@ -904,7 +904,7 @@ pub fn launch_game(
             cmd.env("WINEPREFIX", &pfx);
             cmd.env("STEAM_COMPAT_DATA_PATH", &pfx);
             if let Some(env) = &proton_env {
-                if drained_prefixes.insert(pfx.clone()) {
+                if env.root_path.is_some() && drained_prefixes.insert(pfx.clone()) {
                     drain_stale_proton_session(&pfx, env);
                 }
             }

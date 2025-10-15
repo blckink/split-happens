@@ -51,7 +51,11 @@ impl ProtonInstall {
 /// so the launcher can hydrate environment variables and optional helpers.
 #[derive(Clone, Debug)]
 pub struct ProtonEnvironment {
+    /// String assigned to PROTONPATH so Proton knows which runtime to load.
     pub env_value: String,
+    /// Human-readable label surfaced to logs and diagnostics.
+    pub display_name: String,
+    /// Canonical Proton installation directory when it exists on disk.
     pub root_path: Option<PathBuf>,
 }
 
@@ -102,13 +106,16 @@ pub fn resolve_proton_environment(value: &str) -> ProtonEnvironment {
     // field empty, keeping compatibility with previous PartyDeck releases.
     if trimmed.is_empty() {
         if let Some(install) = installs.iter().find(|install| install.matches("GE-Proton")) {
+            let path = install.root_path.clone();
             return ProtonEnvironment {
-                env_value: install.id.clone(),
-                root_path: Some(install.root_path.clone()),
+                env_value: path.to_string_lossy().to_string(),
+                display_name: install.display_name.clone(),
+                root_path: Some(path),
             };
         }
         return ProtonEnvironment {
             env_value: "GE-Proton".to_string(),
+            display_name: "GE-Proton".to_string(),
             root_path: None,
         };
     }
@@ -124,20 +131,24 @@ pub fn resolve_proton_environment(value: &str) -> ProtonEnvironment {
                 .unwrap_or(candidate)
         };
         return ProtonEnvironment {
-            env_value: trimmed.to_string(),
+            env_value: root.to_string_lossy().to_string(),
+            display_name: trimmed.to_string(),
             root_path: Some(root),
         };
     }
 
     if let Some(install) = installs.iter().find(|install| install.matches(trimmed)) {
+        let path = install.root_path.clone();
         return ProtonEnvironment {
-            env_value: install.id.clone(),
-            root_path: Some(install.root_path.clone()),
+            env_value: path.to_string_lossy().to_string(),
+            display_name: install.display_name.clone(),
+            root_path: Some(path),
         };
     }
 
     ProtonEnvironment {
         env_value: trimmed.to_string(),
+        display_name: trimmed.to_string(),
         root_path: None,
     }
 }
