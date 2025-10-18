@@ -277,17 +277,10 @@ fn apply_instance_cpu_affinity(pid: u32, instance_index: usize, total_instances:
         return;
     }
 
-    let mut cpuset = match CpuSet::new() {
-        Ok(set) => set,
-        Err(err) => {
-            println!(
-                "[PARTYDECK][WARN] Failed to allocate CPU set for instance {}: {}",
-                instance_index + 1,
-                err
-            );
-            return;
-        }
-    };
+    // `CpuSet::new` zero-initializes an affinity mask for us on glibc-based
+    // targets, so there is no failure path to handle here while targeting the
+    // Steam Deck runtime.
+    let mut cpuset = CpuSet::new();
 
     // Assign logical cores in a round-robin pattern so each instance stays close in size
     // while the first few players receive the leftover cores.
