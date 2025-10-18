@@ -4,6 +4,7 @@
 - Comment each newly introduced code block to document its purpose clearly.
 - Preserve existing functionality: double-check for syntax errors or regressions before finalizing changes.
 - For UI changes, ensure a modern, well-aligned, and consistent presentation without unnecessary spacing around elements.
+- Keep the build tooling resilient by re-executing `build.sh` inside `steam-run` when no system linker is present instead of prompting users to install compilers manually.
 - Default Nemirtingas configuration log levels to error severity; only surface critical emulator issues in per-player logs.
 - Persist launch warnings to a text log under the PARTY directory in addition to printing them to the console for easier debugging.
 - Generate and persist unique Nemirtingas `EpicId`/`ProductUserId` pairs for each profile so invite codes stay stable between sessions.
