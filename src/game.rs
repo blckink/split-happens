@@ -70,6 +70,15 @@ impl Game {
             }
         }
     }
+
+    /// Generates a stable identifier so per-game state (like remembered profile
+    /// selections) can survive application restarts regardless of UI order.
+    pub fn persistent_id(&self) -> String {
+        match self {
+            Game::ExecRef(exec) => format!("exec:{}", exec.path().to_string_lossy()),
+            Game::HandlerRef(handler) => format!("handler:{}", handler.uid),
+        }
+    }
 }
 
 pub fn scan_all_games() -> Vec<Game> {

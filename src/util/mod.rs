@@ -28,6 +28,5 @@ pub use updates::check_for_partydeck_update;
 
 // Re-export Proton helpers so the UI and launcher can reference them directly.
 pub use proton::{
-    ProtonEnvironment, ProtonInstall, ProtonSource, discover_proton_versions,
-    resolve_proton_environment,
+    ProtonEnvironment, ProtonInstall, discover_proton_versions, resolve_proton_environment,
 };
