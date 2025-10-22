@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::fs::{self, OpenOptions};
 use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use crate::app::PartyConfig;
 use crate::game::Game;
@@ -180,6 +180,119 @@ fn collect_nemirtingas_logs(contexts: &[NemirtingasLogContext]) {
                     err
                 );
             }
+        }
+    }
+}
+
+/// Tracks the shared cleanup handles referenced by the global Ctrl+C handler so
+/// subsequent launches can reuse the same signal hook without tripping the
+/// multiple-handler guard in the ctrlc crate.
+struct CtrlcCleanup {
+    child_pids: Arc<Mutex<Vec<u32>>>,
+    locks: Arc<Mutex<Vec<ProfileLock>>>,
+}
+
+static CTRL_C_STATE: OnceLock<Mutex<Option<CtrlcCleanup>>> = OnceLock::new();
+static CTRL_C_HANDLER: OnceLock<()> = OnceLock::new();
+
+/// Installs (or refreshes) the Ctrl+C cleanup handler so repeated launches keep
+/// terminating Gamescope descendants and releasing profile locks without
+/// requiring the application to restart between sessions.
+fn register_ctrlc_cleanup(
+    child_pids: Arc<Mutex<Vec<u32>>>,
+    locks: Arc<Mutex<Vec<ProfileLock>>>,
+) -> Result<(), ctrlc::Error> {
+    let state = CTRL_C_STATE.get_or_init(|| Mutex::new(None));
+    {
+        let mut guard = state.lock().unwrap();
+        *guard = Some(CtrlcCleanup {
+            child_pids: Arc::clone(&child_pids),
+            locks: Arc::clone(&locks),
+        });
+    }
+
+    if CTRL_C_HANDLER.get().is_none() {
+        let state_ref = CTRL_C_STATE
+            .get()
+            .expect("Ctrl+C state should be initialized before handler registration");
+        ctrlc::set_handler(move || {
+            if let Ok(mut guard) = state_ref.lock() {
+                if let Some(shared) = guard.as_mut() {
+                    if let Ok(pids) = shared.child_pids.lock() {
+                        for pid in pids.iter() {
+                            let _ = kill(Pid::from_raw(-(*pid as i32)), Signal::SIGTERM);
+                        }
+                    }
+                    if let Ok(mut locks_guard) = shared.locks.lock() {
+                        for lock in locks_guard.iter() {
+                            lock.cleanup();
+                        }
+                        locks_guard.clear();
+                    }
+                }
+            }
+        })?;
+        let _ = CTRL_C_HANDLER.set(());
+    }
+
+    Ok(())
+}
+
+/// Clears the shared Ctrl+C cleanup state after a launch finishes so the next
+/// session starts from a clean slate while reusing the original handler.
+fn clear_ctrlc_cleanup() {
+    if let Some(state) = CTRL_C_STATE.get() {
+        if let Ok(mut guard) = state.lock() {
+            *guard = None;
+        }
+    }
+}
+
+/// Removes stale Nemirtingas command cache data so games that rely on the EOS
+/// emulator do not trip assertions when multiple instances bootstrap in quick
+/// succession.
+fn reset_nemirtingas_session_state(nepice_dir: &Path) {
+    let appdata = nepice_dir.join("appdata");
+    if !appdata.exists() {
+        return;
+    }
+
+    let mut cleared_state = false;
+    for dir in ["Commands", "commands", "PendingCommands"] {
+        let path = appdata.join(dir);
+        if path.exists() {
+            match fs::remove_dir_all(&path) {
+                Ok(_) => cleared_state = true,
+                Err(err) => println!(
+                    "[PARTYDECK][WARN] Failed to remove stale Nemirtingas commands {}: {}",
+                    path.display(),
+                    err
+                ),
+            }
+        }
+    }
+
+    for file in ["CommandCache.json", "PendingCommand.json", "PendingCommand"] {
+        let path = appdata.join(file);
+        if path.exists() {
+            match fs::remove_file(&path) {
+                Ok(_) => cleared_state = true,
+                Err(err) => println!(
+                    "[PARTYDECK][WARN] Failed to remove stale Nemirtingas command file {}: {}",
+                    path.display(),
+                    err
+                ),
+            }
+        }
+    }
+
+    if cleared_state {
+        if let Err(err) = fs::create_dir_all(appdata.join("Commands")) {
+            println!(
+                "[PARTYDECK][WARN] Failed to recreate Nemirtingas command directory {}: {}",
+                appdata.join("Commands").display(),
+                err
+            );
         }
     }
 }
@@ -659,22 +772,7 @@ pub fn launch_game(
     }
     let locks = Arc::new(Mutex::new(locks_vec));
     let child_pids: Arc<Mutex<Vec<u32>>> = Arc::new(Mutex::new(Vec::new()));
-    {
-        let child_pids = Arc::clone(&child_pids);
-        let locks = Arc::clone(&locks);
-        ctrlc::set_handler(move || {
-            if let Ok(pids) = child_pids.lock() {
-                for pid in pids.iter() {
-                    let _ = kill(Pid::from_raw(-(*pid as i32)), Signal::SIGTERM);
-                }
-            }
-            if let Ok(locks) = locks.lock() {
-                for lock in locks.iter() {
-                    lock.cleanup();
-                }
-            }
-        })?;
-    }
+    register_ctrlc_cleanup(Arc::clone(&child_pids), Arc::clone(&locks))?;
 
     let home = PATH_HOME.display();
     let localshare = PATH_LOCAL_SHARE.display();
@@ -780,6 +878,10 @@ pub fn launch_game(
             profile_log: log_path.clone(),
             appdata_root: None,
         };
+
+        // Reset the emulator's pending command queue before each boot so games do not hit
+        // assertion dialogs from stale EOS session state that lingered between launches.
+        reset_nemirtingas_session_state(&nepice_dir);
 
         let instance_gamedir = if use_bwrap {
             gamedir.clone()
@@ -1082,6 +1184,7 @@ pub fn launch_game(
         }
     }
     locks.lock().unwrap().clear();
+    clear_ctrlc_cleanup();
 
     if cfg.enable_kwin_script {
         kwin_dbus_unload_script()?;

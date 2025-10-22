@@ -1,5 +1,6 @@
 use crate::paths::*;
 
+use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
@@ -25,6 +26,8 @@ pub struct PartyConfig {
     #[serde(default)]
     pub vertical_two_player: bool,
     pub pad_filter_type: PadFilterType,
+    #[serde(default)]
+    pub last_profile_assignments: HashMap<String, Vec<String>>,
 }
 
 impl Default for PartyConfig {
@@ -39,6 +42,7 @@ impl Default for PartyConfig {
             proton_separate_pfxs: false,
             vertical_two_player: false,
             pad_filter_type: PadFilterType::NoSteamInput,
+            last_profile_assignments: HashMap::new(),
         }
     }
 }

@@ -1,6 +1,7 @@
 use std::thread::sleep;
 
 use super::config::*;
+use crate::game::Game::HandlerRef;
 use crate::game::*;
 use crate::input::*;
 use crate::instance::*;
@@ -294,10 +295,15 @@ impl PartyApp {
                             self.instances[inst].devices.push(i);
                         }
                         None => {
+                            // Restore the last-used profile for this slot when starting a
+                            // fresh instance so the join screen remembers previous
+                            // assignments per game.
+                            let slot_index = self.instances.len();
+                            let default_profile = self.default_profile_index_for_slot(slot_index);
                             self.instances.push(Instance {
                                 devices: vec![i],
                                 profname: String::new(),
-                                profselection: 0,
+                                profselection: default_profile,
                                 width: 0,
                                 height: 0,
                             });
@@ -351,6 +357,26 @@ impl PartyApp {
         None
     }
 
+    /// Resolves the preferred profile index for a newly created instance slot so
+    /// returning to the join screen preserves each player's last selection.
+    fn default_profile_index_for_slot(&self, slot_index: usize) -> usize {
+        if let HandlerRef(_) = cur_game!(self) {
+            let game_id = cur_game!(self).persistent_id();
+            if let Some(assignments) = self.options.last_profile_assignments.get(&game_id) {
+                if let Some(saved_name) = assignments.get(slot_index) {
+                    if let Some(idx) = self
+                        .profiles
+                        .iter()
+                        .position(|profile| profile == saved_name)
+                    {
+                        return idx;
+                    }
+                }
+            }
+        }
+        0
+    }
+
     pub fn remove_device(&mut self, dev: usize) {
         if let Some((instance_index, device_index)) = self.find_device_in_instance(dev) {
             self.instances[instance_index].devices.remove(device_index);
@@ -362,6 +388,25 @@ impl PartyApp {
 
     pub fn prepare_game_launch(&mut self) {
         set_instance_resolutions(&mut self.instances, &self.options);
+
+        if let HandlerRef(_) = cur_game!(self) {
+            // Remember the raw profile selections for this game before translating
+            // guest placeholders so the next launch can restore the same layout.
+            let game_id = cur_game!(self).persistent_id();
+            let mut assignments: Vec<String> = Vec::new();
+            for instance in &self.instances {
+                let selection = self
+                    .profiles
+                    .get(instance.profselection)
+                    .cloned()
+                    .unwrap_or_else(|| "Guest".to_string());
+                assignments.push(selection);
+            }
+            self.options
+                .last_profile_assignments
+                .insert(game_id, assignments);
+        }
+
         set_instance_names(&mut self.instances, &self.profiles);
 
         let game = cur_game!(self).to_owned();
