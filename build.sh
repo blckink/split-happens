@@ -4,10 +4,22 @@
 # does not provide a `cc` shim so Steam Deck users do not have to install a
 # separate compiler suite. The guard variable prevents an infinite re-exec loop
 # if the runtime still lacks a usable linker.
-if [ -z "${PARTYDECK_STEAMRUN_REEXEC:-}" ] && ! command -v cc >/dev/null 2>&1; then
-  if command -v steam-run >/dev/null 2>&1; then
+# Automatically fall back to clang/gcc shims when the runtime exposes
+# versioned toolchains without the generic `cc` symlink so we still provide a
+# linker to Cargo in SteamOS environments.
+if ! command -v cc >/dev/null 2>&1; then
+  if [ -z "${PARTYDECK_STEAMRUN_REEXEC:-}" ] && command -v steam-run >/dev/null 2>&1; then
     export PARTYDECK_STEAMRUN_REEXEC=1
     exec steam-run "$0" "$@"
+  fi
+
+  # Surface the first available compiler shim for Rust's build scripts.
+  if command -v clang >/dev/null 2>&1; then
+    export CC=${CC:-clang}
+    export CXX=${CXX:-clang++}
+  elif command -v gcc >/dev/null 2>&1; then
+    export CC=${CC:-gcc}
+    export CXX=${CXX:-g++}
   fi
 fi
 
