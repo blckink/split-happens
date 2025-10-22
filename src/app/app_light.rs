@@ -27,6 +27,7 @@ pub struct LightPartyApp {
     pub instances: Vec<Instance>,
     pub instance_add_dev: Option<usize>,
     pub game: Game,
+    pub proton_versions: Vec<ProtonInstall>,
 
     pub loading_msg: Option<String>,
     pub loading_since: Option<std::time::Instant>,
@@ -48,6 +49,7 @@ impl LightPartyApp {
             instance_add_dev: None,
             // Placeholder, user should define this with program args
             game: Game::ExecRef(Executable::new(PathBuf::from(exec), execargs)),
+            proton_versions: discover_proton_versions(),
             loading_msg: None,
             loading_since: None,
             task: None,
@@ -139,6 +141,50 @@ impl eframe::App for LightPartyApp {
 }
 
 impl LightPartyApp {
+    /// Refreshes the cached Proton installation list in the lightweight UI so
+    /// users can pick newly installed compatibility tools without restarting.
+    pub fn refresh_proton_versions(&mut self) {
+        self.proton_versions = discover_proton_versions();
+    }
+
+    /// Mirrors the launcher Proton resolution used in the full UI so the light
+    /// experience remains feature parity.
+    pub fn selected_proton_install(&self) -> Option<&ProtonInstall> {
+        let trimmed = self.options.proton_version.trim();
+        if trimmed.is_empty() {
+            return self
+                .proton_versions
+                .iter()
+                .find(|install| install.matches("GE-Proton"));
+        }
+
+        self.proton_versions
+            .iter()
+            .find(|install| install.matches(trimmed))
+    }
+
+    /// Returns the label shown in the Proton combo box for the light UI.
+    pub fn proton_dropdown_label(&self) -> String {
+        if let Some(install) = self.selected_proton_install() {
+            return install.display_label();
+        }
+
+        let trimmed = self.options.proton_version.trim();
+        if trimmed.is_empty() {
+            if self
+                .proton_versions
+                .iter()
+                .any(|install| install.matches("GE-Proton"))
+            {
+                "Auto (GE-Proton)".to_string()
+            } else {
+                "Auto (GE-Proton missing)".to_string()
+            }
+        } else {
+            format!("Custom: {trimmed}")
+        }
+    }
+
     pub fn spawn_task<F>(&mut self, msg: &str, f: F)
     where
         F: FnOnce() + Send + 'static,
@@ -396,15 +442,62 @@ impl LightPartyApp {
             }
         });
 
+        // Mirror the enhanced Proton selector introduced in the full UI.
         ui.horizontal(|ui| {
-        let proton_ver_label = ui.label("Proton version");
-        let proton_ver_editbox = ui.add(
-            egui::TextEdit::singleline(&mut self.options.proton_version)
-                .hint_text("GE-Proton"),
-        );
-        if proton_ver_label.hovered() || proton_ver_editbox.hovered() {
-            self.infotext = "Specify a Proton version. This can be a path, e.g. \"/path/to/proton\" or just a name, e.g. \"GE-Proton\" for the latest version of Proton-GE. If left blank, this will default to \"GE-Proton\". If unsure, leave this blank.".to_string();
-        }
+            let proton_ver_label = ui.label("Proton version");
+            ui.vertical(|ui| {
+                ui.spacing_mut().item_spacing.y = 4.0;
+                ui.horizontal(|ui| {
+                    let combo_response = egui::ComboBox::from_id_source("light_settings_proton_combo")
+                        .selected_text(self.proton_dropdown_label())
+                        .width(260.0)
+                        .show_ui(ui, |combo_ui| {
+                            combo_ui.selectable_value(
+                                &mut self.options.proton_version,
+                                String::new(),
+                                "Auto (GE-Proton)",
+                            );
+
+                            if self.proton_versions.is_empty() {
+                                combo_ui.label("No Proton builds detected");
+                            } else {
+                                for install in &self.proton_versions {
+                                    combo_ui.selectable_value(
+                                        &mut self.options.proton_version,
+                                        install.id.clone(),
+                                        install.display_label(),
+                                    );
+                                }
+                            }
+
+                            combo_ui.separator();
+                            combo_ui.label(
+                                "Select a build above or keep using the custom path below.",
+                            );
+                        })
+                        .response;
+
+                    let refresh_btn = ui.small_button("Refresh");
+                    if refresh_btn.clicked() {
+                        self.refresh_proton_versions();
+                    }
+
+                    if proton_ver_label.hovered()
+                        || combo_response.hovered()
+                        || refresh_btn.hovered()
+                    {
+                        self.infotext = "Choose an installed Proton build or refresh the list after installing a new compatibility tool. Keep the field below blank for the default GE-Proton.".to_string();
+                    }
+                });
+
+                let proton_ver_editbox = ui.add(
+                    egui::TextEdit::singleline(&mut self.options.proton_version)
+                        .hint_text("GE-Proton or /path/to/proton"),
+                );
+                if proton_ver_editbox.hovered() {
+                    self.infotext = "Enter a custom Proton identifier or absolute path. Leave empty to auto-select GE-Proton.".to_string();
+                }
+            });
         });
 
         let proton_separate_pfxs_check = ui.checkbox(

@@ -1,7 +1,7 @@
 use rand::prelude::*;
 use serde_json::{Map, Value, json};
 use sha1::{Digest, Sha1};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fs::{self, OpenOptions};
 use std::io::{self, Write};
@@ -117,7 +117,11 @@ pub fn create_profile(name: &str) -> Result<(), std::io::Error> {
 /// we avoid spamming disk writes every launch while still guaranteeing consistent values.
 fn write_setting_if_changed(path: &Path, value: &str) -> io::Result<()> {
     if let Ok(existing) = fs::read_to_string(path) {
-        if existing.trim() == value {
+        if value.is_empty() {
+            if existing.is_empty() {
+                return Ok(());
+            }
+        } else if existing.trim() == value {
             return Ok(());
         }
     }
@@ -126,16 +130,25 @@ fn write_setting_if_changed(path: &Path, value: &str) -> io::Result<()> {
         fs::create_dir_all(parent)?;
     }
 
-    fs::write(path, format!("{value}\n"))
+    // Maintain genuinely empty files (for helpers like auto_accept_invite.txt) when the
+    // desired value is blank; otherwise mirror Goldberg's newline-terminated format.
+    let contents = if value.is_empty() {
+        String::new()
+    } else {
+        format!("{value}\n")
+    };
+
+    fs::write(path, contents)
 }
 
-/// Ensures the Goldberg `listen_port` setting is present inside the provided INI file so
-/// the emulator binds the same UDP port that Nemirtingas will advertise over EOS. The
-/// helper keeps existing content intact, only updating or appending the target key inside
-/// the `main::connectivity` section when required.
-fn ensure_ini_listen_port(path: &Path, port: u16) -> io::Result<()> {
-    let desired_section = "[main::connectivity]";
-    let desired_key = format!("listen_port={port}");
+/// Ensures a Goldberg INI file exposes a specific `key=value` pair inside the target
+/// section without disturbing the rest of the configuration. The helper either updates
+/// an existing entry or appends it at the end of the section if missing, creating the
+/// section on demand when necessary.
+fn ensure_ini_setting(path: &Path, section: &str, key: &str, value: &str) -> io::Result<()> {
+    let desired_section = section;
+    let desired_key = format!("{key}={value}");
+    let key_prefix = format!("{key}=");
     let existing_contents = fs::read_to_string(path).ok();
 
     let mut lines: Vec<String> = existing_contents
@@ -157,7 +170,7 @@ fn ensure_ini_listen_port(path: &Path, port: u16) -> io::Result<()> {
             continue;
         }
 
-        if in_desired_section && trimmed.starts_with("listen_port") {
+        if in_desired_section && trimmed.starts_with(&key_prefix) {
             if trimmed != desired_key {
                 *line = desired_key.clone();
             }
@@ -172,8 +185,6 @@ fn ensure_ini_listen_port(path: &Path, port: u16) -> io::Result<()> {
         }
         lines.push(desired_section.to_string());
         lines.push(desired_key.clone());
-        section_found = true;
-        key_updated = true;
     } else if !key_updated {
         let mut insert_index = lines.len();
         let mut current_section = None;
@@ -219,6 +230,18 @@ fn ensure_ini_listen_port(path: &Path, port: u16) -> io::Result<()> {
     fs::write(path, new_contents)
 }
 
+/// Convenience wrapper that keeps the public API focused on the listen port while the
+/// underlying helper remains flexible for other Goldberg flags we might need in future
+/// updates.
+fn ensure_ini_listen_port(path: &Path, port: u16) -> io::Result<()> {
+    ensure_ini_setting(
+        path,
+        "[main::connectivity]",
+        "listen_port",
+        &port.to_string(),
+    )
+}
+
 /// Extracts a `key=value` pair from Goldberg's `configs.user.ini`, returning `None` when
 /// the file cannot be read or the key was absent.
 fn read_config_value(config_path: &Path, key: &str) -> Option<String> {
@@ -243,18 +266,64 @@ fn deterministic_goldberg_port(game_id: &str) -> u16 {
     20000 + (raw % 20000)
 }
 
+/// Computes a deterministic Nemirtingas LAN port derived from the game identifier so every
+/// instance shares the same override without conflicting with other titles.
+fn deterministic_nemirtingas_port(game_id: &str, profile: &str, attempt: u32) -> u16 {
+    let mut hasher = Sha1::new();
+    hasher.update(format!("partydeck-nemirtingas-port:{game_id}:{profile}:{attempt}").as_bytes());
+    let digest = hasher.finalize();
+
+    let raw = u16::from_be_bytes([digest[2], digest[3]]);
+    40000 + (raw % 20000)
+}
+
+/// Resolves a shared Nemirtingas LAN port for the provided profiles so every instance
+/// advertises the same endpoint. Handlers that expose a Goldberg override reuse that
+/// value, otherwise the fallback hashes the game identifier for deterministic stability.
+pub fn resolve_nemirtingas_ports(
+    profiles: &[String],
+    game_id: &str,
+    goldberg_port: Option<u16>,
+) -> HashMap<String, u16> {
+    let mut assignments = HashMap::new();
+
+    if profiles.is_empty() {
+        return assignments;
+    }
+
+    let shared_port =
+        goldberg_port.unwrap_or_else(|| deterministic_nemirtingas_port(game_id, "shared", 0));
+
+    for profile in profiles {
+        assignments.insert(profile.clone(), shared_port);
+    }
+
+    assignments
+}
+
 /// Ensures all active profiles expose the Goldberg LAN identity files expected by Coral
 /// Island (account name, SteamID, language, invite toggles) and normalizes the shared
 /// `listen_port.txt` so every instance binds the same UDP socket during discovery.
 pub fn synchronize_goldberg_profiles(
     profiles: &[String],
     game_id: &str,
-) -> Result<u16, Box<dyn Error>> {
+    port_override: Option<u16>,
+) -> Result<Option<u16>, Box<dyn Error>> {
     if profiles.is_empty() {
-        return Ok(0);
+        return Ok(None);
     }
 
-    let port = deterministic_goldberg_port(game_id);
+    // Resolve the Goldberg listen port shared across every profile. Handlers that bundle
+    // Nemirtingas request the fixed LAN port so EOS beacons and Goldberg discovery stay on
+    // the same socket, while other titles fall back to a deterministic hash of the game ID
+    // so multiple games do not collide yet every instance of the same game advertises the
+    // identical UDP endpoint.
+    let port = port_override.unwrap_or_else(|| deterministic_goldberg_port(game_id));
+    let port_source = if port_override.is_some() {
+        "handler override"
+    } else {
+        "deterministic default"
+    };
     let mut seen_profiles: HashSet<String> = HashSet::new();
 
     for name in profiles {
@@ -307,28 +376,63 @@ pub fn synchronize_goldberg_profiles(
         write_setting_if_changed(&steam_settings.join("language.txt"), "english")?;
 
         // Toggle LAN discovery helpers to avoid requiring the Steam overlay for invites.
-        write_setting_if_changed(&steam_settings.join("auto_accept_invite.txt"), "1")?;
+        write_setting_if_changed(&steam_settings.join("auto_accept_invite.txt"), "")?;
         write_setting_if_changed(&steam_settings.join("disable_lan_only.txt"), "1")?;
-        write_setting_if_changed(&steam_settings.join("gc_token.txt"), "partydeck")?;
+        write_setting_if_changed(&steam_settings.join("gc_token.txt"), "1")?;
+        write_setting_if_changed(&steam_settings.join("new_app_ticket.txt"), "1")?;
+
+        // Ensure the Goldberg INI toggles mirror the one-shot helpers so the emulator's
+        // internal logic also generates the new auth ticket and GC token expected by the
+        // experimental build now bundled with PartyDeck.
+        ensure_ini_setting(
+            &steam_settings.join("configs.main.ini"),
+            "[main::general]",
+            "new_app_ticket",
+            "1",
+        )?;
+        ensure_ini_setting(
+            &steam_settings.join("configs.main.ini"),
+            "[main::general]",
+            "gc_token",
+            "1",
+        )?;
+
+        ensure_ini_setting(
+            &steam_settings.join("configs.user.ini"),
+            "[main::general]",
+            "new_app_ticket",
+            "1",
+        )?;
+        ensure_ini_setting(
+            &steam_settings.join("configs.user.ini"),
+            "[main::general]",
+            "gc_token",
+            "1",
+        )?;
 
         // Synchronize the listen port across every profile so Goldberg advertises/joins
-        // lobbies via the same UDP endpoint.
+        // lobbies via the same UDP endpoint. Persist the port in both helper text files and
+        // the INI toggles so legacy builds that only inspect one location remain in sync and
+        // Nemirtingas can mirror the same socket when generating its JSON later.
         write_setting_if_changed(&steam_settings.join("listen_port.txt"), &port.to_string())?;
         ensure_ini_listen_port(&steam_settings.join("configs.main.ini"), port)?;
         ensure_ini_listen_port(&steam_settings.join("configs.user.ini"), port)?;
 
         println!(
-            "[PARTYDECK] Goldberg LAN identity for profile {} set to {} / {} on port {}",
-            name, account_name, user_steam_id, port
+            "[PARTYDECK] Goldberg LAN identity for profile {} set to {} / {} on port {} ({})",
+            name, account_name, user_steam_id, port, port_source
         );
     }
 
-    Ok(port)
+    // Expose the synchronized port so launch routines can mirror it into Nemirtingas configs
+    // and environment variables whenever required.
+    Ok(Some(port))
 }
 
 pub fn ensure_nemirtingas_config(
     name: &str,
     appid: &str,
+    lan_port: Option<u16>,
 ) -> Result<(PathBuf, PathBuf, PathBuf, String), Box<dyn Error>> {
     let profile_dir = PATH_PARTY.join(format!("profiles/{name}"));
     fs::create_dir_all(&profile_dir)?;
@@ -394,7 +498,19 @@ pub fn ensure_nemirtingas_config(
         }
     }
 
-    let existing_epicid = existing_epicid.and_then(|id| {
+    let mut profile_username = existing_username
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| name.to_string());
+
+    // Nemirtingas ships with a "DefaultName" placeholder that forces the emulator to regenerate
+    // fresh identifiers every boot. Replace that sentinel with the PartyDeck profile name so
+    // invite codes and save data reuse the same logical user across launches.
+    let used_placeholder_username = profile_username == "DefaultName";
+    if used_placeholder_username {
+        profile_username = name.to_string();
+    }
+
+    let mut existing_epicid = existing_epicid.and_then(|id| {
         if let Some(clean) = normalize_hex(&id) {
             Some(clean)
         } else {
@@ -405,7 +521,7 @@ pub fn ensure_nemirtingas_config(
         }
     });
 
-    let existing_productuserid = existing_productuserid.and_then(|id| {
+    let mut existing_productuserid = existing_productuserid.and_then(|id| {
         if let Some(clean) = normalize_hex(&id) {
             Some(clean)
         } else {
@@ -416,7 +532,7 @@ pub fn ensure_nemirtingas_config(
         }
     });
 
-    let existing_accountid = existing_accountid_raw.clone().and_then(|id| {
+    let mut existing_accountid = existing_accountid_raw.clone().and_then(|id| {
         if let Some(clean) = normalize_hex(&id) {
             Some(clean)
         } else {
@@ -427,34 +543,33 @@ pub fn ensure_nemirtingas_config(
         }
     });
 
-    if existing_accountid.is_none() && had_existing_config && existing_accountid_raw.is_none() {
+    if existing_accountid.is_none()
+        && had_existing_config
+        && existing_accountid_raw.is_none()
+        && !used_placeholder_username
+    {
         log_profile_warning(&format!(
             "Profile {name} was missing a Nemirtingas AccountId; generating a new value."
         ));
     }
 
-    let profile_username = existing_username
-        .filter(|value| !value.trim().is_empty())
-        .unwrap_or_else(|| name.to_string());
-    let uses_default_username = profile_username == "DefaultName";
+    if used_placeholder_username && had_existing_config {
+        log_profile_warning(&format!(
+            "Profile {name} used the Nemirtingas placeholder username; regenerating IDs with the profile name."
+        ));
+        existing_epicid = None;
+        existing_productuserid = None;
+        existing_accountid = None;
+    }
 
     // Persistently assign Nemirtingas IDs when they are missing so invite codes do not
     // depend on the emulator regenerating identifiers on every launch.
     let epic_id = existing_epicid.unwrap_or_else(|| {
-        let new_id = if uses_default_username {
-            generate_hex_id(32)
-        } else {
-            deterministic_hex_from_seed(&profile_username, 32)
-        };
+        let new_id = deterministic_hex_from_seed(&profile_username, 32);
         println!(
-            "[PARTYDECK] Generated Nemirtingas EpicId {} for profile {} using {} mode",
+            "[PARTYDECK] Generated Nemirtingas EpicId {} for profile {} using deterministic username seed",
             new_id,
-            name,
-            if uses_default_username {
-                "random"
-            } else {
-                "deterministic"
-            }
+            name
         );
         new_id
     });
@@ -472,21 +587,12 @@ pub fn ensure_nemirtingas_config(
     // Ensure the Nemirtingas AccountId exists alongside EpicId/ProductUserId so the emulator
     // can satisfy EOS auth requests without falling back to 0x0 placeholders.
     let account_id = existing_accountid.unwrap_or_else(|| {
-        let new_id = if uses_default_username {
-            generate_hex_id(32)
-        } else {
-            let seed = format!("account:{profile_username}");
-            deterministic_hex_from_seed(&seed, 32)
-        };
+        let seed = format!("account:{profile_username}");
+        let new_id = deterministic_hex_from_seed(&seed, 32);
         println!(
-            "[PARTYDECK] Generated Nemirtingas AccountId {} for profile {} using {} mode",
+            "[PARTYDECK] Generated Nemirtingas AccountId {} for profile {} using deterministic username seed",
             new_id,
-            name,
-            if uses_default_username {
-                "random"
-            } else {
-                "deterministic"
-            }
+            name
         );
         new_id
     });
@@ -510,8 +616,8 @@ pub fn ensure_nemirtingas_config(
                 "AppId": appid,
                 "DisableCrashDump": false,
                 "DisableOnlineNetworking": false,
-                // Keep Nemirtingas at debug verbosity so cross-profile issues remain visible during invite debugging.
-                "LogLevel": "Debug",
+                // Limit Nemirtingas output to error-level messages so per-profile logs only capture critical emulator issues.
+                "LogLevel": "Error",
                 "SavePath": "appdata"
             },
             "Ecom": {
@@ -527,34 +633,54 @@ pub fn ensure_nemirtingas_config(
         }),
     );
     // Enable the broadcast plugin so Nemirtingas advertises the lobby over LAN, allowing
-    // other players on the local network to discover the host via invite codes.
-    obj.insert(
-        "Network".to_string(),
+    // other players on the local network to discover the host via invite codes. When a
+    // synchronized Goldberg listen port is available, also override the LAN beacon to the
+    // same UDP socket so EOS discovery and Goldberg stay aligned.
+    let mut network_plugins = Map::new();
+    network_plugins.insert(
+        "Broadcast".to_string(),
         json!({
-            "IceServers": [],
-            "Plugins": {
-                "Broadcast": {
-                    "EnableLog": false,
-                    "Enabled": true,
-                    "LocalhostOnly": false
-                },
-                "WebSocket": {
-                    "EnableLog": false,
-                    "Enabled": false,
-                    "SignalingServers": []
-                }
-            }
+            "EnableLog": false,
+            "Enabled": true,
+            "LocalhostOnly": false
         }),
     );
+    network_plugins.insert(
+        "WebSocket".to_string(),
+        json!({
+            "EnableLog": false,
+            "Enabled": false,
+            "SignalingServers": []
+        }),
+    );
+
+    let mut network_obj = Map::new();
+    network_obj.insert("IceServers".to_string(), json!([]));
+    network_obj.insert("Plugins".to_string(), Value::Object(network_plugins));
+    if let Some(port) = lan_port {
+        network_obj.insert(
+            "Lan".to_string(),
+            json!({
+                "Enabled": true,
+                "OverridePort": port
+            }),
+        );
+    }
+    obj.insert("Network".to_string(), Value::Object(network_obj));
     obj.insert("appid".to_string(), json!(appid));
     obj.insert("language".to_string(), json!("en"));
-    // Mirror the nested debug verbosity in the legacy flat configuration for tools still reading the flat keys.
-    obj.insert("log_level".to_string(), json!("DEBUG"));
+    // Limit Nemirtingas output to error-level entries so per-profile logs only capture actionable issues.
+    obj.insert("log_level".to_string(), json!("ERROR"));
     obj.insert("username".to_string(), json!(profile_username));
     // Surface the generated IDs in the flat layout as well so legacy Nemirtingas builds read them consistently.
     obj.insert("epicid".to_string(), json!(epic_id));
     obj.insert("productuserid".to_string(), json!(product_user_id));
     obj.insert("accountid".to_string(), json!(account_id));
+    if let Some(port) = lan_port {
+        // Surface the synchronized LAN port in the flat schema so older Nemirtingas builds
+        // that only inspect top-level keys can still reuse Goldberg's UDP socket.
+        obj.insert("lan_port".to_string(), json!(port));
+    }
 
     let data = serde_json::to_string_pretty(&Value::Object(obj))?;
     let mut file = OpenOptions::new()
@@ -566,7 +692,7 @@ pub fn ensure_nemirtingas_config(
     file.sync_all()?;
 
     // Surface the per-profile Nemirtingas log location and ensure the file exists so
-    // users immediately know where to inspect debug output after switching log levels.
+    // users can still reference critical error messages after a session.
     let log_path = nepice_dir.join("NemirtingasEpicEmu.log");
     match OpenOptions::new().create(true).append(true).open(&log_path) {
         Ok(_) => println!(
@@ -673,6 +799,8 @@ pub fn scan_profiles(include_guest: bool) -> Vec<String> {
     out
 }
 
+/// Cleans up legacy guest profiles that used the old dotted naming convention so they do
+/// not accumulate alongside the new deterministic guest slots.
 pub fn remove_guest_profiles() -> Result<(), Box<dyn Error>> {
     let path_profiles = PATH_PARTY.join("profiles");
     let entries = std::fs::read_dir(&path_profiles)?;
@@ -689,36 +817,4 @@ pub fn remove_guest_profiles() -> Result<(), Box<dyn Error>> {
         }
     }
     Ok(())
-}
-
-pub static GUEST_NAMES: [&str; 31] = [
-    "Blinky", "Pinky", "Inky", "Clyde", "Beatrice", "Battler", "Miyao", "Rena", "Ellie", "Joel",
-    "Leon", "Ada", "Madeline", "Theo", "Yokatta", "Wyrm", "Brodiee", "Supreme", "Conk", "Gort",
-    "Lich", "Smores", "Canary", "Trico", "Yorda", "Wander", "Agro", "Jak", "Daxter", "Soap",
-    "Ghost",
-];
-
-// Unit tests to guarantee that Nemirtingas identifier parsing continues accepting both
-// raw hexadecimal IDs and variants prefixed with `0x`.
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn normalize_hex_accepts_plain_hex() {
-        assert_eq!(normalize_hex("deadbeef"), Some("deadbeef".to_string()));
-    }
-
-    #[test]
-    fn normalize_hex_accepts_prefixed_hex() {
-        assert_eq!(normalize_hex("0xABC123"), Some("ABC123".to_string()));
-        assert_eq!(normalize_hex("0Xff"), Some("ff".to_string()));
-    }
-
-    #[test]
-    fn normalize_hex_rejects_invalid_values() {
-        assert_eq!(normalize_hex(""), None);
-        assert_eq!(normalize_hex("0xg"), None);
-    }
 }

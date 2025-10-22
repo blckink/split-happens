@@ -4,9 +4,18 @@
 - Comment each newly introduced code block to document its purpose clearly.
 - Preserve existing functionality: double-check for syntax errors or regressions before finalizing changes.
 - For UI changes, ensure a modern, well-aligned, and consistent presentation without unnecessary spacing around elements.
-- Default Nemirtingas configuration log levels to debug severity so multiplayer invite issues remain inspectable.
+- Keep the build tooling resilient by re-executing `build.sh` inside `steam-run` when no system linker is present instead of prompting users to install compilers manually.
+- Default Nemirtingas configuration log levels to error severity; only surface critical emulator issues in per-player logs.
 - Persist launch warnings to a text log under the PARTY directory in addition to printing them to the console for easier debugging.
 - Generate and persist unique Nemirtingas `EpicId`/`ProductUserId` pairs for each profile so invite codes stay stable between sessions.
-- Keep Nemirtingas/EOS LAN discovery aligned with Goldberg by forcing `EOS_OVERRIDE_LAN_PORT` to the same port exposed via `listen_port.txt`.
+- Treat Nemirtingas configs that still use the default `DefaultName` username as invalid placeholders; rewrite them to the PartyDeck profile name so the regenerated IDs remain deterministic.
+- Share a single deterministic Nemirtingas LAN port across all profiles for a game, reusing the Goldberg override when present.
+- When a handler ships a Nemirtingas config (`eos.config_path`), still normalize Goldberg `listen_port` deterministically while mirroring that value into the Nemirtingas override so both systems align.
+- Default Goldberg `gc_token`/`new_app_ticket` toggles to `1` (files and INI flags) so the experimental steam_api build bundled in `res/goldberg` works without manual edits.
+- Keep Goldberg's `auto_accept_invite.txt` empty when enabling auto-accept so the experimental overlay bypass matches upstream documentation; avoid writing sentinel values like `1`.
+- Guest profiles must use deterministic slot names (Guest1, Guest2, etc.) so saves persist between sessions instead of rotating through random aliases.
+- Avoid reintroducing Nemirtingas log-mirroring debug helpers; rely on the emulator's own error-level output for diagnostics.
 - Capture any newly provided project-wide user instructions in this file so they are not forgotten on future tasks.
 - When a task exposes a recurring mistake or introduces a new global rule from the user, document it here immediately so future work remains aligned.
+- Audit complete emulator logs before summarizing state transitions (e.g., JOINABLE flips) so transient values are not misreported.
+- Favor pure-Rust or system-provided tooling for HTTP/download tasks; avoid adding crates that require native C toolchains (e.g., OpenSSL, ring, zstd-sys) so Steam Deck builds stay dependency-free.

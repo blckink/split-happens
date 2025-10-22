@@ -363,8 +363,8 @@ pub fn create_symlink_folder(h: &Handler) -> Result<(), Box<dyn Error>> {
             ("disable_overlay.txt", ""),
             ("auto_accept_invite.txt", ""),
             ("disable_overlay_warning_any.txt", ""),
-            ("gc_token.txt", ""),
-            ("new_app_ticket.txt", ""),
+            ("gc_token.txt", "1"),
+            ("new_app_ticket.txt", "1"),
         ] {
             std::fs::write(steam_settings.join(file_name), contents)?;
         }

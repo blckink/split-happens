@@ -3,13 +3,14 @@ mod filesystem;
 mod hash;
 mod lock;
 mod profiles;
+mod proton;
 mod sys;
 mod updates;
 
 // Re-export functions from profiles
 pub use profiles::{
-    GUEST_NAMES, create_gamesave, create_profile, ensure_nemirtingas_config, remove_guest_profiles,
-    scan_profiles, synchronize_goldberg_profiles,
+    create_gamesave, create_profile, ensure_nemirtingas_config, remove_guest_profiles,
+    resolve_nemirtingas_ports, scan_profiles, synchronize_goldberg_profiles,
 };
 
 // Re-export functions from filesystem
@@ -24,3 +25,9 @@ pub use sys::{get_screen_resolution, kwin_dbus_start_script, kwin_dbus_unload_sc
 
 // Re-export functions from updates
 pub use updates::check_for_partydeck_update;
+
+// Re-export Proton helpers so the UI and launcher can reference them directly.
+pub use proton::{
+    ProtonEnvironment, ProtonInstall, ProtonSource, discover_proton_versions,
+    resolve_proton_environment,
+};

@@ -1,12 +1,8 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::{self, OpenOptions};
-use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
+use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
-use std::sync::{
-    Arc, Mutex,
-    atomic::{AtomicBool, Ordering},
-};
-use std::thread::JoinHandle;
+use std::sync::{Arc, Mutex};
 
 use crate::app::PartyConfig;
 use crate::game::Game;
@@ -18,6 +14,7 @@ use crate::paths::*;
 use crate::util::*;
 
 use ctrlc;
+use nix::sched::{CpuSet, sched_setaffinity};
 use nix::sys::signal::{Signal, kill};
 use nix::unistd::Pid;
 use std::process::{Child, Command, Stdio};
@@ -60,153 +57,285 @@ fn prepare_working_tree(
     Ok(run_fs)
 }
 
-/// Links the runtime Nemirtingas log location back into the profile tree so each
-/// player receives an isolated log even when the emulator writes next to the DLLs.
-fn ensure_profile_log_link(
-    profile_log: &Path,
-    runtime_log: &Path,
-) -> Result<(), Box<dyn std::error::Error>> {
-    if runtime_log == profile_log {
-        return Ok(());
-    }
-
-    if let Some(parent) = runtime_log.parent() {
-        fs::create_dir_all(parent)?;
-    }
-
-    if runtime_log.exists() || runtime_log.is_symlink() {
-        std::fs::remove_file(runtime_log)?;
-    }
-
-    std::os::unix::fs::symlink(profile_log, runtime_log)?;
-    Ok(())
+/// Tracks Nemirtingas logging metadata for an instance so we can surface the
+/// persisted emulator output once the Proton processes terminate.
+struct NemirtingasLogContext {
+    profile_log: PathBuf,
+    appdata_root: Option<PathBuf>,
 }
 
-/// Mirrors Nemirtingas logs emitted inside the Proton AppData tree back into the
-/// PartyDeck profile log so each player receives a populated `NemirtingasEpicEmu.log`.
-fn spawn_nemirtingas_log_mirror(
-    appdata_root: PathBuf,
-    profile_log: PathBuf,
-    stop_flag: Arc<AtomicBool>,
-) -> JoinHandle<()> {
-    std::thread::spawn(move || {
-        // Track how many bytes we have already mirrored for each discovered log file.
-        let mut offsets: HashMap<PathBuf, u64> = HashMap::new();
+/// Scans the Proton AppData roots for Nemirtingas log files and copies their
+/// contents into the PartyDeck profile log so the advertised path always
+/// contains the most recent emulator errors for the user.
+fn collect_nemirtingas_logs(contexts: &[NemirtingasLogContext]) {
+    for context in contexts {
+        let mut sources: Vec<PathBuf> = Vec::new();
 
-        // Build the set of Nemirtingas log roots that should be mirrored. Proton writes
-        // `NemirtingasEpicEmu` data under both `AppData/Roaming` and `AppData/Local`, so we
-        // inspect each location on every sweep to catch any new files as they appear.
-        let mut search_roots: Vec<PathBuf> = vec![appdata_root.clone()];
-        if let Some(local_root) = appdata_root
-            .parent()
-            .and_then(|roaming| roaming.parent())
-            .map(|appdata| appdata.join("Local").join("NemirtingasEpicEmu"))
-        {
-            search_roots.push(local_root);
-        }
-
-        loop {
-            // Drop offsets for files that were removed so we do not keep stale entries forever.
-            offsets.retain(|path, _| path.exists());
-
-            // Discover Nemirtingas log files under the Proton AppData directory. The emulator
-            // currently writes verbose output into hashed subdirectories that contain either
-            // `applogs.txt` or `NemirtingasEpicEmu.log`, so we look for both patterns.
-            let mut stack: Vec<PathBuf> = search_roots.clone();
-            let mut sources: Vec<PathBuf> = Vec::new();
-            while let Some(dir) = stack.pop() {
-                if !dir.exists() {
-                    continue;
-                }
-                if let Ok(entries) = fs::read_dir(&dir) {
-                    for entry in entries.flatten() {
-                        let path = entry.path();
-                        if path.is_dir() {
-                            stack.push(path);
-                            continue;
-                        }
-                        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                            let name_lower = name.to_ascii_lowercase();
-                            let is_log =
-                                name_lower.ends_with(".log") || name_lower.ends_with(".txt");
-                            let matches_prefix =
-                                name_lower.contains("nemirtingas") || name_lower.contains("applog");
-                            if is_log && matches_prefix {
-                                sources.push(path);
-                            }
-                        }
-                    }
-                }
+        if let Some(appdata_root) = &context.appdata_root {
+            let mut search_roots = vec![appdata_root.clone()];
+            if let Some(local_root) = appdata_root
+                .parent()
+                .and_then(|roaming| roaming.parent())
+                .map(|appdata| appdata.join("Local").join("NemirtingasEpicEmu"))
+            {
+                search_roots.push(local_root);
             }
 
-            // Mirror any newly appended data back into the per-profile Nemirtingas log.
-            for source in sources {
-                if let Ok(metadata) = fs::metadata(&source) {
-                    let entry = offsets.entry(source.clone()).or_insert(0);
-                    if metadata.len() < *entry {
-                        *entry = 0;
-                    }
-                    if metadata.len() > *entry {
-                        if let Ok(mut src) = std::fs::File::open(&source) {
-                            if src.seek(SeekFrom::Start(*entry)).is_ok() {
-                                let mut buffer = Vec::new();
-                                if src.read_to_end(&mut buffer).is_ok() && !buffer.is_empty() {
-                                    if let Ok(mut dest) = OpenOptions::new()
-                                        .create(true)
-                                        .append(true)
-                                        .open(&profile_log)
-                                    {
-                                        if let Err(err) = dest.write_all(&buffer) {
-                                            println!(
-                                                "[PARTYDECK][WARN] Failed to mirror Nemirtingas log {} into {}: {}",
-                                                source.display(),
-                                                profile_log.display(),
-                                                err
-                                            );
-                                        }
+            let mut stack = search_roots;
+            while let Some(path) = stack.pop() {
+                if !path.exists() {
+                    continue;
+                }
+                if path.is_dir() {
+                    match fs::read_dir(&path) {
+                        Ok(entries) => {
+                            for entry in entries.flatten() {
+                                let child = entry.path();
+                                if child.is_dir() {
+                                    stack.push(child);
+                                    continue;
+                                }
+                                if let Some(name) = child.file_name().and_then(|n| n.to_str()) {
+                                    let lower = name.to_ascii_lowercase();
+                                    let is_log = lower.ends_with(".log") || lower.ends_with(".txt");
+                                    let matches_prefix =
+                                        lower.contains("nemirtingas") || lower.contains("applog");
+                                    if is_log && matches_prefix {
+                                        sources.push(child);
                                     }
                                 }
                             }
                         }
-                        *entry = metadata.len();
-                    }
-                }
-            }
-
-            // Exit once the launcher signals the stop flag; perform one last sweep before leaving
-            // so any buffered log data is captured even if the game just exited.
-            if stop_flag.load(Ordering::Relaxed) {
-                break;
-            }
-
-            std::thread::sleep(Duration::from_millis(500));
-        }
-
-        // Final mirror pass after receiving the stop signal to capture any trailing bytes written
-        // during shutdown (skip sleeping so we do not delay teardown).
-        offsets.retain(|path, _| path.exists());
-        for (source, offset) in offsets {
-            if let Ok(metadata) = fs::metadata(&source) {
-                let mut local_offset = offset.min(metadata.len());
-                if metadata.len() > local_offset {
-                    if let Ok(mut src) = std::fs::File::open(&source) {
-                        if src.seek(SeekFrom::Start(local_offset)).is_ok() {
-                            let mut buffer = Vec::new();
-                            if src.read_to_end(&mut buffer).is_ok() && !buffer.is_empty() {
-                                if let Ok(mut dest) = OpenOptions::new()
-                                    .create(true)
-                                    .append(true)
-                                    .open(&profile_log)
-                                {
-                                    let _ = dest.write_all(&buffer);
-                                }
-                            }
+                        Err(err) => {
+                            println!(
+                                "[PARTYDECK][WARN] Failed to enumerate Nemirtingas logs under {}: {}",
+                                path.display(),
+                                err
+                            );
                         }
                     }
                 }
             }
         }
-    })
+
+        sources.sort();
+        sources.dedup();
+
+        let mut aggregated: Vec<u8> = Vec::new();
+        for source in sources {
+            match fs::read(&source) {
+                Ok(data) => {
+                    let header = format!("===== {} =====\n", source.display());
+                    aggregated.extend_from_slice(header.as_bytes());
+                    aggregated.extend_from_slice(&data);
+                    if !data.ends_with(b"\n") {
+                        aggregated.push(b'\n');
+                    }
+                    aggregated.push(b'\n');
+                }
+                Err(err) => {
+                    println!(
+                        "[PARTYDECK][WARN] Failed to read Nemirtingas log {}: {}",
+                        source.display(),
+                        err
+                    );
+                }
+            }
+        }
+
+        if aggregated.is_empty() {
+            continue;
+        }
+
+        if let Some(parent) = context.profile_log.parent() {
+            if let Err(err) = fs::create_dir_all(parent) {
+                println!(
+                    "[PARTYDECK][WARN] Failed to prepare Nemirtingas log directory {}: {}",
+                    parent.display(),
+                    err
+                );
+                continue;
+            }
+        }
+
+        match OpenOptions::new()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .open(&context.profile_log)
+        {
+            Ok(mut dest) => {
+                if let Err(err) = dest.write_all(&aggregated) {
+                    println!(
+                        "[PARTYDECK][WARN] Failed to persist Nemirtingas log {}: {}",
+                        context.profile_log.display(),
+                        err
+                    );
+                }
+            }
+            Err(err) => {
+                println!(
+                    "[PARTYDECK][WARN] Failed to open Nemirtingas log {}: {}",
+                    context.profile_log.display(),
+                    err
+                );
+            }
+        }
+    }
+}
+
+/// Ensures the targeted Proton prefix is not held by lingering Wine processes
+/// by issuing a graceful shutdown and waiting for cleanup.
+fn drain_stale_proton_session(prefix: &str, proton_env: &ProtonEnvironment) {
+    let prefix_path = Path::new(prefix);
+    if !prefix_path.exists() {
+        return;
+    }
+
+    let actions = [("-k", "terminate"), ("-w", "wait for cleanup")];
+    for (flag, description) in actions {
+        let mut helper = Command::new(&*BIN_UMU_RUN);
+        helper.env("PROTON_VERB", "run");
+        helper.env("PROTONPATH", proton_env.env_value.clone());
+        helper.env("WINEPREFIX", prefix);
+        helper.env("STEAM_COMPAT_DATA_PATH", prefix);
+        helper.env("SDL_JOYSTICK_HIDAPI", "0");
+        helper.env("ENABLE_GAMESCOPE_WSI", "0");
+        helper.env("PROTON_DISABLE_HIDRAW", "1");
+        helper.arg("--");
+        helper.arg("wineserver");
+        helper.arg(flag);
+
+        match helper.status() {
+            Ok(status) => {
+                if !status.success() {
+                    log_launch_warning(&format!(
+                        "wineserver {flag} failed to {description} prefix {} (status: {status})",
+                        prefix_path.display(),
+                    ));
+                }
+            }
+            Err(err) => {
+                log_launch_warning(&format!(
+                    "Failed to run wineserver {flag} while preparing prefix {}: {}",
+                    prefix_path.display(),
+                    err
+                ));
+                break;
+            }
+        }
+    }
+}
+
+/// Distributes CPU cores across running instances while keeping the affinity sets
+/// as balanced as possible. The first few players (host included) receive a single
+/// extra logical core whenever the CPU count is not perfectly divisible so hosting
+/// retains a light advantage without starving other instances.
+fn apply_instance_cpu_affinity(pid: u32, instance_index: usize, total_instances: usize) {
+    if total_instances <= 1 {
+        return;
+    }
+
+    let Ok(cpu_count) = std::thread::available_parallelism() else {
+        println!(
+            "[PARTYDECK][WARN] Unable to query CPU core count for affinity; leaving instance {} unpinned.",
+            instance_index + 1
+        );
+        return;
+    };
+    let cpu_count = cpu_count.get();
+
+    if cpu_count == 0 {
+        println!(
+            "[PARTYDECK][WARN] Reported CPU core count was zero; skipping affinity for instance {}.",
+            instance_index + 1
+        );
+        return;
+    }
+
+    if cpu_count < total_instances {
+        println!(
+            "[PARTYDECK][WARN] Only {} CPU cores available for {} instances; skipping affinity to avoid starving players.",
+            cpu_count, total_instances
+        );
+        return;
+    }
+
+    let base = cpu_count / total_instances;
+    if base == 0 {
+        return;
+    }
+    let remainder = cpu_count % total_instances;
+    let extra = if instance_index < remainder { 1 } else { 0 };
+    let target_width = base + extra;
+
+    if target_width == 0 {
+        println!(
+            "[PARTYDECK][WARN] Calculated empty CPU set for instance {}; affinity skipped.",
+            instance_index + 1
+        );
+        return;
+    }
+
+    // `CpuSet::new` zero-initializes an affinity mask for us on glibc-based
+    // targets, so there is no failure path to handle here while targeting the
+    // Steam Deck runtime.
+    let mut cpuset = CpuSet::new();
+
+    // Assign logical cores in a round-robin pattern so each instance stays close in size
+    // while the first few players receive the leftover cores.
+    let mut assigned: Vec<usize> = Vec::with_capacity(target_width);
+    for core in (instance_index..cpu_count).step_by(total_instances) {
+        assigned.push(core);
+        if assigned.len() == target_width {
+            break;
+        }
+    }
+
+    if assigned.is_empty() {
+        println!(
+            "[PARTYDECK][WARN] No CPU cores mapped to instance {}; affinity skipped.",
+            instance_index + 1
+        );
+        return;
+    }
+
+    for &core in &assigned {
+        if let Err(err) = cpuset.set(core) {
+            println!(
+                "[PARTYDECK][WARN] Unable to add core {} to affinity set for instance {}: {}",
+                core,
+                instance_index + 1,
+                err
+            );
+            return;
+        }
+    }
+
+    let target_pid = Pid::from_raw(pid as i32);
+    match sched_setaffinity(target_pid, &cpuset) {
+        Ok(_) => {
+            let core_list = assigned
+                .iter()
+                .map(|core| core.to_string())
+                .collect::<Vec<_>>()
+                .join(", ");
+            println!(
+                "[PARTYDECK] Bound instance {}/{} (PID {}) to CPU cores [{}]",
+                instance_index + 1,
+                total_instances,
+                pid,
+                core_list
+            );
+        }
+        Err(err) => {
+            println!(
+                "[PARTYDECK][WARN] Failed to set CPU affinity for instance {}: {}",
+                instance_index + 1,
+                err
+            );
+        }
+    }
 }
 
 /// Appends launch diagnostics to a persistent log so users can inspect warnings after the game exits.
@@ -484,19 +613,18 @@ pub fn launch_game(
         HandlerRef(h) => h.uid.clone(),
     };
 
+    let profile_names: Vec<String> = instances
+        .iter()
+        .map(|instance| instance.profname.clone())
+        .collect();
+
     let mut synchronized_goldberg_port: Option<u16> = None;
     if let HandlerRef(h) = game {
-        if !h.path_goldberg.is_empty() {
+        if !h.path_goldberg.is_empty() && !profile_names.is_empty() {
             // Normalize Goldberg LAN metadata so every running instance advertises the
             // same listen port and exposes required identity files for lobby discovery.
-            let profile_names: Vec<String> = instances
-                .iter()
-                .map(|instance| instance.profname.clone())
-                .collect();
-            if !profile_names.is_empty() {
-                synchronized_goldberg_port =
-                    Some(synchronize_goldberg_profiles(&profile_names, &game_id)?);
-            }
+            synchronized_goldberg_port =
+                synchronize_goldberg_profiles(&profile_names, &game_id, None)?;
         }
     }
 
@@ -506,7 +634,24 @@ pub fn launch_game(
             game_id, port
         );
     }
-    let synchronized_goldberg_port_env = synchronized_goldberg_port.map(|port| port.to_string());
+    let mut nemirtingas_ports: HashMap<String, u16> = HashMap::new();
+    if let HandlerRef(h) = game {
+        if !h.path_nemirtingas.is_empty() && !profile_names.is_empty() {
+            // Resolve deterministic Nemirtingas LAN ports per profile so each instance binds a
+            // unique UDP socket without fighting for the same override on the same machine.
+            nemirtingas_ports =
+                resolve_nemirtingas_ports(&profile_names, &game_id, synchronized_goldberg_port);
+
+            for profile in &profile_names {
+                if let Some(port) = nemirtingas_ports.get(profile) {
+                    println!(
+                        "[PARTYDECK] Nemirtingas LAN port for profile {} on {} resolved to {}",
+                        profile, game_id, port
+                    );
+                }
+            }
+        }
+    }
     let mut locks_vec = Vec::new();
     for instance in instances {
         let lock = ProfileLock::acquire(&game_id, &instance.profname)?;
@@ -559,6 +704,25 @@ pub fn launch_game(
         HandlerRef(h) => h.exec.clone(),
     };
 
+    let proton_env = if win {
+        let resolved = resolve_proton_environment(cfg.proton_version.as_str());
+        if resolved.root_path.is_none() {
+            log_launch_warning(&format!(
+                "Unable to verify Proton build '{}' on disk; continuing with the provided hint.",
+                resolved.display_name
+            ));
+        } else if let Some(path) = &resolved.root_path {
+            println!(
+                "[PARTYDECK] Using Proton build {} at {}",
+                resolved.display_name,
+                path.display()
+            );
+        }
+        Some(resolved)
+    } else {
+        None
+    };
+
     let runtime = if win {
         BIN_UMU_RUN.to_string_lossy().to_string()
     } else if let HandlerRef(h) = game {
@@ -604,11 +768,18 @@ pub fn launch_game(
     }
 
     let mut children: Vec<Child> = Vec::new();
-    let mut log_mirrors: Vec<(Arc<AtomicBool>, JoinHandle<()>)> = Vec::new();
+    let mut nemirtingas_logs: Vec<NemirtingasLogContext> = Vec::new();
+    let mut drained_prefixes: HashSet<String> = HashSet::new();
     for (i, instance) in instances.iter().enumerate() {
+        let profile_port = nemirtingas_ports.get(&instance.profname).copied();
+
         let (nepice_dir, json_path, log_path, sha1_nemirtingas) =
-            ensure_nemirtingas_config(&instance.profname, &game_id)?;
+            ensure_nemirtingas_config(&instance.profname, &game_id, profile_port)?;
         let json_real = json_path.canonicalize()?;
+        let mut log_context = NemirtingasLogContext {
+            profile_log: log_path.clone(),
+            appdata_root: None,
+        };
 
         let instance_gamedir = if use_bwrap {
             gamedir.clone()
@@ -664,9 +835,6 @@ pub fn launch_game(
                     // Bind the entire nepice_settings directory so Nemirtingas uses a unique
                     // AppData root per profile instead of sharing a global emulator context.
                     nemirtingas_binds.push((nepice_dir.clone(), dest_dir.clone()));
-                } else {
-                    let runtime_log = dest_dir.join("NemirtingasEpicEmu.log");
-                    ensure_profile_log_link(&log_path, &runtime_log)?;
                 }
             }
         }
@@ -690,19 +858,16 @@ pub fn launch_game(
             }
             cmd.env("SDL_DYNAMIC_API", format!("{steam}/{path_sdl}"));
         }
-        if let Some(port) = &synchronized_goldberg_port_env {
-            // Align Nemirtingas LAN discovery with Goldberg by forcing both emulators to use
-            // the same UDP port so EOS beacons reach Goldberg listeners reliably.
-            cmd.env("EOS_OVERRIDE_LAN_PORT", port);
+        if let Some(port) = profile_port {
+            // Pin Nemirtingas LAN discovery to each profile's deterministic port so concurrent
+            // instances no longer contend for the same UDP socket and stop auto-incrementing.
+            cmd.env("EOS_OVERRIDE_LAN_PORT", port.to_string());
         }
         if win {
-            let protonpath = if cfg.proton_version.is_empty() {
-                "GE-Proton".to_string()
-            } else {
-                cfg.proton_version.clone()
-            };
-            cmd.env("PROTON_VERB", "run");
-            cmd.env("PROTONPATH", protonpath);
+            if let Some(env) = &proton_env {
+                cmd.env("PROTON_VERB", "run");
+                cmd.env("PROTONPATH", env.env_value.clone());
+            }
             if let HandlerRef(h) = game {
                 if !h.dll_overrides.is_empty() {
                     let mut overrides = String::new();
@@ -731,20 +896,20 @@ pub fn launch_game(
             std::fs::create_dir_all(&pfx)?;
             cmd.env("WINEPREFIX", &pfx);
             cmd.env("STEAM_COMPAT_DATA_PATH", &pfx);
-
-            // Spawn a background mirror so Proton's AppData logs are copied back into the
-            // PartyDeck profile tree, keeping per-player Nemirtingas logs populated.
-            let appdata_root = PathBuf::from(&pfx)
-                .join("drive_c")
-                .join("users")
-                .join("steamuser")
-                .join("AppData")
-                .join("Roaming")
-                .join("NemirtingasEpicEmu");
-            let stop_flag = Arc::new(AtomicBool::new(false));
-            let handle =
-                spawn_nemirtingas_log_mirror(appdata_root, log_path.clone(), stop_flag.clone());
-            log_mirrors.push((stop_flag, handle));
+            if let Some(env) = &proton_env {
+                if env.root_path.is_some() && drained_prefixes.insert(pfx.clone()) {
+                    drain_stale_proton_session(&pfx, env);
+                }
+            }
+            log_context.appdata_root = Some(
+                PathBuf::from(&pfx)
+                    .join("drive_c")
+                    .join("users")
+                    .join("steamuser")
+                    .join("AppData")
+                    .join("Roaming")
+                    .join("NemirtingasEpicEmu"),
+            );
         }
 
         cmd.arg("-W").arg(instance.width.to_string());
@@ -884,7 +1049,11 @@ pub fn launch_game(
         cmd.stderr(Stdio::piped());
 
         let mut child = cmd.spawn()?;
-        child_pids.lock().unwrap().push(child.id());
+        let raw_pid = child.id();
+        child_pids.lock().unwrap().push(raw_pid);
+        // Apply the CPU affinity policy immediately so each instance starts with its
+        // dedicated share of cores instead of fighting for resources mid-boot.
+        apply_instance_cpu_affinity(raw_pid, i, instances.len());
 
         if let Some(stdout) = child.stdout.take() {
             forward_child_output(stdout);
@@ -894,6 +1063,7 @@ pub fn launch_game(
         }
 
         children.push(child);
+        nemirtingas_logs.push(log_context);
 
         if i < instances.len() - 1 {
             std::thread::sleep(Duration::from_secs(6));
@@ -904,10 +1074,7 @@ pub fn launch_game(
         let _ = child.wait();
     }
 
-    for (flag, handle) in log_mirrors {
-        flag.store(true, Ordering::Relaxed);
-        let _ = handle.join();
-    }
+    collect_nemirtingas_logs(&nemirtingas_logs);
 
     if let Ok(pids) = child_pids.lock() {
         for pid in pids.iter() {
