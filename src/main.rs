@@ -84,11 +84,9 @@ fn main() -> eframe::Result {
     }
 
     let (_, scrheight) = get_screen_resolution();
-
-    let scale = match fullscreen {
-        true => scrheight as f32 / 560.0,
-        false => 1.3,
-    };
+    let zoom_factor = recommended_zoom_factor(fullscreen, scrheight);
+    let repaint_interval = recommended_repaint_interval(fullscreen, scrheight);
+    let steamdeck = is_steam_deck();
 
     let light = !exec.is_empty();
 
@@ -97,7 +95,7 @@ fn main() -> eframe::Result {
         false => 1080.0,
     };
 
-    let options = eframe::NativeOptions {
+    let mut options = eframe::NativeOptions {
         viewport: eframe::egui::ViewportBuilder::default()
             .with_inner_size([win_width, 540.0])
             .with_min_inner_size([640.0, 360.0])
@@ -108,19 +106,30 @@ fn main() -> eframe::Result {
             ),
         ..Default::default()
     };
+    options.vsync = true;
+    if steamdeck {
+        options.hardware_acceleration = eframe::HardwareAcceleration::Required;
+    }
 
     println!("\n[PARTYDECK] starting...\n");
+    if steamdeck {
+        println!("[PARTYDECK] Steam Deck optimizations enabled");
+    }
 
     eframe::run_native(
         "PartyDeck",
         options,
-        Box::new(|cc| {
+        Box::new(move |cc| {
             // This gives us image support:
             egui_extras::install_image_loaders(&cc.egui_ctx);
-            cc.egui_ctx.set_zoom_factor(scale);
+            cc.egui_ctx.set_zoom_factor(zoom_factor);
             Ok(match light {
-                true => Box::<LightPartyApp>::new(LightPartyApp::new_lightapp(exec, execargs)),
-                false => Box::<PartyApp>::default(),
+                true => Box::<LightPartyApp>::new(LightPartyApp::new_lightapp(
+                    exec,
+                    execargs,
+                    repaint_interval,
+                )),
+                false => Box::<PartyApp>::new(PartyApp::with_repaint_interval(repaint_interval)),
             })
         }),
     )
