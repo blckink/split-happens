@@ -33,10 +33,17 @@ pub struct LightPartyApp {
     pub loading_since: Option<std::time::Instant>,
     #[allow(dead_code)]
     pub task: Option<std::thread::JoinHandle<()>>,
+    /// Mirror the repaint pacing knob from the full UI so both modes behave the
+    /// same way on Steam Deck hardware.
+    pub repaint_interval: std::time::Duration,
 }
 
 impl LightPartyApp {
-    pub fn new_lightapp(exec: String, execargs: String) -> Self {
+    pub fn new_lightapp(
+        exec: String,
+        execargs: String,
+        repaint_interval: std::time::Duration,
+    ) -> Self {
         let options = load_cfg();
         let input_devices = scan_input_devices(&options.pad_filter_type);
         // placeholder, user should define this
@@ -53,6 +60,7 @@ impl LightPartyApp {
             loading_msg: None,
             loading_since: None,
             task: None,
+            repaint_interval,
         }
     }
 }
@@ -135,7 +143,7 @@ impl eframe::App for LightPartyApp {
                 });
         }
         if ctx.input(|input| input.focused) {
-            ctx.request_repaint_after(std::time::Duration::from_millis(33)); // 30 fps
+            ctx.request_repaint_after(self.repaint_interval);
         }
     }
 }

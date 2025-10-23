@@ -44,6 +44,9 @@ pub struct PartyApp {
     pub loading_since: Option<std::time::Instant>,
     #[allow(dead_code)]
     pub task: Option<std::thread::JoinHandle<()>>,
+    /// Target interval between egui repaints so Steam Deck builds can dial in
+    /// smoother menus when docked without sacrificing handheld battery life.
+    pub repaint_interval: std::time::Duration,
 }
 
 macro_rules! cur_game {
@@ -54,6 +57,14 @@ macro_rules! cur_game {
 
 impl Default for PartyApp {
     fn default() -> Self {
+        Self::with_repaint_interval(std::time::Duration::from_millis(33))
+    }
+}
+
+impl PartyApp {
+    /// Builds the full PartyDeck UI with a specific repaint interval so the
+    /// main application can align frame pacing with the detected display.
+    pub fn with_repaint_interval(repaint_interval: std::time::Duration) -> Self {
         let options = load_cfg();
         let input_devices = scan_input_devices(&options.pad_filter_type);
         Self {
@@ -72,6 +83,7 @@ impl Default for PartyApp {
             loading_msg: None,
             loading_since: None,
             task: None,
+            repaint_interval,
         }
     }
 }
@@ -168,7 +180,7 @@ impl eframe::App for PartyApp {
                 });
         }
         if ctx.input(|input| input.focused) {
-            ctx.request_repaint_after(std::time::Duration::from_millis(33)); // 30 fps
+            ctx.request_repaint_after(self.repaint_interval);
         }
     }
 }

@@ -23,10 +23,19 @@ if ! command -v cc >/dev/null 2>&1; then
   fi
 fi
 
+# Tighten the release profile when building on SteamOS/Steam Deck hardware so
+# the binaries benefit from the platform's Zen 2 CPU and lean linker settings
+# without requiring manual cargo configuration tweaks.
+if [ -r /etc/os-release ] && grep -qi 'steamos' /etc/os-release; then
+  export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C target-cpu=znver2 -C link-arg=-Wl,-O1"
+  export CARGO_PROFILE_RELEASE_LTO="${CARGO_PROFILE_RELEASE_LTO:-thin}"
+fi
+
 cargo build --release && \
 rm -rf build/partydeck
 mkdir -p build/ build/res build/bin && \
 cp target/release/partydeck build/ && \
+command -v strip >/dev/null 2>&1 && strip build/partydeck || true && \
 cp LICENSE build/ && cp COPYING.md build/thirdparty.txt && \
 cp res/splitscreen_kwin.js res/splitscreen_kwin_vertical.js build/res && \
 gsc=$(command -v gamescope || true) && \

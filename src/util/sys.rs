@@ -3,6 +3,8 @@ use std::error::Error;
 use std::path::PathBuf;
 use x11rb::connection::Connection;
 
+use super::steamdeck::is_steam_deck;
+
 pub fn msg(title: &str, contents: &str) {
     let _ = dialog::Message::new(contents).title(title).show();
 }
@@ -29,8 +31,12 @@ pub fn get_screen_resolution() -> (u32, u32) {
         );
     }
     // Fallback to a common resolution if detection fails
-    println!("Failed to detect screen resolution, using fallback 1920x1080");
-    (1920, 1080)
+    println!("Failed to detect screen resolution, using Steam Deck friendly fallback");
+    if is_steam_deck() {
+        (1280, 800)
+    } else {
+        (1920, 1080)
+    }
 }
 
 // Sends the splitscreen script to the active KWin session through DBus
