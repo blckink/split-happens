@@ -118,13 +118,13 @@ pub fn kwin_dbus_start_script(file: PathBuf) -> Result<(), Box<dyn Error>> {
     // Prefer the identifier returned by KWin so we stop the exact runtime instance,
     // but gracefully fall back to the legacy string-based API when the compositor
     // rejects numeric handles on newer Plasma builds.
-    if let Err(err) = proxy.call::<(), _>("start", &(script_id.clone(),)) {
+    if let Err(err) = proxy.call::<_, _, ()>("start", &(script_id.clone(),)) {
         if kwin_signature_mismatch(&err) {
             println!(
                 "KWin rejected script id {}; retrying with string fallback...",
                 describe_kwin_id(&script_id)
             );
-            proxy.call::<(), _>("start", &("splitscreen",))?;
+            proxy.call::<_, _, ()>("start", &("splitscreen",))?;
         } else {
             return Err(Box::new(err));
         }
@@ -157,13 +157,13 @@ pub fn kwin_dbus_unload_script() -> Result<(), Box<dyn Error>> {
         // Attempt to unload by identifier first and gracefully fall back to the
         // string API when the compositor expects a name-only signature.
         let label = describe_kwin_id(&id);
-        if let Err(err) = proxy.call::<bool, _>("unloadScript", &(id,)) {
+        if let Err(err) = proxy.call::<_, _, bool>("unloadScript", &(id,)) {
             if kwin_signature_mismatch(&err) {
                 println!(
                     "KWin rejected script id {}; unloading via name fallback...",
                     label
                 );
-                proxy.call::<bool, _>("unloadScript", &("splitscreen",))?;
+                proxy.call::<_, _, bool>("unloadScript", &("splitscreen",))?;
             } else {
                 return Err(Box::new(err));
             }
