@@ -6,6 +6,8 @@
 - For UI changes, ensure a modern, well-aligned, and consistent presentation without unnecessary spacing around elements.
 - Keep the build tooling resilient by re-executing `build.sh` inside `steam-run` when no system linker is present instead of prompting users to install compilers manually.
 - When both `cc` and compiler shims are unavailable, rely on the bundled `rust-lld` fallback so builds continue to work on minimal SteamOS environments.
+- Capture host linker search paths (including libgcc) before the `steam-run` re-exec so the rust-lld fallback can still locate them when the runtime hides the system ld cache.
+- When capturing host linker assets, mirror `libgcc_s.so.1` into `target/rust-lld-shims` so sandboxed builds do not rely on host-only paths.
 - When driving `rust-lld` fallbacks, harvest library search paths with `ldconfig` so glibc and friends remain discoverable, and avoid passing `-Wl,`-prefixed linker flags that the standalone linker rejects.
 - Default Nemirtingas configuration log levels to error severity; only surface critical emulator issues in per-player logs.
 - Persist launch warnings to a text log under the PARTY directory in addition to printing them to the console for easier debugging.
