@@ -9,4 +9,4 @@ pub use app::PartyApp;
 pub use app_light::LightPartyApp;
 pub use config::PadFilterType;
 pub use config::PartyConfig;
-pub use theme::apply_partydeck_theme;
+pub use theme::apply_split_happens_theme;

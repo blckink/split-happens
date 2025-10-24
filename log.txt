@@ -1,12 +1,12 @@
 Found root path for coralisland: /home/deck/.local/share/Steam/steamapps/common/Coral Island
-[PARTYDECK] Handler coralisland uses executable /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe
-[PARTYDECK] Handler coralisland expects Nemirtingas config at /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json
-[PARTYDECK][WARN] No EOSSDK files were found next to /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json. Nemirtingas may fail to initialize.
+[SPLIT HAPPENS] Handler coralisland uses executable /home/deck/.local/share/split-happens/gamesyms/coralisland/ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe
+[SPLIT HAPPENS] Handler coralisland expects Nemirtingas config at /home/deck/.local/share/split-happens/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json
+[SPLIT HAPPENS][WARN] No EOSSDK files were found next to /home/deck/.local/share/split-happens/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json. Nemirtingas may fail to initialize.
 bubblewrap 0.11.0
-Loading script /home/deck/Desktop/partydeck-rs-main/suckmydeck/suckmydeck/build/res/splitscreen_kwin.js...
+Loading script /home/deck/Desktop/split-happens-rs-main/suckmydeck/suckmydeck/build/res/splitscreen_kwin.js...
 Script loaded. Starting...
 KWin script started.
-Instance tyde: Nemirtingas config /home/deck/.local/share/partydeck/profiles/tyde/nepice_settings/NemirtingasEpicEmu.json (SHA1 256cdf37280f7ce550b31779ca416b5f2146befb) -> /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json (user tyde appid coralisland)
+Instance tyde: Nemirtingas config /home/deck/.local/share/split-happens/profiles/tyde/nepice_settings/NemirtingasEpicEmu.json (SHA1 256cdf37280f7ce550b31779ca416b5f2146befb) -> /home/deck/.local/share/split-happens/gamesyms/coralisland/ProjectCoral/Binaries/Win64/nepice_settings/NemirtingasEpicEmu.json (user tyde appid coralisland)
 [gamescope] [Info]  console: gamescope version 3.16.14 (gcc 14.2.1)
 Tracing is enabled
 [gamescope] [Info]  scriptmgr: Loading scripts from: '/usr/share/gamescope/scripts'
@@ -68,10 +68,10 @@ INFO: Extracting GE-Proton10-17.tar.gz...
 INFO: /home/deck/.cache/umu/tmpcg8pr7pf/GE-Proton10-17 -> /home/deck/.local/share/Steam/compatibilitytools.d
 INFO: Using GE-Proton10-17
 i386-linux-gnu-capsule-capture-libs: warning: Dependencies of /usr/lib32/libMangoHud.so not found, ignoring: Missing dependencies: Could not find "libxkbcommon.so.0" in LD_LIBRARY_PATH "", ld.so.cache, DT_RUNPATH or fallback /lib:/usr/lib
-Proton: Upgrading prefix from GE-Proton10-16 to GE-Proton10-17 (/home/deck/.local/share/partydeck/pfx/tyde_1/)
+Proton: Upgrading prefix from GE-Proton10-16 to GE-Proton10-17 (/home/deck/.local/share/split-happens/pfx/tyde_1/)
 Proton: Prefix has an invalid version?! You may want to back up user files and delete this prefix.
 ProtonFixes[14459] WARN: Skipping fix execution. We are probably running an unit test.
-Proton: /home/deck/.local/share/partydeck/gamesyms/coralisland/ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe
+Proton: /home/deck/.local/share/split-happens/gamesyms/coralisland/ProjectCoral/Binaries/Win64/ProjectCoral-Win64-Shipping.exe
 Proton: Executable a unix path, launching with /unix option.
 fsync: up and running.
 ATTENTION: default value of option vk_xwayland_wait_ready overridden by environment.

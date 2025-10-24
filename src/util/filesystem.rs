@@ -121,7 +121,7 @@ pub fn get_rootpath(uid: &str) -> Result<String, Box<dyn Error>> {
 
 fn add_path(uid: &str, path: &String) -> Result<(), Box<dyn Error>> {
     println!("Updating paths.json with {uid}: {path}");
-    let mut paths = if let Ok(file) = File::open(PATH_PARTY.join("paths.json")) {
+    let mut paths = if let Ok(file) = File::open(PATH_APP.join("paths.json")) {
         serde_json::from_reader(BufReader::new(file))
             .unwrap_or(Value::Object(serde_json::Map::new()))
     } else {
@@ -131,7 +131,7 @@ fn add_path(uid: &str, path: &String) -> Result<(), Box<dyn Error>> {
     if let Value::Object(ref mut map) = paths {
         map.insert(uid.to_string(), Value::String(path.clone()));
         std::fs::write(
-            PATH_PARTY.join("paths.json"),
+            PATH_APP.join("paths.json"),
             serde_json::to_string_pretty(&paths)?,
         )?;
     }
@@ -140,7 +140,7 @@ fn add_path(uid: &str, path: &String) -> Result<(), Box<dyn Error>> {
 
 fn find_saved_path(uid: &str) -> Option<Result<String, Box<dyn Error>>> {
     println!("Reading paths.json for root path of {uid}");
-    if let Ok(file) = File::open(PATH_PARTY.join("paths.json")) {
+    if let Ok(file) = File::open(PATH_APP.join("paths.json")) {
         let reader = BufReader::new(file);
         if let Ok(json) = serde_json::from_reader::<_, Value>(reader) {
             if let Some(path) = json.get(uid) {

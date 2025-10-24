@@ -1,12 +1,12 @@
 use std::process::Command;
 
-pub fn check_for_partydeck_update() -> bool {
+pub fn check_for_split_happens_update() -> bool {
     // Use the system curl binary so Steam Deck users do not need a native TLS stack
     if let Ok(output) = Command::new("curl")
         .args([
             "-sSf",
             "-H",
-            "User-Agent: partydeck",
+            "User-Agent: split-happens",
             "https://api.github.com/repos/blckink/suckmydeck/releases/latest",
         ])
         .output()
@@ -33,7 +33,7 @@ pub fn check_for_partydeck_update() -> bool {
         } else if !output.stderr.is_empty() {
             // Surface curl's stderr when the request itself fails so developers can debug network issues locally
             eprintln!(
-                "partydeck update check failed: {}",
+                "Split Happens update check failed: {}",
                 String::from_utf8_lossy(&output.stderr)
             );
         }

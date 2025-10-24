@@ -48,7 +48,7 @@ impl Default for PartyConfig {
 }
 
 pub fn load_cfg() -> PartyConfig {
-    let path = PATH_PARTY.join("settings.json");
+    let path = PATH_APP.join("settings.json");
 
     if let Ok(file) = File::open(path) {
         if let Ok(config) = serde_json::from_reader::<_, PartyConfig>(BufReader::new(file)) {
@@ -61,7 +61,7 @@ pub fn load_cfg() -> PartyConfig {
 }
 
 pub fn save_cfg(config: &PartyConfig) -> Result<(), Box<dyn Error>> {
-    let path = PATH_PARTY.join("settings.json");
+    let path = PATH_APP.join("settings.json");
     let file = File::create(path)?;
     serde_json::to_writer_pretty(file, config)?;
     Ok(())

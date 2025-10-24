@@ -72,13 +72,13 @@ impl Default for PartyApp {
 }
 
 impl PartyApp {
-    /// Builds the full PartyDeck UI with a specific repaint interval so the
+    /// Builds the full Split Happens UI with a specific repaint interval so the
     /// main application can align frame pacing with the detected display.
     pub fn with_repaint_interval(repaint_interval: std::time::Duration) -> Self {
         let options = load_cfg();
         let input_devices = scan_input_devices(&options.pad_filter_type);
         Self {
-            needs_update: check_for_partydeck_update(),
+            needs_update: check_for_split_happens_update(),
             options,
             cur_page: MenuPage::Home,
             infotext: String::new(),
@@ -350,7 +350,7 @@ impl PartyApp {
     }
 
     /// Refreshes the cached Proton installation list so users can discover new
-    /// compatibility tools without restarting PartyDeck.
+    /// compatibility tools without restarting Split Happens.
     pub fn refresh_proton_versions(&mut self) {
         self.proton_versions = discover_proton_versions();
     }
@@ -363,7 +363,7 @@ impl PartyApp {
             msg("Error", &format!("Couldn't add game: {err}"));
         }
 
-        let dir_tmp = PATH_PARTY.join("tmp");
+        let dir_tmp = PATH_APP.join("tmp");
         if dir_tmp.exists() {
             if let Err(err) = std::fs::remove_dir_all(&dir_tmp) {
                 eprintln!("Failed to remove temporary handler files: {err}");

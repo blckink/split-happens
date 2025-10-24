@@ -2682,33 +2682,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "partydeck"
-version = "0.6.2"
-dependencies = [
- "ctrlc",
- "dialog",
- "eframe",
- "egui_extras",
- "env_logger",
- "evdev",
- "fs2",
- "image",
- "nix 0.28.0",
- "rand 0.9.1",
- "rfd",
- "semver",
- "serde",
- "serde_json",
- "sha1",
- "steamlocate",
- "tar",
- "walkdir",
- "x11rb",
- "zbus 5.6.0",
- "zip",
-]
-
-[[package]]
 name = "paste"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3477,6 +3450,33 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eda41003dc44290527a59b13432d4a0379379fa074b70174882adfbdfd917844"
 dependencies = [
  "bitflags 2.9.0",
+]
+
+[[package]]
+name = "split-happens"
+version = "0.6.2"
+dependencies = [
+ "ctrlc",
+ "dialog",
+ "eframe",
+ "egui_extras",
+ "env_logger",
+ "evdev",
+ "fs2",
+ "image",
+ "nix 0.28.0",
+ "rand 0.9.1",
+ "rfd",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha1",
+ "steamlocate",
+ "tar",
+ "walkdir",
+ "x11rb",
+ "zbus 5.6.0",
+ "zip",
 ]
 
 [[package]]

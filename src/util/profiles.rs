@@ -63,12 +63,12 @@ fn normalize_hex(value: &str) -> Option<String> {
 /// Logs a warning both to stdout and the persistent launch warning log so profile repairs are
 /// visible even after the session ends.
 fn log_profile_warning(message: &str) {
-    println!("[PARTYDECK][WARN] {message}");
+    println!("[SPLIT HAPPENS][WARN] {message}");
 
-    let log_dir = PATH_PARTY.join("logs");
+    let log_dir = PATH_APP.join("logs");
     if let Err(err) = fs::create_dir_all(&log_dir) {
         println!(
-            "[PARTYDECK][WARN] Failed to prepare launch log directory {}: {}",
+            "[SPLIT HAPPENS][WARN] Failed to prepare launch log directory {}: {}",
             log_dir.display(),
             err
         );
@@ -83,7 +83,7 @@ fn log_profile_warning(message: &str) {
         .and_then(|mut file| writeln!(file, "[WARN] {message}"))
     {
         println!(
-            "[PARTYDECK][WARN] Failed to persist launch warning log {}: {}",
+            "[SPLIT HAPPENS][WARN] Failed to persist launch warning log {}: {}",
             log_path.display(),
             err
         );
@@ -92,7 +92,7 @@ fn log_profile_warning(message: &str) {
 
 // Makes a folder and sets up Goldberg Steam Emu profile for Steam games
 pub fn create_profile(name: &str) -> Result<(), std::io::Error> {
-    let profile_dir = PATH_PARTY.join(format!("profiles/{name}"));
+    let profile_dir = PATH_APP.join(format!("profiles/{name}"));
 
     if !profile_dir.exists() {
         println!("Creating profile {name}");
@@ -120,7 +120,7 @@ pub fn rename_profile(old_name: &str, new_name: &str) -> io::Result<()> {
         return Ok(());
     }
 
-    let source_dir = PATH_PARTY.join(format!("profiles/{old_name}"));
+    let source_dir = PATH_APP.join(format!("profiles/{old_name}"));
     if !source_dir.exists() {
         return Err(io::Error::new(
             ErrorKind::NotFound,
@@ -128,7 +128,7 @@ pub fn rename_profile(old_name: &str, new_name: &str) -> io::Result<()> {
         ));
     }
 
-    let target_dir = PATH_PARTY.join(format!("profiles/{new_name}"));
+    let target_dir = PATH_APP.join(format!("profiles/{new_name}"));
     if target_dir.exists() {
         return Err(io::Error::new(
             ErrorKind::AlreadyExists,
@@ -285,7 +285,7 @@ fn read_config_value(config_path: &Path, key: &str) -> Option<String> {
 /// instances share a stable LAN discovery socket without clashing across different games.
 fn deterministic_goldberg_port(game_id: &str) -> u16 {
     let mut hasher = Sha1::new();
-    hasher.update(format!("partydeck-goldberg-port:{game_id}").as_bytes());
+    hasher.update(format!("split-happens-goldberg-port:{game_id}").as_bytes());
     let digest = hasher.finalize();
 
     let raw = u16::from_be_bytes([digest[0], digest[1]]);
@@ -296,7 +296,9 @@ fn deterministic_goldberg_port(game_id: &str) -> u16 {
 /// instance shares the same override without conflicting with other titles.
 fn deterministic_nemirtingas_port(game_id: &str, profile: &str, attempt: u32) -> u16 {
     let mut hasher = Sha1::new();
-    hasher.update(format!("partydeck-nemirtingas-port:{game_id}:{profile}:{attempt}").as_bytes());
+    hasher.update(
+        format!("split-happens-nemirtingas-port:{game_id}:{profile}:{attempt}").as_bytes(),
+    );
     let digest = hasher.finalize();
 
     let raw = u16::from_be_bytes([digest[2], digest[3]]);
@@ -357,7 +359,7 @@ pub fn synchronize_goldberg_profiles(
             continue;
         }
 
-        let profile_dir = PATH_PARTY.join(format!("profiles/{name}"));
+        let profile_dir = PATH_APP.join(format!("profiles/{name}"));
         fs::create_dir_all(&profile_dir)?;
 
         let steam_settings = profile_dir.join("steam/settings");
@@ -381,7 +383,8 @@ pub fn synchronize_goldberg_profiles(
             .or_else(|| read_config_value(&config_path, "account_steamid"))
             .unwrap_or_else(|| {
                 let mut hasher = Sha1::new();
-                hasher.update(format!("partydeck-goldberg-steamid:{name}").as_bytes());
+                hasher
+                    .update(format!("split-happens-goldberg-steamid:{name}").as_bytes());
                 let digest = hasher.finalize();
                 let mut value = u128::from_be_bytes([
                     digest[0], digest[1], digest[2], digest[3], digest[4], digest[5], digest[6],
@@ -409,7 +412,7 @@ pub fn synchronize_goldberg_profiles(
 
         // Ensure the Goldberg INI toggles mirror the one-shot helpers so the emulator's
         // internal logic also generates the new auth ticket and GC token expected by the
-        // experimental build now bundled with PartyDeck.
+        // experimental build now bundled with Split Happens.
         ensure_ini_setting(
             &steam_settings.join("configs.main.ini"),
             "[main::general]",
@@ -445,7 +448,7 @@ pub fn synchronize_goldberg_profiles(
         ensure_ini_listen_port(&steam_settings.join("configs.user.ini"), port)?;
 
         println!(
-            "[PARTYDECK] Goldberg LAN identity for profile {} set to {} / {} on port {} ({})",
+            "[SPLIT HAPPENS] Goldberg LAN identity for profile {} set to {} / {} on port {} ({})",
             name, account_name, user_steam_id, port, port_source
         );
     }
@@ -460,7 +463,7 @@ pub fn ensure_nemirtingas_config(
     appid: &str,
     lan_port: Option<u16>,
 ) -> Result<(PathBuf, PathBuf, PathBuf, String), Box<dyn Error>> {
-    let profile_dir = PATH_PARTY.join(format!("profiles/{name}"));
+    let profile_dir = PATH_APP.join(format!("profiles/{name}"));
     fs::create_dir_all(&profile_dir)?;
     create_profile(name)?;
 
@@ -529,7 +532,7 @@ pub fn ensure_nemirtingas_config(
         .unwrap_or_else(|| name.to_string());
 
     // Nemirtingas ships with a "DefaultName" placeholder that forces the emulator to regenerate
-    // fresh identifiers every boot. Replace that sentinel with the PartyDeck profile name so
+    // fresh identifiers every boot. Replace that sentinel with the Split Happens profile name so
     // invite codes and save data reuse the same logical user across launches.
     let used_placeholder_username = profile_username == "DefaultName";
     if used_placeholder_username {
@@ -593,7 +596,7 @@ pub fn ensure_nemirtingas_config(
     let epic_id = existing_epicid.unwrap_or_else(|| {
         let new_id = deterministic_hex_from_seed(&profile_username, 32);
         println!(
-            "[PARTYDECK] Generated Nemirtingas EpicId {} for profile {} using deterministic username seed",
+            "[SPLIT HAPPENS] Generated Nemirtingas EpicId {} for profile {} using deterministic username seed",
             new_id,
             name
         );
@@ -603,7 +606,7 @@ pub fn ensure_nemirtingas_config(
         let seed = format!("{appid}:{epic_id}");
         let new_id = deterministic_hex_from_seed(&seed, 32);
         println!(
-            "[PARTYDECK] Generated Nemirtingas ProductUserId {} for profile {} using deterministic seed",
+            "[SPLIT HAPPENS] Generated Nemirtingas ProductUserId {} for profile {} using deterministic seed",
             new_id,
             name
         );
@@ -616,7 +619,7 @@ pub fn ensure_nemirtingas_config(
         let seed = format!("account:{profile_username}");
         let new_id = deterministic_hex_from_seed(&seed, 32);
         println!(
-            "[PARTYDECK] Generated Nemirtingas AccountId {} for profile {} using deterministic username seed",
+            "[SPLIT HAPPENS] Generated Nemirtingas AccountId {} for profile {} using deterministic username seed",
             new_id,
             name
         );
@@ -722,12 +725,12 @@ pub fn ensure_nemirtingas_config(
     let log_path = nepice_dir.join("NemirtingasEpicEmu.log");
     match OpenOptions::new().create(true).append(true).open(&log_path) {
         Ok(_) => println!(
-            "[PARTYDECK] Nemirtingas log for profile {} will be written to {}",
+            "[SPLIT HAPPENS] Nemirtingas log for profile {} will be written to {}",
             name,
             log_path.display()
         ),
         Err(err) => println!(
-            "[PARTYDECK][WARN] Failed to prepare Nemirtingas log for profile {} at {}: {}",
+            "[SPLIT HAPPENS][WARN] Failed to prepare Nemirtingas log for profile {} at {}: {}",
             name,
             log_path.display(),
             err
@@ -745,7 +748,7 @@ pub fn ensure_nemirtingas_config(
 
 // Creates the "game save" folder for per-profile game data to go into
 pub fn create_gamesave(name: &str, h: &Handler) -> Result<(), Box<dyn Error>> {
-    let path_gamesave = PATH_PARTY
+    let path_gamesave = PATH_APP
         .join("profiles")
         .join(name)
         .join("saves")
@@ -804,7 +807,7 @@ pub fn create_gamesave(name: &str, h: &Handler) -> Result<(), Box<dyn Error>> {
 pub fn scan_profiles(include_guest: bool) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
 
-    if let Ok(entries) = std::fs::read_dir(PATH_PARTY.join("profiles")) {
+    if let Ok(entries) = std::fs::read_dir(PATH_APP.join("profiles")) {
         for entry in entries {
             if let Ok(entry) = entry {
                 if entry.file_type().map(|ft| ft.is_dir()).unwrap_or(false) {
@@ -828,7 +831,7 @@ pub fn scan_profiles(include_guest: bool) -> Vec<String> {
 /// Cleans up legacy guest profiles that used the old dotted naming convention so they do
 /// not accumulate alongside the new deterministic guest slots.
 pub fn remove_guest_profiles() -> Result<(), Box<dyn Error>> {
-    let path_profiles = PATH_PARTY.join("profiles");
+    let path_profiles = PATH_APP.join("profiles");
     let entries = std::fs::read_dir(&path_profiles)?;
     for entry in entries.flatten() {
         if !entry.file_type()?.is_dir() {

@@ -33,7 +33,7 @@ pub struct Handler {
     pub path_goldberg: String,
     // Path to Nemirtingas config relative to the game's root directory.
     // The handler must also bundle the patched EOSSDK DLL (e.g. via
-    // copy_to_symdir) at the matching location; PartyDeck does not ship it.
+    // copy_to_symdir) at the matching location; Split Happens does not ship it.
     pub path_nemirtingas: String,
     pub eos_per_instance: bool,
     pub never_symlink_paths: Vec<String>,
@@ -258,7 +258,7 @@ impl Handler {
 
 pub fn scan_handlers() -> Vec<Handler> {
     let mut out: Vec<Handler> = Vec::new();
-    let handlers_path = PATH_PARTY.join("handlers");
+    let handlers_path = PATH_APP.join("handlers");
 
     let entries = match std::fs::read_dir(handlers_path) {
         Ok(entries) => entries,
@@ -294,8 +294,8 @@ pub fn install_handler_from_file(file: &PathBuf) -> Result<(), Box<dyn Error>> {
         return Err("Handler not valid!".into());
     }
 
-    let dir_handlers = PATH_PARTY.join("handlers");
-    let dir_tmp = PATH_PARTY.join("tmp");
+    let dir_handlers = PATH_APP.join("handlers");
+    let dir_tmp = PATH_APP.join("tmp");
     if !dir_tmp.exists() {
         std::fs::create_dir_all(&dir_tmp)?;
     }
@@ -328,7 +328,7 @@ pub fn install_handler_from_file(file: &PathBuf) -> Result<(), Box<dyn Error>> {
 
 pub fn create_symlink_folder(h: &Handler) -> Result<(), Box<dyn Error>> {
     let path_root = PathBuf::from(get_rootpath_handler(&h)?);
-    let path_sym = PATH_PARTY.join(format!("gamesyms/{}", h.uid));
+    let path_sym = PATH_APP.join(format!("gamesyms/{}", h.uid));
     if path_sym.exists() {
         return Ok(());
     }

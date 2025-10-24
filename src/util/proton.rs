@@ -12,7 +12,7 @@ pub enum ProtonSource {
     SteamRuntime,
 }
 
-/// Captures metadata about a Proton installation that PartyDeck can expose to
+/// Captures metadata about a Proton installation that Split Happens can expose to
 /// the user or use internally to prepare the launcher environment.
 #[derive(Clone, Debug)]
 pub struct ProtonInstall {
@@ -132,7 +132,7 @@ pub fn resolve_proton_environment(value: &str) -> ProtonEnvironment {
     let installs = discover_proton_versions();
 
     // Fall back to the default GE-Proton build whenever the user left the
-    // field empty, keeping compatibility with previous PartyDeck releases.
+    // field empty, keeping compatibility with previous Split Happens releases.
     if trimmed.is_empty() {
         if let Some(install) = installs.iter().find(|install| install.matches("GE-Proton")) {
             let path = install.root_path.clone();

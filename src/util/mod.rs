@@ -29,7 +29,7 @@ pub use sys::{get_screen_resolution, kwin_dbus_start_script, kwin_dbus_unload_sc
 pub use steamdeck::{is_steam_deck, recommended_repaint_interval, recommended_zoom_factor};
 
 // Re-export functions from updates
-pub use updates::check_for_partydeck_update;
+pub use updates::check_for_split_happens_update;
 
 // Re-export Proton helpers so the UI and launcher can reference them directly.
 pub use proton::{
