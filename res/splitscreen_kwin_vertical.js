@@ -37,7 +37,9 @@ function getGamescopeClients() {
   return gamescopeClients;
 }
 
-function gamescopeAboveBelow() {
+// Accept the activated window so newer KWin signal signatures are satisfied without
+// relying on deprecated parameter-less handlers.
+function gamescopeAboveBelow(_activatedWindow) {
   var gamescopeClients = getGamescopeClients();
   for (var i = 0; i < gamescopeClients.length; i++) {
     if (
@@ -51,7 +53,9 @@ function gamescopeAboveBelow() {
   }
 }
 
-function gamescopeSplitscreen() {
+// Accept the newly added window even though the layout logic derives all placement
+// information from the aggregated gamescope client list.
+function gamescopeSplitscreen(_addedWindow) {
   var gamescopeClients = getGamescopeClients();
 
   switch (gamescopeClients.length) {
