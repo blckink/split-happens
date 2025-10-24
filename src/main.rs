@@ -123,6 +123,7 @@ fn main() -> eframe::Result {
             // This gives us image support:
             egui_extras::install_image_loaders(&cc.egui_ctx);
             cc.egui_ctx.set_zoom_factor(zoom_factor);
+            apply_partydeck_theme(&cc.egui_ctx);
             Ok(match light {
                 true => Box::<LightPartyApp>::new(LightPartyApp::new_lightapp(
                     exec,

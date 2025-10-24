@@ -52,6 +52,18 @@ pub struct PartyApp {
     /// Tracks when the input list was last synchronized so new controllers can
     /// be discovered automatically without hammering the kernel every frame.
     pub last_input_scan: std::time::Instant,
+    /// Remembers how many columns the home grid used during the last frame so
+    /// D-pad navigation can move predictably between rows.
+    pub home_grid_columns: usize,
+    /// Signals that the home grid should request focus for the selected tile so
+    /// controller presses immediately trigger the highlighted entry.
+    pub pending_home_focus: bool,
+    /// Signals that the game list sidebar should scroll the selected entry into
+    /// view to keep navigation fluid when using a controller.
+    pub pending_game_list_focus: bool,
+    /// Marks that the viewport still needs an initial focus pulse so Steam Deck
+    /// controllers send events without the user clicking first.
+    pub needs_viewport_focus: bool,
 }
 
 macro_rules! cur_game {
@@ -90,6 +102,10 @@ impl PartyApp {
             task: None,
             repaint_interval,
             last_input_scan: std::time::Instant::now(),
+            home_grid_columns: 1,
+            pending_home_focus: true,
+            pending_game_list_focus: false,
+            needs_viewport_focus: true,
         }
     }
 }
@@ -110,6 +126,11 @@ impl eframe::App for PartyApp {
         // without requiring the user to mash the manual rescan button.
         self.maybe_refresh_input_devices();
 
+        if self.needs_viewport_focus {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
+            self.needs_viewport_focus = false;
+        }
+
         egui::TopBottomPanel::top("menu_nav_panel").show(ctx, |ui| {
             if self.task.is_some() {
                 ui.disable();
@@ -123,7 +144,7 @@ impl eframe::App for PartyApp {
             // the full window.
             egui::SidePanel::left("games_panel")
                 .resizable(false)
-                .exact_width(200.0)
+                .exact_width(240.0)
                 .show(ctx, |ui| {
                     if self.task.is_some() {
                         ui.disable();
@@ -211,40 +232,58 @@ impl PartyApp {
     }
 
     fn handle_gamepad_gui(&mut self, raw_input: &mut egui::RawInput) {
-        let mut key: Option<egui::Key> = None;
+        let mut keypress: Option<egui::Key> = None;
         let mut trigger_instances = false;
+        let mut open_selected_from_home = false;
+        let mut horizontal = 0i32;
+        let mut vertical = 0i32;
         for pad in &mut self.input_devices {
             if !pad.enabled() {
                 continue;
             }
             match pad.poll() {
-                Some(PadButton::ABtn) => key = Some(Key::Enter),
-                Some(PadButton::BBtn) => self.cur_page = MenuPage::Home,
+                Some(PadButton::ABtn) => match self.cur_page {
+                    MenuPage::Home => open_selected_from_home = true,
+                    _ => keypress = Some(Key::Enter),
+                },
+                Some(PadButton::BBtn) => {
+                    self.cur_page = MenuPage::Home;
+                    self.pending_home_focus = true;
+                }
                 Some(PadButton::XBtn) => {
                     self.profiles = scan_profiles(false);
                     self.cur_page = MenuPage::Profiles;
                 }
                 Some(PadButton::YBtn) => self.cur_page = MenuPage::Settings,
-                Some(PadButton::SelectBtn) => key = Some(Key::Tab),
+                Some(PadButton::SelectBtn) => keypress = Some(Key::Tab),
                 Some(PadButton::StartBtn) => {
                     if self.cur_page == MenuPage::Game {
                         trigger_instances = true;
                     }
                 }
-                Some(PadButton::Up) => key = Some(Key::ArrowUp),
-                Some(PadButton::Down) => key = Some(Key::ArrowDown),
-                Some(PadButton::Left) => key = Some(Key::ArrowLeft),
-                Some(PadButton::Right) => key = Some(Key::ArrowRight),
+                Some(PadButton::Up) => vertical -= 1,
+                Some(PadButton::Down) => vertical += 1,
+                Some(PadButton::Left) => horizontal -= 1,
+                Some(PadButton::Right) => horizontal += 1,
                 Some(_) => {}
                 None => {}
             }
+        }
+
+        if horizontal != 0 || vertical != 0 {
+            // Translate D-pad movement into focused selection changes.
+            self.navigate_selection(horizontal, vertical);
+        }
+
+        if open_selected_from_home {
+            self.open_instances_for(self.selected_game);
         }
 
         if trigger_instances {
             self.open_instances_for(self.selected_game);
         }
 
-        if let Some(key) = key {
+        if let Some(key) = keypress {
             raw_input.events.push(egui::Event::Key {
                 key,
                 physical_key: None,
@@ -252,6 +291,100 @@ impl PartyApp {
                 repeat: false,
                 modifiers: egui::Modifiers::default(),
             });
+        }
+    }
+
+    /// Updates the selected game index based on D-pad input and flags the
+    /// corresponding UI region to request focus.
+    fn navigate_selection(&mut self, horizontal: i32, vertical: i32) {
+        if self.games.is_empty() {
+            return;
+        }
+
+        match self.cur_page {
+            MenuPage::Home => self.navigate_home_grid(horizontal, vertical),
+            _ => self.navigate_game_list(vertical),
+        }
+    }
+
+    /// Handles horizontal and vertical travel within the home screen grid so
+    /// controller navigation mirrors tile-based consoles.
+    fn navigate_home_grid(&mut self, horizontal: i32, vertical: i32) {
+        let columns = self.home_grid_columns.max(1);
+        let total_rows = (self.games.len() + columns - 1) / columns;
+        if total_rows == 0 {
+            return;
+        }
+
+        let mut row = self.selected_game / columns;
+        let mut col = self.selected_game % columns;
+
+        if vertical != 0 {
+            let mut new_row = row as i32 + vertical;
+            new_row = new_row.clamp(0, (total_rows.saturating_sub(1)) as i32);
+            row = new_row as usize;
+            let row_start = row * columns;
+            let row_len = (self.games.len().saturating_sub(row_start)).min(columns);
+            if row_len > 0 {
+                col = col.min(row_len - 1);
+            }
+        }
+
+        if horizontal != 0 {
+            let row_start = row * columns;
+            let row_len = (self.games.len().saturating_sub(row_start)).min(columns);
+            if row_len > 0 {
+                let mut new_col = col as i32 + horizontal;
+                new_col = new_col.clamp(0, (row_len.saturating_sub(1)) as i32);
+                col = new_col as usize;
+            }
+        }
+
+        let new_index = row * columns + col;
+        if new_index < self.games.len() && new_index != self.selected_game {
+            self.selected_game = new_index;
+            self.pending_home_focus = true;
+        }
+    }
+
+    /// Steps through the vertical game list while keeping the selection within
+    /// bounds so the sidebar scrolls naturally with controller input.
+    fn navigate_game_list(&mut self, vertical: i32) {
+        if vertical == 0 {
+            return;
+        }
+
+        let len = self.games.len();
+        if len == 0 {
+            return;
+        }
+
+        let current = self.selected_game as i32;
+        let max_index = len.saturating_sub(1) as i32;
+        let mut next = current + vertical;
+        next = next.clamp(0, max_index);
+
+        if next != current {
+            self.selected_game = next as usize;
+            self.pending_game_list_focus = true;
+        }
+    }
+
+    /// Synchronizes in-memory profile assignments when the user renames a
+    /// profile so running sessions keep referencing the updated identifier.
+    pub fn apply_local_profile_rename(&mut self, old_name: &str, new_name: &str) {
+        for assignments in self.options.last_profile_assignments.values_mut() {
+            for slot in assignments.iter_mut() {
+                if slot == old_name {
+                    *slot = new_name.to_string();
+                }
+            }
+        }
+
+        for instance in &mut self.instances {
+            if instance.profname == old_name {
+                instance.profname = new_name.to_string();
+            }
         }
     }
 
@@ -322,6 +455,7 @@ impl PartyApp {
         self.instances.clear();
         self.profiles = scan_profiles(true);
         self.instance_add_dev = None;
+        self.pending_game_list_focus = true;
         self.cur_page = MenuPage::Instances;
     }
 

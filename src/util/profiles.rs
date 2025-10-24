@@ -4,7 +4,7 @@ use sha1::{Digest, Sha1};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fs::{self, OpenOptions};
-use std::io::{self, Write};
+use std::io::{self, ErrorKind, Write};
 use std::path::{Path, PathBuf};
 
 use crate::util::filesystem::copy_dir_recursive;
@@ -111,6 +111,32 @@ pub fn create_profile(name: &str) -> Result<(), std::io::Error> {
     fs::create_dir_all(profile_dir.join("nepice_settings"))?;
 
     Ok(())
+}
+
+/// Renames a profile directory while ensuring the new identifier is unused so
+/// profile-specific saves continue to load correctly.
+pub fn rename_profile(old_name: &str, new_name: &str) -> io::Result<()> {
+    if old_name == new_name {
+        return Ok(());
+    }
+
+    let source_dir = PATH_PARTY.join(format!("profiles/{old_name}"));
+    if !source_dir.exists() {
+        return Err(io::Error::new(
+            ErrorKind::NotFound,
+            format!("Profile {old_name} does not exist"),
+        ));
+    }
+
+    let target_dir = PATH_PARTY.join(format!("profiles/{new_name}"));
+    if target_dir.exists() {
+        return Err(io::Error::new(
+            ErrorKind::AlreadyExists,
+            format!("Profile {new_name} already exists"),
+        ));
+    }
+
+    std::fs::rename(source_dir, target_dir)
 }
 
 /// Writes a Goldberg configuration helper file only when the trimmed contents differ so
