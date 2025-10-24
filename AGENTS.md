@@ -34,3 +34,4 @@
 - When painting focus outlines with egui 0.31+, always pass an explicit `StrokeKind` to `rect_stroke` so builds keep compiling after upstream API changes.
 - When adding or updating KWin scripting handlers, always accept the signal's window parameter to avoid signature mismatch errors on newer Plasma releases.
 - When KWin DBus calls reject numeric script identifiers with a signature mismatch, retry with the "splitscreen" script name so launches remain compatible with newer Plasma builds.
+- When requesting the KWin script identifier over DBus, deserialize the reply dynamically so integer handles from Plasma 6 do not trigger signature mismatches.

@@ -103,10 +103,17 @@ pub fn kwin_dbus_start_script(file: PathBuf) -> Result<(), Box<dyn Error>> {
 
     // Ask KWin to load the script and capture the concrete runtime identifier so
     // we can start and later unload the exact instance that was registered.
-    let script_id: OwnedValue = proxy.call(
+    // Plasma sometimes returns the identifier as an integer instead of wrapping
+    // it in a variant, so we deserialize the reply dynamically to preserve the
+    // raw type and avoid signature mismatch errors on newer releases.
+    let script_reply = proxy.call_method(
         "loadScript",
         &(file.to_string_lossy().into_owned(), "splitscreen"),
     )?;
+    let script_id: OwnedValue = script_reply
+        .body()
+        .deserialize()
+        .map_err(|err| Box::new(err) as Box<dyn Error>)?;
     println!(
         "Script loaded as id {}. Starting...",
         describe_kwin_id(&script_id)
