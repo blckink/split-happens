@@ -95,5 +95,5 @@ function gamescopeSplitscreen() {
 }
 
 workspace.windowAdded.connect(gamescopeSplitscreen);
-workspace.windowRemoved.connect(gamescopeSplitscreen);
+// Avoid reacting to removals so surviving instances keep their slot when a peer crashes.
 workspace.windowActivated.connect(gamescopeAboveBelow);

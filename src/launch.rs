@@ -14,6 +14,7 @@ use crate::paths::*;
 use crate::util::*;
 
 use ctrlc;
+use nix::libc;
 use nix::sched::{CpuSet, sched_setaffinity};
 use nix::sys::signal::{Signal, kill};
 use nix::unistd::Pid;
@@ -59,6 +60,7 @@ fn prepare_working_tree(
 
 /// Tracks Nemirtingas logging metadata for an instance so we can surface the
 /// persisted emulator output once the Proton processes terminate.
+#[derive(Clone)]
 struct NemirtingasLogContext {
     profile_log: PathBuf,
     appdata_root: Option<PathBuf>,
@@ -181,6 +183,360 @@ fn collect_nemirtingas_logs(contexts: &[NemirtingasLogContext]) {
                 );
             }
         }
+    }
+}
+
+/// Captures the reusable artifacts from launching a single instance so crashes can be
+/// recovered without rebuilding the entire session state.
+struct SpawnOutcome {
+    child: Child,
+    log_context: NemirtingasLogContext,
+    proton_prefix: Option<String>,
+}
+
+/// Spawns a single Gamescope instance for the provided player slot while preparing all
+/// emulator mounts and controller bindings required by the handler. The returned
+/// [`SpawnOutcome`] keeps enough context for the caller to re-launch the same slot later
+/// when a crash occurs.
+fn spawn_instance_child(
+    index: usize,
+    instance: &Instance,
+    game: &Game,
+    game_id: &str,
+    gamedir: &str,
+    exec: &str,
+    runtime: &str,
+    win: bool,
+    use_bwrap: bool,
+    cfg: &PartyConfig,
+    input_devices: &[DeviceInfo],
+    proton_env: Option<&ProtonEnvironment>,
+    nemirtingas_ports: &HashMap<String, u16>,
+    drained_prefixes: &mut HashSet<String>,
+    party: &str,
+    steam: &str,
+    home: &str,
+    localshare: &str,
+) -> Result<SpawnOutcome, Box<dyn std::error::Error>> {
+    let profile_port = nemirtingas_ports.get(&instance.profname).copied();
+
+    let (nepice_dir, json_path, log_path, sha1_nemirtingas) =
+        ensure_nemirtingas_config(&instance.profname, game_id, profile_port)?;
+    let json_real = json_path.canonicalize()?;
+    let mut log_context = NemirtingasLogContext {
+        profile_log: log_path.clone(),
+        appdata_root: None,
+    };
+
+    reset_nemirtingas_session_state(&nepice_dir);
+
+    let instance_gamedir = if use_bwrap {
+        gamedir.to_string()
+    } else if let HandlerRef(h) = game {
+        prepare_working_tree(
+            instance.profname.as_str(),
+            gamedir,
+            h.path_nemirtingas.as_str(),
+            &nepice_dir,
+        )?
+        .to_string_lossy()
+        .to_string()
+    } else {
+        gamedir.to_string()
+    };
+
+    let mut nemirtingas_binds: Vec<(PathBuf, PathBuf)> = Vec::new();
+    if let HandlerRef(h) = game {
+        if !h.path_nemirtingas.is_empty() {
+            let nemirtingas_rel = Path::new(&h.path_nemirtingas);
+            let Some(parent_rel) = nemirtingas_rel.parent() else {
+                return Err(format!(
+                    "Nemirtingas path {} has no parent directory; update the handler configuration.",
+                    h.path_nemirtingas
+                )
+                .into());
+            };
+
+            let dest_dir = PathBuf::from(&instance_gamedir).join(parent_rel);
+            if dest_dir.exists() && !dest_dir.is_dir() {
+                fs::remove_file(&dest_dir)?;
+            }
+            fs::create_dir_all(&dest_dir)?;
+
+            let dest_config = dest_dir.join(
+                nemirtingas_rel
+                    .file_name()
+                    .unwrap_or_else(|| std::ffi::OsStr::new("NemirtingasEpicEmu.json")),
+            );
+
+            println!(
+                "Instance {}: Nemirtingas config {} (SHA1 {}) -> {} (user {} appid {})",
+                instance.profname,
+                json_real.display(),
+                sha1_nemirtingas,
+                dest_config.display(),
+                instance.profname,
+                game_id
+            );
+
+            if use_bwrap {
+                nemirtingas_binds.push((nepice_dir.clone(), dest_dir.clone()));
+            }
+        }
+    }
+
+    let mut cmd = Command::new(match cfg.kbm_support {
+        true => BIN_GSC_KBM.to_string_lossy().to_string(),
+        false => "gamescope".to_string(),
+    });
+
+    cmd.current_dir(&instance_gamedir);
+    cmd.env("SDL_JOYSTICK_HIDAPI", "0");
+    cmd.env("ENABLE_GAMESCOPE_WSI", "0");
+    cmd.env("PROTON_DISABLE_HIDRAW", "1");
+    if cfg.force_sdl && !win {
+        let mut path_sdl = "ubuntu12_32/steam-runtime/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0";
+        if let HandlerRef(h) = game {
+            if h.is32bit {
+                path_sdl = "ubuntu12_32/steam-runtime/usr/lib/i386-linux-gnu/libSDL2-2.0.so.0";
+            }
+        }
+        cmd.env("SDL_DYNAMIC_API", format!("{steam}/{path_sdl}"));
+    }
+    if let Some(port) = profile_port {
+        cmd.env("EOS_OVERRIDE_LAN_PORT", port.to_string());
+    }
+    if win {
+        if let Some(env) = proton_env {
+            cmd.env("PROTON_VERB", "run");
+            cmd.env("PROTONPATH", env.env_value.clone());
+        }
+        if let HandlerRef(h) = game {
+            if !h.dll_overrides.is_empty() {
+                let mut overrides = String::new();
+                for dll in &h.dll_overrides {
+                    overrides.push_str(&format!("{dll},"));
+                }
+                overrides.push_str("=n,b");
+                cmd.env("WINEDLLOVERRIDES", overrides);
+            }
+            if h.coldclient {
+                cmd.env("PROTON_DISABLE_LSTEAMCLIENT", "1");
+            }
+        }
+    }
+
+    let mut proton_prefix: Option<String> = None;
+    if win {
+        let mut pfx = format!("{party}/pfx/{}", instance.profname);
+        if cfg.proton_separate_pfxs {
+            pfx = format!("{}_{}", pfx, index + 1);
+        }
+        std::fs::create_dir_all(&pfx)?;
+        cmd.env("WINEPREFIX", &pfx);
+        cmd.env("STEAM_COMPAT_DATA_PATH", &pfx);
+        if let Some(env) = proton_env {
+            if env.root_path.is_some() && drained_prefixes.insert(pfx.clone()) {
+                drain_stale_proton_session(&pfx, env);
+            }
+        }
+        log_context.appdata_root = Some(
+            PathBuf::from(&pfx)
+                .join("drive_c")
+                .join("users")
+                .join("steamuser")
+                .join("AppData")
+                .join("Roaming")
+                .join("NemirtingasEpicEmu"),
+        );
+        proton_prefix = Some(pfx);
+    }
+
+    cmd.arg("-W").arg(instance.width.to_string());
+    cmd.arg("-H").arg(instance.height.to_string());
+    if cfg.gamescope_sdl_backend {
+        cmd.arg("--backend=sdl");
+    }
+
+    if cfg.kbm_support {
+        let mut has_keyboard = false;
+        let mut has_mouse = false;
+        let mut kbms: Vec<String> = Vec::new();
+        for d in &instance.devices {
+            match input_devices[*d].device_type {
+                DeviceType::Keyboard => {
+                    has_keyboard = true;
+                    kbms.push(input_devices[*d].path.clone());
+                }
+                DeviceType::Mouse => {
+                    has_mouse = true;
+                    kbms.push(input_devices[*d].path.clone());
+                }
+                _ => {}
+            }
+        }
+        if has_keyboard {
+            cmd.arg("--backend-disable-keyboard");
+        }
+        if has_mouse {
+            cmd.arg("--backend-disable-mouse");
+        }
+        if !kbms.is_empty() {
+            cmd.arg("--libinput-hold-dev");
+            cmd.arg(kbms.join(","));
+        }
+    }
+
+    cmd.arg("--");
+    if use_bwrap {
+        cmd.arg("bwrap");
+        cmd.arg("--die-with-parent");
+        cmd.arg("--dev-bind").arg("/").arg("/");
+        cmd.arg("--bind").arg("/tmp").arg("/tmp");
+        if let Ok(runtime_dir) = std::env::var("XDG_RUNTIME_DIR") {
+            cmd.arg("--bind").arg(&runtime_dir).arg(&runtime_dir);
+        }
+
+        for (d, dev) in input_devices.iter().enumerate() {
+            if !dev.enabled
+                || (!instance.devices.contains(&d) && dev.device_type == DeviceType::Gamepad)
+            {
+                cmd.args(["--bind", "/dev/null", dev.path.as_str()]);
+            }
+        }
+
+        if let HandlerRef(h) = game {
+            let path_prof = format!("{party}/profiles/{}", instance.profname);
+            let path_save = format!("{path_prof}/saves/{}", h.uid);
+            if !h.path_goldberg.is_empty() {
+                let src = format!("{path_prof}/steam");
+                let dst = format!("{instance_gamedir}/{}/goldbergsave", h.path_goldberg);
+                cmd.args(["--bind", src.as_str(), dst.as_str()]);
+            }
+            for (src, dest) in &nemirtingas_binds {
+                cmd.arg("--bind").arg(src).arg(dest);
+            }
+            if h.win {
+                let Some(prefix_value) = &proton_prefix else {
+                    return Err("Missing Proton prefix for Windows handler".into());
+                };
+                let path_windata = format!("{prefix_value}/drive_c/users/steamuser");
+                if h.win_unique_appdata {
+                    let src = format!("{path_save}/_AppData");
+                    let dst = format!("{path_windata}/AppData");
+                    cmd.args(["--bind", src.as_str(), dst.as_str()]);
+                }
+                if h.win_unique_documents {
+                    let src = format!("{path_save}/_Documents");
+                    let dst = format!("{path_windata}/Documents");
+                    cmd.args(["--bind", src.as_str(), dst.as_str()]);
+                }
+            } else {
+                if h.linux_unique_localshare {
+                    let src = format!("{path_save}/_share");
+                    cmd.args(["--bind", src.as_str(), localshare]);
+                }
+                if h.linux_unique_config {
+                    let src = format!("{path_save}/_config");
+                    let dst = format!("{home}/.config");
+                    cmd.args(["--bind", src.as_str(), dst.as_str()]);
+                }
+            }
+            for subdir in &h.game_unique_paths {
+                let src = format!("{path_save}/{subdir}");
+                let dst = format!("{instance_gamedir}/{subdir}");
+                cmd.args(["--bind", src.as_str(), dst.as_str()]);
+            }
+        }
+    }
+
+    if !runtime.is_empty() {
+        cmd.arg(runtime);
+    }
+
+    let exec_path = PathBuf::from(&instance_gamedir).join(exec);
+    let exec_arg = if win {
+        exec_path
+            .canonicalize()
+            .unwrap_or_else(|_| exec_path.clone())
+    } else {
+        exec_path.clone()
+    };
+    cmd.arg(exec_arg.to_string_lossy().to_string());
+
+    let args: Vec<String> = match game {
+        HandlerRef(h) => h
+            .args
+            .iter()
+            .map(|arg| match arg.as_str() {
+                "$GAMEDIR" => instance_gamedir.clone(),
+                "$PROFILE" => instance.profname.clone(),
+                "$WIDTH" => instance.width.to_string(),
+                "$HEIGHT" => instance.height.to_string(),
+                "$WIDTHXHEIGHT" => format!("{}x{}", instance.width, instance.height),
+                _ => arg.to_string(),
+            })
+            .collect(),
+        ExecRef(e) => e.args.split_whitespace().map(|s| s.to_string()).collect(),
+    };
+    for a in args {
+        cmd.arg(a);
+    }
+
+    cmd.stdout(Stdio::piped());
+    cmd.stderr(Stdio::piped());
+
+    let child = cmd.spawn()?;
+
+    Ok(SpawnOutcome {
+        child,
+        log_context,
+        proton_prefix,
+    })
+}
+
+/// Tracks the runtime state of a launched instance so crashes can trigger targeted
+/// restarts without disturbing other players.
+struct RuntimeInstance {
+    index: usize,
+    profile_name: String,
+    instance: Instance,
+    child: Option<Child>,
+    last_pid: Option<u32>,
+    log_context: NemirtingasLogContext,
+    proton_prefix: Option<String>,
+    finished: bool,
+}
+
+/// Removes a PID from the shared cleanup list once the corresponding process exits so the
+/// Ctrl+C handler stops signalling stale process groups.
+fn unregister_child_pid(child_pids: &Arc<Mutex<Vec<u32>>>, pid: u32) {
+    if let Ok(mut pids) = child_pids.lock() {
+        if let Some(pos) = pids.iter().position(|existing| *existing == pid) {
+            pids.swap_remove(pos);
+        }
+    }
+}
+
+/// Raises the niceness of a spawned instance slightly so CPU scheduling stays balanced when
+/// multiple Gamescope sessions render simultaneously.
+fn promote_instance_priority(pid: u32, index: usize, total_instances: usize) {
+    let result = unsafe { libc::setpriority(libc::PRIO_PROCESS, pid as libc::id_t, -5) };
+    if result == 0 {
+        println!(
+            "[PARTYDECK] Elevated scheduling priority for instance {}/{} (PID {}).",
+            index + 1,
+            total_instances,
+            pid
+        );
+    } else {
+        let err = std::io::Error::last_os_error();
+        println!(
+            "[PARTYDECK][WARN] Unable to boost priority for instance {} (PID {}): {}",
+            index + 1,
+            pid,
+            err
+        );
     }
 }
 
@@ -774,10 +1130,10 @@ pub fn launch_game(
     let child_pids: Arc<Mutex<Vec<u32>>> = Arc::new(Mutex::new(Vec::new()));
     register_ctrlc_cleanup(Arc::clone(&child_pids), Arc::clone(&locks))?;
 
-    let home = PATH_HOME.display();
-    let localshare = PATH_LOCAL_SHARE.display();
-    let party = PATH_PARTY.display();
-    let steam = PATH_STEAM.display();
+    let home = PATH_HOME.to_string_lossy().to_string();
+    let localshare = PATH_LOCAL_SHARE.to_string_lossy().to_string();
+    let party = PATH_PARTY.to_string_lossy().to_string();
+    let steam = PATH_STEAM.to_string_lossy().to_string();
 
     let gamedir = match game {
         ExecRef(e) => e
@@ -865,297 +1221,35 @@ pub fn launch_game(
         kwin_dbus_start_script(PATH_RES.join(script))?;
     }
 
-    let mut children: Vec<Child> = Vec::new();
-    let mut nemirtingas_logs: Vec<NemirtingasLogContext> = Vec::new();
     let mut drained_prefixes: HashSet<String> = HashSet::new();
+    let mut runtime_instances: Vec<RuntimeInstance> = Vec::new();
     for (i, instance) in instances.iter().enumerate() {
-        let profile_port = nemirtingas_ports.get(&instance.profname).copied();
+        let outcome = spawn_instance_child(
+            i,
+            instance,
+            game,
+            &game_id,
+            &gamedir,
+            &exec,
+            &runtime,
+            win,
+            use_bwrap,
+            cfg,
+            input_devices,
+            proton_env.as_ref(),
+            &nemirtingas_ports,
+            &mut drained_prefixes,
+            &party,
+            &steam,
+            &home,
+            &localshare,
+        )?;
 
-        let (nepice_dir, json_path, log_path, sha1_nemirtingas) =
-            ensure_nemirtingas_config(&instance.profname, &game_id, profile_port)?;
-        let json_real = json_path.canonicalize()?;
-        let mut log_context = NemirtingasLogContext {
-            profile_log: log_path.clone(),
-            appdata_root: None,
-        };
-
-        // Reset the emulator's pending command queue before each boot so games do not hit
-        // assertion dialogs from stale EOS session state that lingered between launches.
-        reset_nemirtingas_session_state(&nepice_dir);
-
-        let instance_gamedir = if use_bwrap {
-            gamedir.clone()
-        } else if let HandlerRef(h) = game {
-            prepare_working_tree(
-                instance.profname.as_str(),
-                &gamedir,
-                h.path_nemirtingas.as_str(),
-                &nepice_dir,
-            )?
-            .to_string_lossy()
-            .to_string()
-        } else {
-            gamedir.clone()
-        };
-
-        // Track the optional Nemirtingas bind mount as a tuple of source and destination.
-        let mut nemirtingas_binds: Vec<(PathBuf, PathBuf)> = Vec::new();
-        if let HandlerRef(h) = game {
-            if !h.path_nemirtingas.is_empty() {
-                let nemirtingas_rel = Path::new(&h.path_nemirtingas);
-                let Some(parent_rel) = nemirtingas_rel.parent() else {
-                    return Err(format!(
-                        "Nemirtingas path {} has no parent directory; update the handler configuration.",
-                        h.path_nemirtingas
-                    )
-                    .into());
-                };
-
-                let dest_dir = PathBuf::from(&instance_gamedir).join(parent_rel);
-                if dest_dir.exists() && !dest_dir.is_dir() {
-                    fs::remove_file(&dest_dir)?;
-                }
-                fs::create_dir_all(&dest_dir)?;
-
-                let dest_config = dest_dir.join(
-                    nemirtingas_rel
-                        .file_name()
-                        .unwrap_or_else(|| std::ffi::OsStr::new("NemirtingasEpicEmu.json")),
-                );
-
-                println!(
-                    "Instance {}: Nemirtingas config {} (SHA1 {}) -> {} (user {} appid {})",
-                    instance.profname,
-                    json_real.display(),
-                    sha1_nemirtingas,
-                    dest_config.display(),
-                    instance.profname,
-                    game_id
-                );
-
-                if use_bwrap {
-                    // Bind the entire nepice_settings directory so Nemirtingas uses a unique
-                    // AppData root per profile instead of sharing a global emulator context.
-                    nemirtingas_binds.push((nepice_dir.clone(), dest_dir.clone()));
-                }
-            }
-        }
-
-        let mut cmd = Command::new(match cfg.kbm_support {
-            true => BIN_GSC_KBM.to_string_lossy().to_string(),
-            false => "gamescope".to_string(),
-        });
-
-        cmd.current_dir(&instance_gamedir);
-        cmd.env("SDL_JOYSTICK_HIDAPI", "0");
-        cmd.env("ENABLE_GAMESCOPE_WSI", "0");
-        cmd.env("PROTON_DISABLE_HIDRAW", "1");
-        if cfg.force_sdl && !win {
-            let mut path_sdl =
-                "ubuntu12_32/steam-runtime/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0";
-            if let HandlerRef(h) = game {
-                if h.is32bit {
-                    path_sdl = "ubuntu12_32/steam-runtime/usr/lib/i386-linux-gnu/libSDL2-2.0.so.0";
-                }
-            }
-            cmd.env("SDL_DYNAMIC_API", format!("{steam}/{path_sdl}"));
-        }
-        if let Some(port) = profile_port {
-            // Pin Nemirtingas LAN discovery to each profile's deterministic port so concurrent
-            // instances no longer contend for the same UDP socket and stop auto-incrementing.
-            cmd.env("EOS_OVERRIDE_LAN_PORT", port.to_string());
-        }
-        if win {
-            if let Some(env) = &proton_env {
-                cmd.env("PROTON_VERB", "run");
-                cmd.env("PROTONPATH", env.env_value.clone());
-            }
-            if let HandlerRef(h) = game {
-                if !h.dll_overrides.is_empty() {
-                    let mut overrides = String::new();
-                    for dll in &h.dll_overrides {
-                        overrides.push_str(&format!("{dll},"));
-                    }
-                    overrides.push_str("=n,b");
-                    cmd.env("WINEDLLOVERRIDES", overrides);
-                }
-                if h.coldclient {
-                    cmd.env("PROTON_DISABLE_LSTEAMCLIENT", "1");
-                }
-            }
-        }
-
-        let pfx = if win {
-            let mut pfx = format!("{party}/pfx/{}", instance.profname);
-            if cfg.proton_separate_pfxs {
-                pfx = format!("{}_{}", pfx, i + 1);
-            }
-            pfx
-        } else {
-            String::new()
-        };
-        if win {
-            std::fs::create_dir_all(&pfx)?;
-            cmd.env("WINEPREFIX", &pfx);
-            cmd.env("STEAM_COMPAT_DATA_PATH", &pfx);
-            if let Some(env) = &proton_env {
-                if env.root_path.is_some() && drained_prefixes.insert(pfx.clone()) {
-                    drain_stale_proton_session(&pfx, env);
-                }
-            }
-            log_context.appdata_root = Some(
-                PathBuf::from(&pfx)
-                    .join("drive_c")
-                    .join("users")
-                    .join("steamuser")
-                    .join("AppData")
-                    .join("Roaming")
-                    .join("NemirtingasEpicEmu"),
-            );
-        }
-
-        cmd.arg("-W").arg(instance.width.to_string());
-        cmd.arg("-H").arg(instance.height.to_string());
-        if cfg.gamescope_sdl_backend {
-            cmd.arg("--backend=sdl");
-        }
-
-        if cfg.kbm_support {
-            let mut has_keyboard = false;
-            let mut has_mouse = false;
-            let mut kbms: Vec<String> = Vec::new();
-            for d in &instance.devices {
-                match input_devices[*d].device_type {
-                    DeviceType::Keyboard => {
-                        has_keyboard = true;
-                        kbms.push(input_devices[*d].path.clone());
-                    }
-                    DeviceType::Mouse => {
-                        has_mouse = true;
-                        kbms.push(input_devices[*d].path.clone());
-                    }
-                    _ => {}
-                }
-            }
-            if has_keyboard {
-                cmd.arg("--backend-disable-keyboard");
-            }
-            if has_mouse {
-                cmd.arg("--backend-disable-mouse");
-            }
-            if !kbms.is_empty() {
-                cmd.arg("--libinput-hold-dev");
-                cmd.arg(kbms.join(","));
-            }
-        }
-
-        cmd.arg("--");
-        if use_bwrap {
-            cmd.arg("bwrap");
-            cmd.arg("--die-with-parent");
-            cmd.arg("--dev-bind").arg("/").arg("/");
-            cmd.arg("--bind").arg("/tmp").arg("/tmp");
-            if let Ok(runtime_dir) = std::env::var("XDG_RUNTIME_DIR") {
-                cmd.arg("--bind").arg(&runtime_dir).arg(&runtime_dir);
-            }
-
-            for (d, dev) in input_devices.iter().enumerate() {
-                if !dev.enabled
-                    || (!instance.devices.contains(&d) && dev.device_type == DeviceType::Gamepad)
-                {
-                    cmd.args(["--bind", "/dev/null", dev.path.as_str()]);
-                }
-            }
-
-            if let HandlerRef(h) = game {
-                let path_prof = format!("{party}/profiles/{}", instance.profname);
-                let path_save = format!("{path_prof}/saves/{}", h.uid);
-                if !h.path_goldberg.is_empty() {
-                    let src = format!("{path_prof}/steam");
-                    let dst = format!("{instance_gamedir}/{}/goldbergsave", h.path_goldberg);
-                    cmd.args(["--bind", src.as_str(), dst.as_str()]);
-                }
-                for (src, dest) in &nemirtingas_binds {
-                    // Bind per-profile Nemirtingas assets (config, logs) into the game directory.
-                    cmd.arg("--bind").arg(src).arg(dest);
-                }
-                if h.win {
-                    let path_windata = format!("{pfx}/drive_c/users/steamuser");
-                    if h.win_unique_appdata {
-                        let src = format!("{path_save}/_AppData");
-                        let dst = format!("{path_windata}/AppData");
-                        cmd.args(["--bind", src.as_str(), dst.as_str()]);
-                    }
-                    if h.win_unique_documents {
-                        let src = format!("{path_save}/_Documents");
-                        let dst = format!("{path_windata}/Documents");
-                        cmd.args(["--bind", src.as_str(), dst.as_str()]);
-                    }
-                } else {
-                    if h.linux_unique_localshare {
-                        let src = format!("{path_save}/_share");
-                        let dst = format!("{localshare}");
-                        cmd.args(["--bind", src.as_str(), dst.as_str()]);
-                    }
-                    if h.linux_unique_config {
-                        let src = format!("{path_save}/_config");
-                        let dst = format!("{home}/.config");
-                        cmd.args(["--bind", src.as_str(), dst.as_str()]);
-                    }
-                }
-                for subdir in &h.game_unique_paths {
-                    let src = format!("{path_save}/{subdir}");
-                    let dst = format!("{instance_gamedir}/{subdir}");
-                    cmd.args(["--bind", src.as_str(), dst.as_str()]);
-                }
-            }
-        }
-
-        if !runtime.is_empty() {
-            cmd.arg(&runtime);
-        }
-
-        // Resolve the executable path and canonicalize it for Windows builds so Proton receives
-        // the real filesystem target instead of a symlink path that certain games refuse to open.
-        let exec_path = PathBuf::from(&instance_gamedir).join(&exec);
-        let exec_arg = if win {
-            exec_path
-                .canonicalize()
-                .unwrap_or_else(|_| exec_path.clone())
-        } else {
-            exec_path.clone()
-        };
-        cmd.arg(exec_arg.to_string_lossy().to_string());
-
-        let args: Vec<String> = match game {
-            HandlerRef(h) => h
-                .args
-                .iter()
-                .map(|arg| match arg.as_str() {
-                    "$GAMEDIR" => instance_gamedir.clone(),
-                    "$PROFILE" => instance.profname.clone(),
-                    "$WIDTH" => instance.width.to_string(),
-                    "$HEIGHT" => instance.height.to_string(),
-                    "$WIDTHXHEIGHT" => format!("{}x{}", instance.width, instance.height),
-                    _ => arg.to_string(),
-                })
-                .collect(),
-            ExecRef(e) => e.args.split_whitespace().map(|s| s.to_string()).collect(),
-        };
-        for a in args {
-            cmd.arg(a);
-        }
-
-        // Capture child output so we can filter redundant Gamescope warnings without hiding other logs.
-        cmd.stdout(Stdio::piped());
-        cmd.stderr(Stdio::piped());
-
-        let mut child = cmd.spawn()?;
+        let mut child = outcome.child;
         let raw_pid = child.id();
         child_pids.lock().unwrap().push(raw_pid);
-        // Apply the CPU affinity policy immediately so each instance starts with its
-        // dedicated share of cores instead of fighting for resources mid-boot.
         apply_instance_cpu_affinity(raw_pid, i, instances.len());
+        promote_instance_priority(raw_pid, i, instances.len());
 
         if let Some(stdout) = child.stdout.take() {
             forward_child_output(stdout);
@@ -1164,17 +1258,131 @@ pub fn launch_game(
             forward_child_output(stderr);
         }
 
-        children.push(child);
-        nemirtingas_logs.push(log_context);
+        runtime_instances.push(RuntimeInstance {
+            index: i,
+            profile_name: instance.profname.clone(),
+            instance: instance.clone(),
+            child: Some(child),
+            last_pid: Some(raw_pid),
+            log_context: outcome.log_context,
+            proton_prefix: outcome.proton_prefix,
+            finished: false,
+        });
 
         if i < instances.len() - 1 {
             std::thread::sleep(Duration::from_secs(6));
         }
     }
 
-    for mut child in children {
-        let _ = child.wait();
+    while runtime_instances.iter().any(|state| !state.finished) {
+        let mut made_progress = false;
+        for state in runtime_instances.iter_mut() {
+            let Some(child) = state.child.as_mut() else {
+                continue;
+            };
+
+            match child.try_wait() {
+                Ok(Some(status)) => {
+                    if let Some(pid) = state.last_pid.take() {
+                        unregister_child_pid(&child_pids, pid);
+                    }
+                    state.child = None;
+
+                    let mut restart_requested = false;
+                    if !status.success() {
+                        println!(
+                            "[PARTYDECK][WARN] Instance {} exited unexpectedly (status: {:?}).",
+                            state.profile_name, status
+                        );
+                        let prompt = format!(
+                            "Profile {} closed unexpectedly. Restart it in the reserved slot?",
+                            state.profile_name
+                        );
+                        restart_requested = yesno("Restart crashed instance?", &prompt);
+                    }
+
+                    if restart_requested {
+                        if let Some(prefix) = state.proton_prefix.clone() {
+                            drained_prefixes.remove(&prefix);
+                        }
+                        std::thread::sleep(Duration::from_secs(2));
+                        match spawn_instance_child(
+                            state.index,
+                            &state.instance,
+                            game,
+                            &game_id,
+                            &gamedir,
+                            &exec,
+                            &runtime,
+                            win,
+                            use_bwrap,
+                            cfg,
+                            input_devices,
+                            proton_env.as_ref(),
+                            &nemirtingas_ports,
+                            &mut drained_prefixes,
+                            &party,
+                            &steam,
+                            &home,
+                            &localshare,
+                        ) {
+                            Ok(mut respawn) => {
+                                let new_pid = respawn.child.id();
+                                child_pids.lock().unwrap().push(new_pid);
+                                apply_instance_cpu_affinity(new_pid, state.index, instances.len());
+                                promote_instance_priority(new_pid, state.index, instances.len());
+
+                                if let Some(stdout) = respawn.child.stdout.take() {
+                                    forward_child_output(stdout);
+                                }
+                                if let Some(stderr) = respawn.child.stderr.take() {
+                                    forward_child_output(stderr);
+                                }
+
+                                state.child = Some(respawn.child);
+                                state.last_pid = Some(new_pid);
+                                state.log_context = respawn.log_context;
+                                state.proton_prefix = respawn.proton_prefix;
+                                state.finished = false;
+                                println!(
+                                    "[PARTYDECK] Restarted profile {} in slot {}.",
+                                    state.profile_name,
+                                    state.index + 1
+                                );
+                            }
+                            Err(err) => {
+                                println!(
+                                    "[PARTYDECK][WARN] Failed to restart instance {}: {}",
+                                    state.profile_name, err
+                                );
+                                state.finished = true;
+                            }
+                        }
+                    } else {
+                        state.finished = true;
+                    }
+
+                    made_progress = true;
+                }
+                Ok(None) => {}
+                Err(err) => {
+                    println!(
+                        "[PARTYDECK][WARN] Failed to poll instance {}: {}",
+                        state.profile_name, err
+                    );
+                }
+            }
+        }
+
+        if !made_progress {
+            std::thread::sleep(Duration::from_millis(250));
+        }
     }
+
+    let nemirtingas_logs: Vec<NemirtingasLogContext> = runtime_instances
+        .iter()
+        .map(|state| state.log_context.clone())
+        .collect();
 
     collect_nemirtingas_logs(&nemirtingas_logs);
 
