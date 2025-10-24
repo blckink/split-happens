@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::fs::{self, OpenOptions};
+use std::io::ErrorKind;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, OnceLock};
@@ -18,8 +19,12 @@ use nix::libc;
 use nix::sched::{CpuSet, sched_setaffinity};
 use nix::sys::signal::{Signal, kill};
 use nix::unistd::Pid;
+use std::process::ExitStatus;
 use std::process::{Child, Command, Stdio};
+use std::thread;
 use std::time::Duration;
+
+use evdev::{Device as EvDevice, EventSummary, KeyCode};
 
 fn prepare_working_tree(
     profname: &str,
@@ -520,6 +525,223 @@ struct RuntimeInstance {
     log_context: NemirtingasLogContext,
     proton_prefix: Option<String>,
     finished: bool,
+}
+
+/// Wraps an evdev device so the restart prompt can watch for the specific
+/// confirmation and cancellation buttons without reimplementing the full
+/// controller stack used by the main UI.
+struct ControllerPromptDevice {
+    path: String,
+    device: EvDevice,
+}
+
+impl ControllerPromptDevice {
+    /// Opens the referenced event node in non-blocking mode so we can poll for
+    /// X/Circle presses while the desktop dialog remains visible.
+    fn open(path: &str) -> Option<Self> {
+        match EvDevice::open(path) {
+            Ok(device) => {
+                if let Err(err) = device.set_nonblocking(true) {
+                    println!(
+                        "[SPLIT HAPPENS][WARN] Failed to enable non-blocking mode for controller {}: {}",
+                        path, err
+                    );
+                }
+                Some(Self {
+                    path: path.to_string(),
+                    device,
+                })
+            }
+            Err(err) => {
+                println!(
+                    "[SPLIT HAPPENS][WARN] Unable to open controller {} for restart prompt: {}",
+                    path, err
+                );
+                None
+            }
+        }
+    }
+
+    /// Polls pending input events and translates X/Circle presses into restart
+    /// or exit decisions while ignoring unrelated traffic.
+    fn poll_choice(&mut self) -> Result<Option<bool>, std::io::Error> {
+        match self.device.fetch_events() {
+            Ok(events) => {
+                for event in events {
+                    match event.destructure() {
+                        EventSummary::Key(_, KeyCode::BTN_SOUTH, 1) => {
+                            return Ok(Some(true));
+                        }
+                        EventSummary::Key(_, KeyCode::BTN_EAST, 1) => {
+                            return Ok(Some(false));
+                        }
+                        _ => {}
+                    }
+                }
+                Ok(None)
+            }
+            Err(err) if err.kind() == ErrorKind::WouldBlock => Ok(None),
+            Err(err) => Err(err),
+        }
+    }
+}
+
+/// Represents the desktop dialog used to surface the restart question so it
+/// can be cancelled immediately when the assigned controller makes a choice.
+enum DesktopPrompt {
+    KDialog(Child),
+    Zenity(Child),
+}
+
+impl DesktopPrompt {
+    /// Attempts to spawn a lightweight desktop dialog using the available
+    /// system helper (preferring KDE's kdialog and falling back to Zenity).
+    fn spawn(title: &str, contents: &str) -> Option<Self> {
+        if let Ok(child) = Command::new("kdialog")
+            .arg("--title")
+            .arg(title)
+            .arg("--yesno")
+            .arg(contents)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+        {
+            return Some(Self::KDialog(child));
+        }
+
+        if let Ok(child) = Command::new("zenity")
+            .arg("--question")
+            .arg("--title")
+            .arg(title)
+            .arg("--text")
+            .arg(contents)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+        {
+            return Some(Self::Zenity(child));
+        }
+
+        None
+    }
+
+    /// Checks whether the dialog already produced a response so the caller can
+    /// mirror mouse or keyboard selections immediately.
+    fn try_poll(&mut self) -> Option<bool> {
+        match self {
+            DesktopPrompt::KDialog(child) | DesktopPrompt::Zenity(child) => {
+                match child.try_wait() {
+                    Ok(Some(status)) => Some(Self::interpret_status(status)),
+                    Ok(None) => None,
+                    Err(err) => {
+                        println!(
+                            "[SPLIT HAPPENS][WARN] Restart dialog closed unexpectedly: {}",
+                            err
+                        );
+                        Some(false)
+                    }
+                }
+            }
+        }
+    }
+
+    /// Terminates the helper process if the controller already answered the prompt.
+    fn close(&mut self) {
+        match self {
+            DesktopPrompt::KDialog(child) | DesktopPrompt::Zenity(child) => {
+                if let Err(err) = child.kill() {
+                    if err.kind() != ErrorKind::InvalidInput {
+                        println!(
+                            "[SPLIT HAPPENS][WARN] Failed to close restart dialog helper: {}",
+                            err
+                        );
+                    }
+                }
+                let _ = child.wait();
+            }
+        }
+    }
+
+    /// Normalizes exit codes across the supported helpers into a simple boolean
+    /// choice where `true` indicates a restart request.
+    fn interpret_status(status: ExitStatus) -> bool {
+        status.success()
+    }
+}
+
+/// Presents the restart prompt to the player assigned to the crashed instance
+/// and watches the relevant controller for Cross/Circle decisions while keeping
+/// the desktop modal available for keyboard or mouse input.
+fn prompt_instance_restart(
+    runtime_state: &RuntimeInstance,
+    input_devices: &[DeviceInfo],
+    title: &str,
+    message: &str,
+) -> bool {
+    let mut seen: HashSet<String> = HashSet::new();
+    let mut controllers: Vec<ControllerPromptDevice> = Vec::new();
+    for device_index in &runtime_state.instance.devices {
+        if let Some(info) = input_devices.get(*device_index) {
+            if seen.insert(info.path.clone()) {
+                if let Some(device) = ControllerPromptDevice::open(&info.path) {
+                    controllers.push(device);
+                }
+            }
+        }
+    }
+
+    if controllers.is_empty() {
+        return yesno(title, message);
+    }
+
+    let mut dialog = DesktopPrompt::spawn(title, message);
+    if dialog.is_none() {
+        println!(
+            "[SPLIT HAPPENS][WARN] Unable to present desktop restart dialog; waiting for controller input."
+        );
+    }
+
+    let mut removals: Vec<usize> = Vec::new();
+
+    loop {
+        removals.clear();
+        for (index, device) in controllers.iter_mut().enumerate() {
+            match device.poll_choice() {
+                Ok(Some(choice)) => {
+                    if let Some(mut prompt) = dialog.take() {
+                        prompt.close();
+                    }
+                    return choice;
+                }
+                Ok(None) => {}
+                Err(err) => {
+                    println!(
+                        "[SPLIT HAPPENS][WARN] Lost controller {} during restart prompt: {}",
+                        device.path, err
+                    );
+                    removals.push(index);
+                }
+            }
+        }
+
+        for index in removals.iter().rev() {
+            controllers.remove(*index);
+        }
+
+        if let Some(prompt) = dialog.as_mut() {
+            if let Some(choice) = prompt.try_poll() {
+                return choice;
+            }
+        } else if controllers.is_empty() {
+            break;
+        }
+
+        thread::sleep(Duration::from_millis(50));
+    }
+
+    yesno(title, message)
 }
 
 /// Removes a PID from the shared cleanup list once the corresponding process exits so the
@@ -1343,7 +1565,12 @@ pub fn launch_game(
                             "Profile {} closed unexpectedly. Restart it in the reserved slot?",
                             state.profile_name
                         );
-                        restart_requested = yesno("Restart crashed instance?", &prompt);
+                        restart_requested = prompt_instance_restart(
+                            state,
+                            input_devices,
+                            "Restart crashed instance?",
+                            &prompt,
+                        );
                     }
 
                     if restart_requested {
