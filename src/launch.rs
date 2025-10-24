@@ -3,6 +3,7 @@ use std::fs::{self, OpenOptions};
 use std::io::ErrorKind;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 
 use crate::app::PartyConfig;
@@ -213,6 +214,7 @@ fn spawn_instance_child(
     runtime: &str,
     win: bool,
     use_bwrap: bool,
+    use_gamescope_rt: bool,
     cfg: &PartyConfig,
     input_devices: &[DeviceInfo],
     proton_env: Option<&ProtonEnvironment>,
@@ -372,7 +374,7 @@ fn spawn_instance_child(
         cmd.arg("--backend=sdl");
     }
 
-    if cfg.performance_gamescope_rt {
+    if use_gamescope_rt {
         // Promote gamescope to its real-time scheduling mode to smooth frame pacing on the Deck.
         cmd.arg("--rt");
     }
@@ -529,6 +531,7 @@ struct RuntimeInstance {
     last_pid: Option<u32>,
     log_context: NemirtingasLogContext,
     proton_prefix: Option<String>,
+    used_gamescope_rt: bool,
     finished: bool,
 }
 
@@ -1115,7 +1118,7 @@ const GAMESCOPE_DUP_BUFFER_WARNING_SUFFIX: &str =
     "[Warn]  xwm: got the same buffer committed twice, ignoring.";
 
 /// Streams child output on a background thread while suppressing the noisy duplicate-buffer warning.
-fn forward_child_output<R>(reader: R)
+fn forward_child_output<R>(reader: R, gamescope_rt_error: Option<Arc<AtomicBool>>)
 where
     R: Read + Send + 'static,
 {
@@ -1129,6 +1132,13 @@ where
                         && trimmed.ends_with(GAMESCOPE_DUP_BUFFER_WARNING_SUFFIX)
                     {
                         continue;
+                    }
+                    // Flag the specific Gamescope realtime scheduling error so the launcher can
+                    // transparently fall back to a non-realtime configuration on the next spawn.
+                    if let Some(flag) = &gamescope_rt_error {
+                        if trimmed.contains("Signature mismatch: got `i`, expected `s`") {
+                            flag.store(true, Ordering::SeqCst);
+                        }
                     }
                     println!("{line}");
                 }
@@ -1359,6 +1369,11 @@ pub fn launch_game(
         .map(|instance| instance.profname.clone())
         .collect();
 
+    // Track Gamescope realtime scheduling compatibility so we can gracefully fall back if the
+    // compositor rejects the `--rt` flag on this system.
+    let gamescope_rt_error = Arc::new(AtomicBool::new(false));
+    let mut request_gamescope_rt = cfg.performance_gamescope_rt;
+
     let mut synchronized_goldberg_port: Option<u16> = None;
     if let HandlerRef(h) = game {
         if !h.path_goldberg.is_empty() && !profile_names.is_empty() {
@@ -1509,6 +1524,7 @@ pub fn launch_game(
             &runtime,
             win,
             use_bwrap,
+            request_gamescope_rt,
             cfg,
             input_devices,
             proton_env.as_ref(),
@@ -1528,10 +1544,10 @@ pub fn launch_game(
         promote_instance_priority(raw_pid, i, instances.len());
 
         if let Some(stdout) = child.stdout.take() {
-            forward_child_output(stdout);
+            forward_child_output(stdout, Some(gamescope_rt_error.clone()));
         }
         if let Some(stderr) = child.stderr.take() {
-            forward_child_output(stderr);
+            forward_child_output(stderr, Some(gamescope_rt_error.clone()));
         }
 
         runtime_instances.push(RuntimeInstance {
@@ -1542,6 +1558,7 @@ pub fn launch_game(
             last_pid: Some(raw_pid),
             log_context: outcome.log_context,
             proton_prefix: outcome.proton_prefix,
+            used_gamescope_rt: request_gamescope_rt,
             finished: false,
         });
 
@@ -1570,16 +1587,31 @@ pub fn launch_game(
                             "[SPLIT HAPPENS][WARN] Instance {} exited unexpectedly (status: {:?}).",
                             state.profile_name, status
                         );
-                        let prompt = format!(
-                            "Profile {} closed unexpectedly. Restart it in the reserved slot?",
-                            state.profile_name
-                        );
-                        restart_requested = prompt_instance_restart(
-                            state,
-                            input_devices,
-                            "Restart crashed instance?",
-                            &prompt,
-                        );
+                        // If Gamescope rejected realtime scheduling, disable the flag and retry
+                        // automatically so players are not forced to acknowledge a known limitation.
+                        if state.used_gamescope_rt
+                            && gamescope_rt_error.swap(false, Ordering::SeqCst)
+                        {
+                            if request_gamescope_rt {
+                                log_launch_warning(
+                                    "Gamescope realtime scheduling is unsupported on this setup; retrying without it.",
+                                );
+                            }
+                            request_gamescope_rt = false;
+                            state.used_gamescope_rt = false;
+                            restart_requested = true;
+                        } else {
+                            let prompt = format!(
+                                "Profile {} closed unexpectedly. Restart it in the reserved slot?",
+                                state.profile_name
+                            );
+                            restart_requested = prompt_instance_restart(
+                                state,
+                                input_devices,
+                                "Restart crashed instance?",
+                                &prompt,
+                            );
+                        }
                     }
 
                     if restart_requested {
@@ -1598,6 +1630,7 @@ pub fn launch_game(
                             &runtime,
                             win,
                             use_bwrap,
+                            request_gamescope_rt,
                             cfg,
                             input_devices,
                             proton_env.as_ref(),
@@ -1616,16 +1649,20 @@ pub fn launch_game(
                                 promote_instance_priority(new_pid, state.index, instances.len());
 
                                 if let Some(stdout) = respawn.child.stdout.take() {
-                                    forward_child_output(stdout);
+                                    forward_child_output(stdout, Some(gamescope_rt_error.clone()));
                                 }
                                 if let Some(stderr) = respawn.child.stderr.take() {
-                                    forward_child_output(stderr);
+                                    forward_child_output(stderr, Some(gamescope_rt_error.clone()));
                                 }
 
                                 state.child = Some(respawn.child);
                                 state.last_pid = Some(new_pid);
                                 state.log_context = respawn.log_context;
                                 state.proton_prefix = respawn.proton_prefix;
+                                // Record whether the replacement instance actually requested
+                                // realtime scheduling so future failures know if they stem from
+                                // the unsupported `--rt` flag.
+                                state.used_gamescope_rt = request_gamescope_rt;
                                 state.finished = false;
                                 println!(
                                     "[SPLIT HAPPENS] Restarted profile {} in slot {}.",
