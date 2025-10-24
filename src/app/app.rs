@@ -21,17 +21,10 @@ pub enum MenuPage {
     Instances,
 }
 
-#[derive(Eq, PartialEq)]
-pub enum SettingsPage {
-    General,
-    Gamescope,
-}
-
 pub struct PartyApp {
     pub needs_update: bool,
     pub options: PartyConfig,
     pub cur_page: MenuPage,
-    pub settings_page: SettingsPage,
     pub infotext: String,
 
     pub input_devices: Vec<InputDevice>,
@@ -88,7 +81,6 @@ impl PartyApp {
             needs_update: check_for_partydeck_update(),
             options,
             cur_page: MenuPage::Home,
-            settings_page: SettingsPage::General,
             infotext: String::new(),
             input_devices,
             instances: Vec::new(),
@@ -137,37 +129,6 @@ impl eframe::App for PartyApp {
             }
             self.display_panel_top(ui);
         });
-
-        if self.cur_page != MenuPage::Home {
-            // Keep the traditional left navigation only when the user is in a
-            // detail view so the new tile-based home screen can stretch across
-            // the full window.
-            egui::SidePanel::left("games_panel")
-                .resizable(false)
-                .exact_width(240.0)
-                .show(ctx, |ui| {
-                    if self.task.is_some() {
-                        ui.disable();
-                    }
-                    self.display_panel_left(ui);
-                });
-        }
-
-        if self.cur_page == MenuPage::Instances {
-            egui::SidePanel::right("devices_panel")
-                .resizable(false)
-                .exact_width(180.0)
-                .show(ctx, |ui| {
-                    if self.task.is_some() {
-                        ui.disable();
-                    }
-                    self.display_panel_right(ui, ctx);
-                });
-        }
-
-        if (self.cur_page != MenuPage::Home) && (self.cur_page != MenuPage::Instances) {
-            self.display_panel_bottom(ctx);
-        }
 
         egui::CentralPanel::default().show(ctx, |ui| {
             if self.task.is_some() {
