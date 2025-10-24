@@ -64,19 +64,48 @@ pub struct ProtonEnvironment {
 pub fn discover_proton_versions() -> Vec<ProtonInstall> {
     let mut installs: Vec<ProtonInstall> = Vec::new();
 
-    // Collect custom compatibility tools that ship as Proton builds.
-    collect_proton_under(
-        &PATH_STEAM.join("compatibilitytools.d"),
-        ProtonSource::CompatibilityTool,
-        &mut installs,
-    );
+    // Build a unique list of Steam library roots so Proton installs stored on
+    // external cards or secondary drives are also discovered.
+    let mut library_roots: Vec<PathBuf> = Vec::new();
+    let mut seen_roots: HashSet<PathBuf> = HashSet::new();
 
-    // Collect the official Steam-distributed Proton builds.
-    collect_proton_under(
-        &PATH_STEAM.join("steamapps/common"),
-        ProtonSource::SteamRuntime,
-        &mut installs,
-    );
+    let primary_root = PATH_STEAM.as_path().to_path_buf();
+    let primary_canonical = primary_root
+        .canonicalize()
+        .unwrap_or_else(|_| primary_root.clone());
+    seen_roots.insert(primary_canonical);
+    library_roots.push(primary_root);
+
+    if let Ok(steam_dir) = steamlocate::SteamDir::locate() {
+        if let Ok(paths) = steam_dir.library_paths() {
+            for library in paths {
+                if !library.exists() {
+                    continue;
+                }
+
+                let canonical = library.canonicalize().unwrap_or_else(|_| library.clone());
+                if seen_roots.insert(canonical) {
+                    library_roots.push(library);
+                }
+            }
+        }
+    }
+
+    for root in library_roots {
+        // Collect custom compatibility tools that ship as Proton builds.
+        collect_proton_under(
+            &root.join("compatibilitytools.d"),
+            ProtonSource::CompatibilityTool,
+            &mut installs,
+        );
+
+        // Collect the official Steam-distributed Proton builds.
+        collect_proton_under(
+            &root.join("steamapps/common"),
+            ProtonSource::SteamRuntime,
+            &mut installs,
+        );
+    }
 
     // Deduplicate installations that may appear twice because of symlinks and
     // keep the list sorted for deterministic UI ordering.
