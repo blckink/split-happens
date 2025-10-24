@@ -32,3 +32,4 @@
 - Ensure controller navigation stays consistent: Circle/O/B should always return to the main menu, Cross/A confirms selections, and both the D-pad and analog sticks must move focus cleanly between adjacent UI elements.
 - When painting focus outlines with egui 0.31+, always pass an explicit `StrokeKind` to `rect_stroke` so builds keep compiling after upstream API changes.
 - When adding or updating KWin scripting handlers, always accept the signal's window parameter to avoid signature mismatch errors on newer Plasma releases.
+- When KWin DBus calls reject numeric script identifiers with a signature mismatch, retry with the "splitscreen" script name so launches remain compatible with newer Plasma builds.
