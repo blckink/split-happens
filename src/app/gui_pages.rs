@@ -524,7 +524,18 @@ impl PartyApp {
         // Track the exact instance/device pairs flagged for removal so shared
         // controllers can be detached cleanly from a single slot.
         let mut devices_to_remove: Vec<(usize, usize)> = Vec::new();
-        for (i, instance) in &mut self.instances.iter_mut().enumerate() {
+        let instance_count = self.instances.len();
+        for i in 0..instance_count {
+            // Track per-instance responses so we can decorate them after the mutable
+            // borrow of `self.instances[i]` ends, keeping the borrow checker happy
+            // while still highlighting active controls.
+            let mut combo_response: Option<egui::Response> = None;
+            let mut invite_response: Option<egui::Response> = None;
+            let mut cancel_response: Option<egui::Response> = None;
+
+            let mut profselection = self.instances[i].profselection;
+            let device_indices = self.instances[i].devices.clone();
+
             ui.horizontal(|ui| {
                 ui.label(format!("Instance {}", i + 1));
 
@@ -532,50 +543,64 @@ impl PartyApp {
                     ui.label("👤");
                     // Clamp invalid selections when the profile list refreshes so the
                     // drop-down keeps pointing at a valid entry.
-                    if instance.profselection >= self.profiles.len() && !self.profiles.is_empty() {
-                        instance.profselection = 0;
+                    if profselection >= self.profiles.len() && !self.profiles.is_empty() {
+                        profselection = 0;
                     }
                     // Surface the currently selected profile name in the combo box even
                     // when no assignment has been made yet.
                     let selected_text = self
                         .profiles
-                        .get(instance.profselection)
+                        .get(profselection)
                         .cloned()
                         .unwrap_or_else(|| "Select profile".to_string());
                     // Wrap the combo box in a manual `show_ui` call so we can decorate
                     // the response with controller focus feedback.
-                    let combo_response = egui::ComboBox::from_id_salt(format!("{i}"))
-                        .selected_text(selected_text)
-                        .show_ui(ui, |combo_ui| {
-                            for (index, profile_name) in self.profiles.iter().enumerate() {
-                                combo_ui.selectable_value(
-                                    &mut instance.profselection,
-                                    index,
-                                    profile_name.clone(),
-                                );
-                            }
-                        })
-                        .response;
-                    self.decorate_focus(ui, &combo_response);
+                    combo_response = Some(
+                        egui::ComboBox::from_id_salt(format!("{i}"))
+                            .selected_text(selected_text)
+                            .show_ui(ui, |combo_ui| {
+                                for (index, profile_name) in self.profiles.iter().enumerate() {
+                                    combo_ui.selectable_value(
+                                        &mut profselection,
+                                        index,
+                                        profile_name.clone(),
+                                    );
+                                }
+                            })
+                            .response,
+                    );
                 }
 
                 if self.instance_add_dev == None {
                     let invite_button = ui.button("➕ Invite New Device");
-                    self.decorate_focus(ui, &invite_button);
                     if invite_button.clicked() {
                         self.instance_add_dev = Some(i);
                     }
+                    invite_response = Some(invite_button);
                 } else if self.instance_add_dev == Some(i) {
                     let cancel_button = ui.button("🗙 Cancel");
-                    self.decorate_focus(ui, &cancel_button);
                     if cancel_button.clicked() {
                         self.instance_add_dev = None;
                     }
+                    cancel_response = Some(cancel_button);
                     ui.label("Adding new device...");
                 }
             });
-            for (device_slot, &dev) in instance.devices.iter().enumerate() {
-                if let Some(device) = self.input_devices.get(dev) {
+
+            if let Some(response) = combo_response.as_ref() {
+                self.decorate_focus(ui, response);
+            }
+            if let Some(response) = invite_response.as_ref() {
+                self.decorate_focus(ui, response);
+            }
+            if let Some(response) = cancel_response.as_ref() {
+                self.decorate_focus(ui, response);
+            }
+
+            self.instances[i].profselection = profselection;
+
+            for (device_slot, dev_index) in device_indices.iter().enumerate() {
+                if let Some(device) = self.input_devices.get(*dev_index) {
                     let mut dev_text =
                         RichText::new(format!("{} {}", device.emoji(), device.fancyname()));
 
