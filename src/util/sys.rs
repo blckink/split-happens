@@ -1,30 +1,48 @@
 use dialog::{Choice, DialogBox};
 use std::error::Error;
 use std::io::{Error as IoError, ErrorKind};
+use std::ops::Deref;
 use std::path::PathBuf;
 use std::sync::{Mutex, MutexGuard, OnceLock};
 use x11rb::connection::Connection;
+use zbus::zvariant::{OwnedValue, Value};
 
 use super::steamdeck::is_steam_deck;
 
 /// Tracks the active KWin script identifier so we can cleanly stop it after the
 /// last Split Happens instance terminates.
-static KWIN_SCRIPT_ID: OnceLock<Mutex<Option<String>>> = OnceLock::new();
+/// Persists the raw identifier returned by KWin when loading the helper script so
+/// we can later stop the exact runtime instance regardless of the concrete type
+/// (some platforms report a string name, others an integer handle).
+static KWIN_SCRIPT_ID: OnceLock<Mutex<Option<OwnedValue>>> = OnceLock::new();
 
 /// Convenience helper that provides access to the script identifier storage.
-fn kwin_script_slot() -> &'static Mutex<Option<String>> {
+fn kwin_script_slot() -> &'static Mutex<Option<OwnedValue>> {
     KWIN_SCRIPT_ID.get_or_init(|| Mutex::new(None))
 }
 
 /// Locks the script identifier storage and maps poisoning into a descriptive IO
 /// error so callers can bubble the failure up uniformly.
-fn lock_kwin_script_slot() -> Result<MutexGuard<'static, Option<String>>, Box<dyn Error>> {
+fn lock_kwin_script_slot() -> Result<MutexGuard<'static, Option<OwnedValue>>, Box<dyn Error>> {
     kwin_script_slot().lock().map_err(|_| {
         Box::new(IoError::new(
             ErrorKind::Other,
             "Failed to lock KWin script storage",
         )) as Box<dyn Error>
     })
+}
+
+/// Formats the dynamically typed DBus identifier into a human readable label so
+/// launch logs stay understandable even when KWin reports numeric handles.
+fn describe_kwin_id(id: &OwnedValue) -> String {
+    match id.deref() {
+        Value::Str(text) => text.to_string(),
+        Value::I32(num) => num.to_string(),
+        Value::I64(num) => num.to_string(),
+        Value::U32(num) => num.to_string(),
+        Value::U64(num) => num.to_string(),
+        other => format!("{other:?}"),
+    }
 }
 
 pub fn msg(title: &str, contents: &str) {
@@ -78,14 +96,18 @@ pub fn kwin_dbus_start_script(file: PathBuf) -> Result<(), Box<dyn Error>> {
 
     // Ask KWin to load the script and capture the concrete runtime identifier so
     // we can start and later unload the exact instance that was registered.
-    let script_id: String = proxy.call(
+    let script_id: OwnedValue = proxy.call(
         "loadScript",
         &(file.to_string_lossy().into_owned(), "splitscreen"),
     )?;
-    println!("Script loaded as id {}. Starting...", script_id);
+    println!(
+        "Script loaded as id {}. Starting...",
+        describe_kwin_id(&script_id)
+    );
 
     // Launch the freshly registered script so all future game windows are
-    // immediately snapped into their target positions.
+    // immediately snapped into their target positions, regardless of the
+    // identifier type reported by the compositor.
     let _: () = proxy.call("start", &(script_id.clone(),))?;
 
     // Remember which script instance we activated to avoid leaving stray
