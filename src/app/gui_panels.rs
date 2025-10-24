@@ -2,8 +2,8 @@ use super::app::{MenuPage, PartyApp};
 use crate::input::*;
 use crate::util::*;
 
-use eframe::egui::output::OpenUrl;
 use eframe::egui::RichText;
+use eframe::egui::output::OpenUrl;
 use eframe::egui::{self, TextWrapMode, Ui};
 use egui_extras::{Size, StripBuilder};
 
