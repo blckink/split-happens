@@ -6,6 +6,7 @@
 - For UI changes, ensure a modern, well-aligned, and consistent presentation without unnecessary spacing around elements.
 - Keep the build tooling resilient by re-executing `build.sh` inside `steam-run` when no system linker is present instead of prompting users to install compilers manually.
 - When both `cc` and compiler shims are unavailable, rely on the bundled `rust-lld` fallback so builds continue to work on minimal SteamOS environments.
+- When driving `rust-lld` fallbacks, harvest library search paths with `ldconfig` so glibc and friends remain discoverable, and avoid passing `-Wl,`-prefixed linker flags that the standalone linker rejects.
 - Default Nemirtingas configuration log levels to error severity; only surface critical emulator issues in per-player logs.
 - Persist launch warnings to a text log under the PARTY directory in addition to printing them to the console for easier debugging.
 - Generate and persist unique Nemirtingas `EpicId`/`ProductUserId` pairs for each profile so invite codes stay stable between sessions.

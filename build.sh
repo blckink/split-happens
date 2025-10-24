@@ -7,6 +7,53 @@
 # Automatically fall back to clang/gcc shims when the runtime exposes
 # versioned toolchains without the generic `cc` symlink so we still provide a
 # linker to Cargo in SteamOS environments.
+add_rust_lld_search_paths() {
+  # Gather shared library directories from ldconfig so rust-lld can discover
+  # glibc when no system compiler wrapper is present. While scanning, capture
+  # the first libgcc path so we can fabricate the unversioned SONAMEs that
+  # rust-lld expects when cc is unavailable.
+  local libpath libdir added_dirs="" libgcc_source="" shim_dir="target/rust-lld-shims"
+
+  if ! command -v ldconfig >/dev/null 2>&1; then
+    return
+  fi
+
+  while IFS= read -r libpath; do
+    libdir=$(dirname "$libpath")
+    case " ${added_dirs} " in
+      *" ${libdir} "*)
+        continue
+        ;;
+    esac
+
+    added_dirs+=" ${libdir}"
+    RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-L native=${libdir}"
+
+    # Remember where libgcc_s lives so we can expose libgcc aliases later on.
+    if [ -z "$libgcc_source" ] && [ "$(basename "$libpath")" = "libgcc_s.so.1" ]; then
+      libgcc_source="$libpath"
+    fi
+  done < <(ldconfig -p | awk -F'=> ' 'NF==2 {gsub(/^ +| +$/, "", $2); print $2}')
+
+  if [ -n "$libgcc_source" ]; then
+    # Surface libgcc under both libgcc.so and libgcc_s.so so rust-lld can
+    # satisfy the -lgcc/-lgcc_s search pairs injected by Rust's stdlib.
+    mkdir -p "$shim_dir"
+    ln -sf "$libgcc_source" "$shim_dir/libgcc.so"
+    ln -sf "$libgcc_source" "$shim_dir/libgcc_s.so"
+
+    case " ${added_dirs} " in
+      *" ${shim_dir} "*)
+        ;;
+      *)
+        RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-L native=${shim_dir}"
+        ;;
+    esac
+  fi
+
+  export RUSTFLAGS
+}
+
 if ! command -v cc >/dev/null 2>&1; then
   if [ -z "${PARTYDECK_STEAMRUN_REEXEC:-}" ] && command -v steam-run >/dev/null 2>&1; then
     export PARTYDECK_STEAMRUN_REEXEC=1
@@ -27,6 +74,7 @@ if ! command -v cc >/dev/null 2>&1; then
     # present so Deck users can still build without installing toolchains.
     export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C linker=rust-lld"
     export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=${CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER:-rust-lld}
+    add_rust_lld_search_paths
   fi
 fi
 
@@ -34,7 +82,7 @@ fi
 # the binaries benefit from the platform's Zen 2 CPU and lean linker settings
 # without requiring manual cargo configuration tweaks.
 if [ -r /etc/os-release ] && grep -qi 'steamos' /etc/os-release; then
-  export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C target-cpu=znver2 -C link-arg=-Wl,-O1"
+  export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C target-cpu=znver2 -C link-arg=-O1"
   export CARGO_PROFILE_RELEASE_LTO="${CARGO_PROFILE_RELEASE_LTO:-thin}"
 fi
 
