@@ -12,7 +12,7 @@ use crate::util::*;
 
 use eframe::egui::{self, Key};
 
-#[derive(Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub enum MenuPage {
     Home,
     Settings,
