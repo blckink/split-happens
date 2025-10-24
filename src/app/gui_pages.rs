@@ -33,7 +33,9 @@ impl PartyApp {
         // stays prominent on both desktop and Steam Deck screens.
         let mut refresh_games = false;
         let tile_spacing = 16.0;
-        let min_tile_width = 320.0;
+        // Shrink the responsive tile baseline so every game card renders at half the
+        // previous footprint, which keeps the grid lightweight even on small screens.
+        let min_tile_width = 160.0;
 
         egui::ScrollArea::vertical()
             .auto_shrink([false; 2])
@@ -71,10 +73,11 @@ impl PartyApp {
                         for index in start..end {
                             let game = self.games[index].to_owned();
                             let removal_game = game.to_owned();
-                            let image_height = (tile_width * 9.0 / 16.0).clamp(160.0, 320.0);
-                            let letterbox_pad = (image_height * 0.12).clamp(12.0, 24.0);
-                            let hero_total_height = image_height + 2.0 * letterbox_pad;
-                            let tile_height = hero_total_height + 72.0;
+                            let image_height = (tile_width * 9.0 / 16.0).clamp(80.0, 160.0);
+                            let hero_total_height = image_height;
+                            // Tighten the tile height so the reduced hero art doesn't leave
+                            // oversized padding around the title text.
+                            let tile_height = hero_total_height + 52.0;
 
                             let (rect, response) = row_ui.allocate_exact_size(
                                 egui::vec2(tile_width, tile_height),
@@ -111,23 +114,14 @@ impl PartyApp {
                                 .show(&mut tile_ui, |tile_ui| {
                                     tile_ui.spacing_mut().item_spacing.y = 10.0;
 
-                                    // Paint a letterboxed hero area so artwork never overlaps
-                                    // neighboring tiles even when we shrink the window.
+                                    // Paint the hero artwork flush with the frame so no empty
+                                    // bars appear above or below each image.
                                     let image_width = tile_ui.available_width();
                                     let hero_size = egui::vec2(image_width, hero_total_height);
                                     let (hero_rect, _) = tile_ui
                                         .allocate_exact_size(hero_size, egui::Sense::hover());
 
-                                    let rounding = egui::CornerRadius::same(10);
-                                    let letterbox_color = tile_ui.visuals().extreme_bg_color;
-                                    tile_ui.painter().rect_filled(
-                                        hero_rect,
-                                        rounding,
-                                        letterbox_color,
-                                    );
-
-                                    let image_rect =
-                                        hero_rect.shrink2(egui::vec2(0.0, letterbox_pad));
+                                    let image_rect = hero_rect;
                                     if let Some(hero_path) = game.hero_image_path() {
                                         let hero_widget = egui::Image::new(format!(
                                             "file://{}",
@@ -147,7 +141,7 @@ impl PartyApp {
                                         tile_ui.put(icon_rect, icon_widget);
                                     }
 
-                                    tile_ui.add_space(8.0);
+                                    tile_ui.add_space(10.0);
                                     tile_ui.label(
                                         egui::RichText::new(game.name()).size(20.0).strong(),
                                     );
