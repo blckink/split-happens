@@ -59,6 +59,8 @@ impl PartyApp {
                 if columns == 0 {
                     columns = 1;
                 }
+                // Cache the responsive column count so D-pad input snaps between rows.
+                self.home_grid_columns = columns;
 
                 let tile_width = if columns == 1 {
                     available_width
@@ -86,15 +88,21 @@ impl PartyApp {
                                 egui::Sense::click(),
                             );
 
-                            let fill_color = if response.hovered() {
-                                row_ui.visuals().widgets.hovered.bg_fill
+                            let is_selected = index == self.selected_game;
+                            let visuals = row_ui.visuals();
+                            let fill_color = if is_selected {
+                                visuals.selection.bg_fill
+                            } else if response.hovered() {
+                                visuals.widgets.hovered.bg_fill
                             } else {
-                                row_ui.visuals().extreme_bg_color
+                                visuals.widgets.inactive.bg_fill
                             };
-                            let stroke = if response.hovered() {
-                                row_ui.visuals().widgets.hovered.bg_stroke
+                            let stroke = if is_selected {
+                                egui::Stroke::new(2.0, visuals.selection.stroke.color)
+                            } else if response.hovered() {
+                                visuals.widgets.hovered.bg_stroke
                             } else {
-                                row_ui.visuals().widgets.inactive.bg_stroke
+                                visuals.widgets.inactive.bg_stroke
                             };
 
                             let mut tile_ui = row_ui.new_child(
@@ -141,7 +149,7 @@ impl PartyApp {
 
                                     tile_ui.add_space(12.0);
                                     tile_ui.label(
-                                        egui::RichText::new(game.name()).size(20.0).strong(),
+                                        egui::RichText::new(game.name()).size(24.0).strong(),
                                     );
 
                                     match game {
@@ -179,12 +187,23 @@ impl PartyApp {
                             if response.clicked() {
                                 self.open_instances_for(index);
                             }
+
+                            if self.pending_home_focus && is_selected {
+                                // Pull focus to the active tile so controller actions work immediately.
+                                response.request_focus();
+                                response.scroll_to_me(Some(egui::Align::Center));
+                                self.pending_home_focus = false;
+                            }
                         }
                     });
 
                     if row + 1 < total_rows {
                         scroll_ui.add_space(tile_spacing);
                     }
+                }
+                if self.pending_home_focus {
+                    // If no tile consumed the focus request, clear the flag to avoid repeated pings.
+                    self.pending_home_focus = false;
                 }
             });
     }
@@ -230,30 +249,95 @@ impl PartyApp {
             .max_height(ui.available_height() - 16.0)
             .auto_shrink(false)
             .show(ui, |ui| {
-                for profile in &self.profiles {
-                    if ui.selectable_value(&mut 0, 0, profile).clicked() {
-                        if let Err(_) = std::process::Command::new("sh")
-                            .arg("-c")
-                            .arg(format!(
-                                "xdg-open {}/profiles/{}",
-                                PATH_PARTY.display(),
-                                profile
-                            ))
-                            .status()
-                        {
-                            msg("Error", "Couldn't open profile directory!");
-                        }
-                    };
+                // Present each profile as a card with inline actions for controller clarity.
+                let profile_names = self.profiles.clone();
+                for profile in profile_names {
+                    let frame = egui::Frame::new()
+                        .fill(ui.visuals().widgets.inactive.bg_fill)
+                        .stroke(egui::Stroke::new(
+                            1.0,
+                            ui.visuals().widgets.inactive.bg_stroke.color,
+                        ))
+                        .corner_radius(egui::CornerRadius::same(12))
+                        .inner_margin(egui::Margin::symmetric(18, 12));
+
+                    frame.show(ui, |row_ui| {
+                        row_ui.horizontal(|row| {
+                            let profile_name = profile.as_str();
+                            row.label(RichText::new(profile_name).size(22.0).strong());
+                            row.with_layout(
+                                egui::Layout::right_to_left(egui::Align::Center),
+                                |actions| {
+                                    if actions.button(RichText::new("Open").size(18.0)).clicked() {
+                                        if let Err(_) = std::process::Command::new("sh")
+                                            .arg("-c")
+                                            .arg(format!(
+                                                "xdg-open {}/profiles/{}",
+                                                PATH_PARTY.display(),
+                                                profile_name
+                                            ))
+                                            .status()
+                                        {
+                                            msg("Error", "Couldn't open profile directory!");
+                                        }
+                                    }
+
+                                    if actions.button(RichText::new("Rename").size(18.0)).clicked()
+                                    {
+                                        if let Some(new_name) =
+                                            dialog::Input::new("Enter new name (alphanumeric)")
+                                                .title("Rename Profile")
+                                                .show()
+                                                .expect("Could not display dialog box")
+                                        {
+                                            let trimmed = new_name.trim();
+                                            if trimmed.is_empty()
+                                                || !trimmed.chars().all(char::is_alphanumeric)
+                                            {
+                                                msg("Error", "Invalid name");
+                                            } else if let Err(err) =
+                                                rename_profile(profile_name, trimmed)
+                                            {
+                                                msg(
+                                                    "Error",
+                                                    &format!("Couldn't rename profile: {err}"),
+                                                );
+                                            } else {
+                                                self.apply_local_profile_rename(
+                                                    profile_name,
+                                                    trimmed,
+                                                );
+                                                if let Err(err) = save_cfg(&self.options) {
+                                                    msg(
+                                                        "Error",
+                                                        &format!(
+                                                            "Couldn't persist profile settings: {}",
+                                                            err
+                                                        ),
+                                                    );
+                                                }
+                                                self.profiles = scan_profiles(false);
+                                            }
+                                        }
+                                    }
+                                },
+                            );
+                        });
+                    });
+
+                    ui.add_space(8.0);
                 }
             });
-        if ui.button("New").clicked() {
+        if ui.button(RichText::new("New Profile").size(20.0)).clicked() {
             if let Some(name) = dialog::Input::new("Enter name (must be alphanumeric):")
                 .title("New Profile")
                 .show()
                 .expect("Could not display dialog box")
             {
                 if !name.is_empty() && name.chars().all(char::is_alphanumeric) {
-                    create_profile(&name).unwrap();
+                    if let Err(err) = create_profile(&name) {
+                        msg("Error", &format!("Couldn't create profile: {err}"));
+                    }
                 } else {
                     msg("Error", "Invalid name");
                 }
