@@ -12,6 +12,7 @@ pub struct Handler {
     // Members that are determined by context
     pub path_handler: PathBuf,
     pub img_paths: Vec<PathBuf>,
+    pub steam_header: Option<PathBuf>,
 
     pub uid: String,
     pub name: String,
@@ -55,6 +56,7 @@ impl Handler {
         let mut handler = Self {
             path_handler: PathBuf::new(),
             img_paths: Vec::new(),
+            steam_header: None,
 
             uid: json["handler.uid"].as_str().unwrap_or_default().to_string(),
             name: json["handler.name"]
@@ -172,6 +174,7 @@ impl Handler {
             .ok_or_else(|| "Invalid path")?
             .to_path_buf();
         handler.img_paths = handler.get_imgs();
+        handler.ensure_steam_header_image();
 
         Ok(handler)
     }
@@ -214,6 +217,42 @@ impl Handler {
 
         out.sort();
         out
+    }
+
+    /// Ensures that each handler caches the Steam header artwork locally so the
+    /// UI can render large, responsive tiles without repeatedly downloading the
+    /// same image.
+    fn ensure_steam_header_image(&mut self) {
+        use std::process::Command;
+
+        let Some(appid) = &self.steam_appid else {
+            self.steam_header = None;
+            return;
+        };
+
+        let header_path = self.path_handler.join("steam_header.jpg");
+        if header_path.exists() {
+            self.steam_header = Some(header_path);
+            return;
+        }
+
+        let url = format!(
+            "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/{appid}/header.jpg"
+        );
+
+        let download_status = Command::new("curl")
+            .arg("-sSfL")
+            .arg(&url)
+            .arg("-o")
+            .arg(&header_path)
+            .status();
+
+        if matches!(download_status, Ok(status) if status.success()) && header_path.exists() {
+            self.steam_header = Some(header_path);
+        } else {
+            let _ = std::fs::remove_file(&header_path);
+            self.steam_header = None;
+        }
     }
 }
 
