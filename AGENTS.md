@@ -30,3 +30,4 @@
 - Favor pure-Rust or system-provided tooling for HTTP/download tasks; avoid adding crates that require native C toolchains (e.g., OpenSSL, ring, zstd-sys) so Steam Deck builds stay dependency-free.
 - Maintain state-of-the-art UI polish with smooth transitions, clean reusable code, perfectly aligned layouts, and avoid oversized padding or empty frames around iconography.
 - Ensure controller navigation stays consistent: Circle/O/B should always return to the main menu, Cross/A confirms selections, and both the D-pad and analog sticks must move focus cleanly between adjacent UI elements.
+- When painting focus outlines with egui 0.31+, always pass an explicit `StrokeKind` to `rect_stroke` so builds keep compiling after upstream API changes.

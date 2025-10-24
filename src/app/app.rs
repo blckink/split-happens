@@ -10,7 +10,7 @@ use crate::launch::launch_game;
 use crate::paths::*;
 use crate::util::*;
 
-use eframe::egui::{self, Key};
+use eframe::egui::{self, Key, StrokeKind};
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum MenuPage {
@@ -224,7 +224,9 @@ impl PartyApp {
             let visuals = ui.visuals();
             let stroke = egui::Stroke::new(2.0, visuals.selection.bg_fill);
             ui.painter()
-                .rect_stroke(response.rect.expand(4.0), 8.0, stroke);
+                // Draw the focus ring just outside the widget so active elements
+                // gain a subtle glow without shrinking their layout footprint.
+                .rect_stroke(response.rect.expand(4.0), 8.0, stroke, StrokeKind::Outside);
         }
     }
 
@@ -302,14 +304,21 @@ impl PartyApp {
         let mut open_selected_from_home = false;
         let mut horizontal = 0i32;
         let mut vertical = 0i32;
-        for pad in &mut self.input_devices {
-            if !pad.enabled() {
+        // Defer activating the navigation selection until the input iteration
+        // finishes so the borrow checker can release the mutable slice borrow
+        // from `self.input_devices` before we mutate other fields.
+        let mut activate_nav_after_poll = false;
+
+        for pad_index in 0..self.input_devices.len() {
+            if !self.input_devices[pad_index].enabled() {
                 continue;
             }
-            match pad.poll() {
+
+            let event = self.input_devices[pad_index].poll();
+            match event {
                 Some(PadButton::ABtn) => {
                     if self.nav_in_focus {
-                        self.activate_nav_selection();
+                        activate_nav_after_poll = true;
                     } else {
                         match self.cur_page {
                             MenuPage::Home => open_selected_from_home = true,
@@ -356,6 +365,10 @@ impl PartyApp {
                 Some(_) => {}
                 None => {}
             }
+        }
+
+        if activate_nav_after_poll {
+            self.activate_nav_selection();
         }
 
         let mut tab_forward = 0i32;
