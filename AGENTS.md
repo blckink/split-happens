@@ -10,6 +10,7 @@
 - When capturing host linker assets, mirror `libgcc_s.so.1` into `target/rust-lld-shims` so sandboxed builds do not rely on host-only paths.
 - When driving `rust-lld` fallbacks, harvest library search paths with `ldconfig` so glibc and friends remain discoverable, and avoid passing `-Wl,`-prefixed linker flags that the standalone linker rejects.
 - Default Nemirtingas configuration log levels to error severity; only surface critical emulator issues in per-player logs.
+- Before each launch, completely purge Nemirtingas `appdata` artifacts (except logs) so stale EOS command caches never trigger `COMMAND_STATE_SUBMITTED` assertion dialogs for players.
 - Persist launch warnings to a text log under the PARTY directory in addition to printing them to the console for easier debugging.
 - Generate and persist unique Nemirtingas `EpicId`/`ProductUserId` pairs for each profile so invite codes stay stable between sessions.
 - Treat Nemirtingas configs that still use the default `DefaultName` username as invalid placeholders; rewrite them to the PartyDeck profile name so the regenerated IDs remain deterministic.

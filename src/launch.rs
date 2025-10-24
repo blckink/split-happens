@@ -257,33 +257,41 @@ fn reset_nemirtingas_session_state(nepice_dir: &Path) {
         return;
     }
 
+    // Aggressively purge any stale EOS command artifacts before each launch so the emulator
+    // never replays partially-submitted commands that crash with the COMMAND_STATE_SUBMITTED
+    // assertion reported by players. We preserve the log directory so historical diagnostics
+    // stay intact between sessions.
     let mut cleared_state = false;
-    for dir in ["Commands", "commands", "PendingCommands"] {
-        let path = appdata.join(dir);
-        if path.exists() {
-            match fs::remove_dir_all(&path) {
-                Ok(_) => cleared_state = true,
-                Err(err) => println!(
-                    "[PARTYDECK][WARN] Failed to remove stale Nemirtingas commands {}: {}",
-                    path.display(),
-                    err
-                ),
-            }
-        }
-    }
+    let logs_dir = appdata.join("Logs");
+    match fs::read_dir(&appdata) {
+        Ok(entries) => {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path == logs_dir {
+                    continue;
+                }
 
-    for file in ["CommandCache.json", "PendingCommand.json", "PendingCommand"] {
-        let path = appdata.join(file);
-        if path.exists() {
-            match fs::remove_file(&path) {
-                Ok(_) => cleared_state = true,
-                Err(err) => println!(
-                    "[PARTYDECK][WARN] Failed to remove stale Nemirtingas command file {}: {}",
-                    path.display(),
-                    err
-                ),
+                let result = if entry.file_type().map(|ft| ft.is_dir()).unwrap_or(false) {
+                    fs::remove_dir_all(&path)
+                } else {
+                    fs::remove_file(&path)
+                };
+
+                match result {
+                    Ok(_) => cleared_state = true,
+                    Err(err) => println!(
+                        "[PARTYDECK][WARN] Failed to remove stale Nemirtingas appdata {}: {}",
+                        path.display(),
+                        err
+                    ),
+                }
             }
         }
+        Err(err) => println!(
+            "[PARTYDECK][WARN] Failed to enumerate Nemirtingas appdata {}: {}",
+            appdata.display(),
+            err
+        ),
     }
 
     if cleared_state {
