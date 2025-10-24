@@ -7,6 +7,30 @@
 # Automatically fall back to clang/gcc shims when the runtime exposes
 # versioned toolchains without the generic `cc` symlink so we still provide a
 # linker to Cargo in SteamOS environments.
+add_rust_lld_search_paths() {
+  # Gather shared library directories from ldconfig so rust-lld can discover
+  # glibc when no system compiler wrapper is present.
+  local libpath libdir added_dirs=""
+
+  if ! command -v ldconfig >/dev/null 2>&1; then
+    return
+  fi
+
+  while IFS= read -r libpath; do
+    libdir=$(dirname "$libpath")
+    case " ${added_dirs} " in
+      *" ${libdir} "*)
+        continue
+        ;;
+    esac
+
+    added_dirs+=" ${libdir}"
+    RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-L native=${libdir}"
+  done < <(ldconfig -p | awk -F'=> ' 'NF==2 {gsub(/^ +| +$/, "", $2); print $2}')
+
+  export RUSTFLAGS
+}
+
 if ! command -v cc >/dev/null 2>&1; then
   if [ -z "${PARTYDECK_STEAMRUN_REEXEC:-}" ] && command -v steam-run >/dev/null 2>&1; then
     export PARTYDECK_STEAMRUN_REEXEC=1
@@ -27,6 +51,7 @@ if ! command -v cc >/dev/null 2>&1; then
     # present so Deck users can still build without installing toolchains.
     export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C linker=rust-lld"
     export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=${CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER:-rust-lld}
+    add_rust_lld_search_paths
   fi
 fi
 
@@ -34,7 +59,7 @@ fi
 # the binaries benefit from the platform's Zen 2 CPU and lean linker settings
 # without requiring manual cargo configuration tweaks.
 if [ -r /etc/os-release ] && grep -qi 'steamos' /etc/os-release; then
-  export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C target-cpu=znver2 -C link-arg=-Wl,-O1"
+  export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C target-cpu=znver2 -C link-arg=-O1"
   export CARGO_PROFILE_RELEASE_LTO="${CARGO_PROFILE_RELEASE_LTO:-thin}"
 fi
 
