@@ -33,7 +33,9 @@ impl PartyApp {
         // stays prominent on both desktop and Steam Deck screens.
         let mut refresh_games = false;
         let tile_spacing = 16.0;
-        let min_tile_width = 320.0;
+        // Expand the responsive tile baseline so every game card renders about 25%
+        // larger than before, keeping hero art impactful even on wider displays.
+        let min_tile_width = 200.0;
 
         egui::ScrollArea::vertical()
             .auto_shrink([false; 2])
@@ -71,10 +73,11 @@ impl PartyApp {
                         for index in start..end {
                             let game = self.games[index].to_owned();
                             let removal_game = game.to_owned();
-                            let image_height = (tile_width * 9.0 / 16.0).clamp(160.0, 320.0);
-                            let letterbox_pad = (image_height * 0.12).clamp(12.0, 24.0);
-                            let hero_total_height = image_height + 2.0 * letterbox_pad;
-                            let tile_height = hero_total_height + 72.0;
+                            let image_height = (tile_width * 9.0 / 16.0).clamp(100.0, 200.0);
+                            let hero_total_height = image_height;
+                            // Tighten the tile height so the reduced hero art doesn't leave
+                            // oversized padding around the title text.
+                            let tile_height = hero_total_height + 52.0;
 
                             let (rect, response) = row_ui.allocate_exact_size(
                                 egui::vec2(tile_width, tile_height),
@@ -111,23 +114,14 @@ impl PartyApp {
                                 .show(&mut tile_ui, |tile_ui| {
                                     tile_ui.spacing_mut().item_spacing.y = 10.0;
 
-                                    // Paint a letterboxed hero area so artwork never overlaps
-                                    // neighboring tiles even when we shrink the window.
+                                    // Paint the hero artwork flush with the frame so no empty
+                                    // bars appear above or below each image.
                                     let image_width = tile_ui.available_width();
                                     let hero_size = egui::vec2(image_width, hero_total_height);
                                     let (hero_rect, _) = tile_ui
                                         .allocate_exact_size(hero_size, egui::Sense::hover());
 
-                                    let rounding = egui::CornerRadius::same(10);
-                                    let letterbox_color = tile_ui.visuals().extreme_bg_color;
-                                    tile_ui.painter().rect_filled(
-                                        hero_rect,
-                                        rounding,
-                                        letterbox_color,
-                                    );
-
-                                    let image_rect =
-                                        hero_rect.shrink2(egui::vec2(0.0, letterbox_pad));
+                                    let image_rect = hero_rect;
                                     if let Some(hero_path) = game.hero_image_path() {
                                         let hero_widget = egui::Image::new(format!(
                                             "file://{}",
@@ -147,7 +141,7 @@ impl PartyApp {
                                         tile_ui.put(icon_rect, icon_widget);
                                     }
 
-                                    tile_ui.add_space(8.0);
+                                    tile_ui.add_space(5.0);
                                     tile_ui.label(
                                         egui::RichText::new(game.name()).size(20.0).strong(),
                                     );
@@ -221,8 +215,12 @@ impl PartyApp {
         egui::ScrollArea::vertical()
             .auto_shrink([false; 2])
             .show(ui, |scroll| {
+                // Establish consistent vertical rhythm across the settings layout.
+                scroll.spacing_mut().item_spacing.y = 18.0;
                 scroll.heading("Settings");
-                scroll.add_space(10.0);
+                scroll.add_space(6.0);
+                scroll.separator();
+                scroll.add_space(18.0);
 
                 // Split the settings into two responsive columns so labels and
                 // controls remain tidy even on narrower windows.
@@ -231,26 +229,63 @@ impl PartyApp {
                     .size(Size::remainder().at_least(260.0))
                     .horizontal(|mut strip| {
                         strip.cell(|left| {
-                            left.spacing_mut().item_spacing.y = 10.0;
-                            left.heading("General");
-                            left.add_space(6.0);
-                            self.display_settings_general(left);
+                            // Render the general section inside a card so padding and
+                            // separators match the rest of the settings view.
+                            let column_frame = egui::Frame::new()
+                                .fill(left.visuals().widgets.noninteractive.bg_fill)
+                                .stroke(egui::Stroke::new(
+                                    1.0,
+                                    left.visuals().widgets.inactive.bg_stroke.color,
+                                ))
+                                .corner_radius(egui::CornerRadius::same(12))
+                                .inner_margin(egui::Margin::symmetric(18.0, 16.0));
+                            column_frame.show(left, |card| {
+                                card.spacing_mut().item_spacing.y = 12.0;
+                                card.heading("General");
+                                card.separator();
+                                self.display_settings_general(card);
+                            });
                         });
 
                         strip.cell(|right| {
-                            right.spacing_mut().item_spacing.y = 10.0;
-                            right.heading("Gamescope");
-                            right.add_space(6.0);
-                            self.display_settings_gamescope(right);
+                            // Match the gamescope controls with the same card styling for
+                            // a uniform two-column presentation.
+                            let column_frame = egui::Frame::new()
+                                .fill(right.visuals().widgets.noninteractive.bg_fill)
+                                .stroke(egui::Stroke::new(
+                                    1.0,
+                                    right.visuals().widgets.inactive.bg_stroke.color,
+                                ))
+                                .corner_radius(egui::CornerRadius::same(12))
+                                .inner_margin(egui::Margin::symmetric(18.0, 16.0));
+                            column_frame.show(right, |card| {
+                                card.spacing_mut().item_spacing.y = 12.0;
+                                card.heading("Gamescope");
+                                card.separator();
+                                self.display_settings_gamescope(card);
+                            });
                         });
                     });
 
                 scroll.add_space(18.0);
-                scroll.heading("Performance");
-                scroll.add_space(6.0);
-                self.display_settings_performance(scroll);
+                // Present the performance tuning controls in the same card layout so
+                // every settings group feels cohesive.
+                let performance_frame = egui::Frame::new()
+                    .fill(scroll.visuals().widgets.noninteractive.bg_fill)
+                    .stroke(egui::Stroke::new(
+                        1.0,
+                        scroll.visuals().widgets.inactive.bg_stroke.color,
+                    ))
+                    .corner_radius(egui::CornerRadius::same(12))
+                    .inner_margin(egui::Margin::symmetric(18.0, 16.0));
+                performance_frame.show(scroll, |performance| {
+                    performance.spacing_mut().item_spacing.y = 12.0;
+                    performance.heading("Performance");
+                    performance.separator();
+                    self.display_settings_performance(performance);
+                });
 
-                scroll.add_space(16.0);
+                scroll.add_space(18.0);
                 // Keep persistence controls anchored at the bottom with a
                 // consistent compact layout.
                 scroll.with_layout(

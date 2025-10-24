@@ -351,15 +351,13 @@ fn spawn_instance_child(
                 drain_stale_proton_session(&pfx, env);
             }
         }
-        log_context.appdata_root = Some(
-            PathBuf::from(&pfx)
-                .join("drive_c")
-                .join("users")
-                .join("steamuser")
-                .join("AppData")
-                .join("Roaming")
-                .join("NemirtingasEpicEmu"),
-        );
+        let proton_appdata = PathBuf::from(&pfx)
+            .join("drive_c")
+            .join("users")
+            .join("steamuser")
+            .join("AppData");
+        reset_proton_nemirtingas_session_state(&proton_appdata);
+        log_context.appdata_root = Some(proton_appdata.join("Roaming").join("NemirtingasEpicEmu"));
         proton_prefix = Some(pfx);
     }
 
@@ -842,26 +840,20 @@ fn clear_ctrlc_cleanup() {
     }
 }
 
-/// Removes stale Nemirtingas command cache data so games that rely on the EOS
-/// emulator do not trip assertions when multiple instances bootstrap in quick
-/// succession.
-fn reset_nemirtingas_session_state(nepice_dir: &Path) {
-    let appdata = nepice_dir.join("appdata");
-    if !appdata.exists() {
+/// Recursively removes stale Nemirtingas emulator artifacts within the provided
+/// cache root while optionally preserving the `Logs` directory so previous
+/// sessions remain debuggable.
+fn purge_nemirtingas_appdata(root: &Path, preserve_logs: bool) {
+    if !root.exists() {
         return;
     }
 
-    // Aggressively purge any stale EOS command artifacts before each launch so the emulator
-    // never replays partially-submitted commands that crash with the COMMAND_STATE_SUBMITTED
-    // assertion reported by players. We preserve the log directory so historical diagnostics
-    // stay intact between sessions.
-    let mut cleared_state = false;
-    let logs_dir = appdata.join("Logs");
-    match fs::read_dir(&appdata) {
+    let logs_dir = root.join("Logs");
+    match fs::read_dir(root) {
         Ok(entries) => {
             for entry in entries.flatten() {
                 let path = entry.path();
-                if path == logs_dir {
+                if preserve_logs && path == logs_dir {
                     continue;
                 }
 
@@ -871,32 +863,58 @@ fn reset_nemirtingas_session_state(nepice_dir: &Path) {
                     fs::remove_file(&path)
                 };
 
-                match result {
-                    Ok(_) => cleared_state = true,
-                    Err(err) => println!(
+                if let Err(err) = result {
+                    println!(
                         "[SPLIT HAPPENS][WARN] Failed to remove stale Nemirtingas appdata {}: {}",
                         path.display(),
                         err
-                    ),
+                    );
                 }
             }
         }
         Err(err) => println!(
             "[SPLIT HAPPENS][WARN] Failed to enumerate Nemirtingas appdata {}: {}",
-            appdata.display(),
+            root.display(),
             err
         ),
     }
+}
 
-    if cleared_state {
-        if let Err(err) = fs::create_dir_all(appdata.join("Commands")) {
-            println!(
-                "[SPLIT HAPPENS][WARN] Failed to recreate Nemirtingas command directory {}: {}",
-                appdata.join("Commands").display(),
-                err
-            );
-        }
+/// Ensures the Nemirtingas command queue folder exists after cache purges so
+/// the emulator can submit fresh EOS commands without tripping startup
+/// assertions.
+fn ensure_nemirtingas_command_cache(root: &Path) {
+    let commands_dir = root.join("Commands");
+    if let Err(err) = fs::create_dir_all(&commands_dir) {
+        println!(
+            "[SPLIT HAPPENS][WARN] Failed to recreate Nemirtingas command directory {}: {}",
+            commands_dir.display(),
+            err
+        );
     }
+}
+
+/// Purges the per-profile Nemirtingas cache tree in `nepice_settings` before a
+/// launch so Split Happens never replays partially submitted command buffers.
+fn reset_nemirtingas_session_state(nepice_dir: &Path) {
+    let appdata = nepice_dir.join("appdata");
+    purge_nemirtingas_appdata(&appdata, true);
+    ensure_nemirtingas_command_cache(&appdata);
+}
+
+/// Clears Nemirtingas caches inside the Proton prefix (`AppData/Local` and
+/// `AppData/Roaming`) to eliminate stale Windows-side EOS commands that would
+/// otherwise recreate the COMMAND_STATE_SUBMITTED assertion for players.
+fn reset_proton_nemirtingas_session_state(appdata_root: &Path) {
+    let roaming = appdata_root.join("Roaming").join("NemirtingasEpicEmu");
+    let local = appdata_root.join("Local").join("NemirtingasEpicEmu");
+    let local_low = appdata_root.join("LocalLow").join("NemirtingasEpicEmu");
+
+    purge_nemirtingas_appdata(&roaming, true);
+    purge_nemirtingas_appdata(&local, false);
+    purge_nemirtingas_appdata(&local_low, false);
+
+    ensure_nemirtingas_command_cache(&local);
 }
 
 /// Ensures the targeted Proton prefix is not held by lingering Wine processes

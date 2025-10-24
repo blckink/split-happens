@@ -1,9 +1,31 @@
 use dialog::{Choice, DialogBox};
 use std::error::Error;
+use std::io::{Error as IoError, ErrorKind};
 use std::path::PathBuf;
+use std::sync::{Mutex, MutexGuard, OnceLock};
 use x11rb::connection::Connection;
 
 use super::steamdeck::is_steam_deck;
+
+/// Tracks the active KWin script identifier so we can cleanly stop it after the
+/// last Split Happens instance terminates.
+static KWIN_SCRIPT_ID: OnceLock<Mutex<Option<String>>> = OnceLock::new();
+
+/// Convenience helper that provides access to the script identifier storage.
+fn kwin_script_slot() -> &'static Mutex<Option<String>> {
+    KWIN_SCRIPT_ID.get_or_init(|| Mutex::new(None))
+}
+
+/// Locks the script identifier storage and maps poisoning into a descriptive IO
+/// error so callers can bubble the failure up uniformly.
+fn lock_kwin_script_slot() -> Result<MutexGuard<'static, Option<String>>, Box<dyn Error>> {
+    kwin_script_slot().lock().map_err(|_| {
+        Box::new(IoError::new(
+            ErrorKind::Other,
+            "Failed to lock KWin script storage",
+        )) as Box<dyn Error>
+    })
+}
 
 pub fn msg(title: &str, contents: &str) {
     let _ = dialog::Message::new(contents).title(title).show();
@@ -54,9 +76,22 @@ pub fn kwin_dbus_start_script(file: PathBuf) -> Result<(), Box<dyn Error>> {
         "org.kde.kwin.Scripting",
     )?;
 
-    let _: i32 = proxy.call("loadScript", &(file.to_string_lossy(), "splitscreen"))?;
-    println!("Script loaded. Starting...");
-    let _: () = proxy.call("start", &())?;
+    // Ask KWin to load the script and capture the concrete runtime identifier so
+    // we can start and later unload the exact instance that was registered.
+    let script_id: String = proxy.call(
+        "loadScript",
+        &(file.to_string_lossy().into_owned(), "splitscreen"),
+    )?;
+    println!("Script loaded as id {}. Starting...", script_id);
+
+    // Launch the freshly registered script so all future game windows are
+    // immediately snapped into their target positions.
+    let _: () = proxy.call("start", &(script_id.clone(),))?;
+
+    // Remember which script instance we activated to avoid leaving stray
+    // registrations behind when the session terminates.
+    let mut slot = lock_kwin_script_slot()?;
+    *slot = Some(script_id);
 
     println!("KWin script started.");
     Ok(())
@@ -72,7 +107,15 @@ pub fn kwin_dbus_unload_script() -> Result<(), Box<dyn Error>> {
         "org.kde.kwin.Scripting",
     )?;
 
-    let _: bool = proxy.call("unloadScript", &("splitscreen"))?;
+    // Attempt to unload the exact script instance we started earlier and fall
+    // back to the legacy name-based call when no identifier was recorded.
+    let script_id = lock_kwin_script_slot()?.take();
+
+    if let Some(id) = script_id {
+        let _: bool = proxy.call("unloadScript", &(id,))?;
+    } else {
+        let _: bool = proxy.call("unloadScript", &("splitscreen"))?;
+    }
 
     println!("Script unloaded.");
     Ok(())

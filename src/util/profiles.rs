@@ -296,9 +296,8 @@ fn deterministic_goldberg_port(game_id: &str) -> u16 {
 /// instance shares the same override without conflicting with other titles.
 fn deterministic_nemirtingas_port(game_id: &str, profile: &str, attempt: u32) -> u16 {
     let mut hasher = Sha1::new();
-    hasher.update(
-        format!("split-happens-nemirtingas-port:{game_id}:{profile}:{attempt}").as_bytes(),
-    );
+    hasher
+        .update(format!("split-happens-nemirtingas-port:{game_id}:{profile}:{attempt}").as_bytes());
     let digest = hasher.finalize();
 
     let raw = u16::from_be_bytes([digest[2], digest[3]]);
@@ -383,8 +382,7 @@ pub fn synchronize_goldberg_profiles(
             .or_else(|| read_config_value(&config_path, "account_steamid"))
             .unwrap_or_else(|| {
                 let mut hasher = Sha1::new();
-                hasher
-                    .update(format!("split-happens-goldberg-steamid:{name}").as_bytes());
+                hasher.update(format!("split-happens-goldberg-steamid:{name}").as_bytes());
                 let digest = hasher.finalize();
                 let mut value = u128::from_be_bytes([
                     digest[0], digest[1], digest[2], digest[3], digest[4], digest[5], digest[6],
