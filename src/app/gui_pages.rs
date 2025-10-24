@@ -238,7 +238,7 @@ impl PartyApp {
                                     left.visuals().widgets.inactive.bg_stroke.color,
                                 ))
                                 .corner_radius(egui::CornerRadius::same(12))
-                                .inner_margin(egui::Margin::symmetric(18.0, 16.0));
+                                .inner_margin(egui::Margin::symmetric(18, 16));
                             column_frame.show(left, |card| {
                                 card.spacing_mut().item_spacing.y = 12.0;
                                 card.heading("General");
@@ -257,7 +257,7 @@ impl PartyApp {
                                     right.visuals().widgets.inactive.bg_stroke.color,
                                 ))
                                 .corner_radius(egui::CornerRadius::same(12))
-                                .inner_margin(egui::Margin::symmetric(18.0, 16.0));
+                                .inner_margin(egui::Margin::symmetric(18, 16));
                             column_frame.show(right, |card| {
                                 card.spacing_mut().item_spacing.y = 12.0;
                                 card.heading("Gamescope");
@@ -277,7 +277,7 @@ impl PartyApp {
                         scroll.visuals().widgets.inactive.bg_stroke.color,
                     ))
                     .corner_radius(egui::CornerRadius::same(12))
-                    .inner_margin(egui::Margin::symmetric(18.0, 16.0));
+                    .inner_margin(egui::Margin::symmetric(18, 16));
                 performance_frame.show(scroll, |performance| {
                     performance.spacing_mut().item_spacing.y = 12.0;
                     performance.heading("Performance");
