@@ -8,6 +8,7 @@ use crate::util::*;
 use dialog::DialogBox;
 use eframe::egui::RichText;
 use eframe::egui::{self, Ui};
+use egui_extras::{Size, StripBuilder};
 
 macro_rules! cur_game {
     ($self:expr) => {
@@ -71,7 +72,9 @@ impl PartyApp {
                             let game = self.games[index].to_owned();
                             let removal_game = game.to_owned();
                             let image_height = (tile_width * 9.0 / 16.0).clamp(160.0, 320.0);
-                            let tile_height = image_height + 96.0;
+                            let letterbox_pad = (image_height * 0.12).clamp(12.0, 24.0);
+                            let hero_total_height = image_height + 2.0 * letterbox_pad;
+                            let tile_height = hero_total_height + 72.0;
 
                             let (rect, response) = row_ui.allocate_exact_size(
                                 egui::vec2(tile_width, tile_height),
@@ -104,26 +107,33 @@ impl PartyApp {
                                 .fill(fill_color)
                                 .stroke(stroke)
                                 .corner_radius(egui::CornerRadius::same(12))
-                                .inner_margin(egui::Margin::symmetric(14, 14))
+                                .inner_margin(egui::Margin::symmetric(12, 12))
                                 .show(&mut tile_ui, |tile_ui| {
+                                    tile_ui.spacing_mut().item_spacing.y = 10.0;
+
+                                    // Paint a letterboxed hero area so artwork never overlaps
+                                    // neighboring tiles even when we shrink the window.
                                     let image_width = tile_ui.available_width();
-                                    let image_area = egui::vec2(image_width, image_height);
-                                    let (image_rect, _) = tile_ui
-                                        .allocate_exact_size(image_area, egui::Sense::hover());
+                                    let hero_size = egui::vec2(image_width, hero_total_height);
+                                    let (hero_rect, _) = tile_ui
+                                        .allocate_exact_size(hero_size, egui::Sense::hover());
 
                                     let rounding = egui::CornerRadius::same(10);
+                                    let letterbox_color = tile_ui.visuals().extreme_bg_color;
                                     tile_ui.painter().rect_filled(
-                                        image_rect,
+                                        hero_rect,
                                         rounding,
-                                        tile_ui.visuals().widgets.inactive.bg_fill,
+                                        letterbox_color,
                                     );
 
+                                    let image_rect =
+                                        hero_rect.shrink2(egui::vec2(0.0, letterbox_pad));
                                     if let Some(hero_path) = game.hero_image_path() {
                                         let hero_widget = egui::Image::new(format!(
                                             "file://{}",
                                             hero_path.display()
                                         ))
-                                        .fit_to_exact_size(image_area)
+                                        .fit_to_exact_size(image_rect.size())
                                         .maintain_aspect_ratio(true);
                                         tile_ui.put(image_rect, hero_widget);
                                     } else {
@@ -137,39 +147,10 @@ impl PartyApp {
                                         tile_ui.put(icon_rect, icon_widget);
                                     }
 
-                                    tile_ui.add_space(12.0);
+                                    tile_ui.add_space(8.0);
                                     tile_ui.label(
-                                        egui::RichText::new(game.name()).size(24.0).strong(),
+                                        egui::RichText::new(game.name()).size(20.0).strong(),
                                     );
-
-                                    match &game {
-                                        HandlerRef(handler) => {
-                                            // Display a concise platform tag without author metadata for a cleaner tile.
-                                            let platform_label =
-                                                if handler.win { "Proton" } else { "Native" };
-                                            tile_ui.label(
-                                                egui::RichText::new(platform_label)
-                                                    .color(tile_ui.visuals().weak_text_color()),
-                                            );
-                                            tile_ui.label(
-                                                egui::RichText::new(format!(
-                                                    "Version {}",
-                                                    handler.version
-                                                ))
-                                                .small()
-                                                .color(tile_ui.visuals().weak_text_color()),
-                                            );
-                                        }
-                                        ExecRef(exec) => {
-                                            tile_ui.label(
-                                                egui::RichText::new(
-                                                    exec.path().display().to_string(),
-                                                )
-                                                .small()
-                                                .color(tile_ui.visuals().weak_text_color()),
-                                            );
-                                        }
-                                    }
                                 });
 
                             if response.clicked() {
@@ -241,32 +222,47 @@ impl PartyApp {
             .auto_shrink([false; 2])
             .show(ui, |scroll| {
                 scroll.heading("Settings");
-                scroll.add_space(12.0);
+                scroll.add_space(10.0);
 
-                // Surface configuration groups sequentially for a single scrollable view.
-                scroll.heading("General");
-                scroll.add_space(6.0);
-                self.display_settings_general(scroll);
+                // Split the settings into two responsive columns so labels and
+                // controls remain tidy even on narrower windows.
+                StripBuilder::new(scroll)
+                    .size(Size::relative(0.5).at_least(260.0))
+                    .size(Size::remainder().at_least(260.0))
+                    .horizontal(|mut strip| {
+                        strip.cell(|left| {
+                            left.spacing_mut().item_spacing.y = 10.0;
+                            left.heading("General");
+                            left.add_space(6.0);
+                            self.display_settings_general(left);
+                        });
 
-                scroll.add_space(20.0);
-                // Continue with Gamescope tuning without forcing a tab change.
-                scroll.heading("Gamescope");
-                scroll.add_space(6.0);
-                self.display_settings_gamescope(scroll);
+                        strip.cell(|right| {
+                            right.spacing_mut().item_spacing.y = 10.0;
+                            right.heading("Gamescope");
+                            right.add_space(6.0);
+                            self.display_settings_gamescope(right);
+                        });
+                    });
 
-                scroll.add_space(20.0);
-                // Keep persistence controls anchored at the bottom of the combined settings view.
-                scroll.horizontal(|actions| {
-                    if actions.button("Save Settings").clicked() {
-                        if let Err(e) = save_cfg(&self.options) {
-                            msg("Error", &format!("Couldn't save settings: {}", e));
+                scroll.add_space(16.0);
+                // Keep persistence controls anchored at the bottom with a
+                // consistent compact layout.
+                scroll.with_layout(
+                    egui::Layout::right_to_left(egui::Align::Center),
+                    |actions| {
+                        actions.spacing_mut().item_spacing.x = 10.0;
+                        if actions.button("Restore Defaults").clicked() {
+                            self.options = PartyConfig::default();
+                            self.input_devices = scan_input_devices(&self.options.pad_filter_type);
                         }
-                    }
-                    if actions.button("Restore Defaults").clicked() {
-                        self.options = PartyConfig::default();
-                        self.input_devices = scan_input_devices(&self.options.pad_filter_type);
-                    }
-                });
+                        if actions.button("Save Settings").clicked() {
+                            if let Err(e) = save_cfg(&self.options) {
+                                msg("Error", &format!("Couldn't save settings: {}", e));
+                            }
+                        }
+                    },
+                );
                 scroll.separator();
             });
     }
@@ -554,6 +550,8 @@ impl PartyApp {
     }
 
     pub fn display_settings_general(&mut self, ui: &mut Ui) {
+        // Normalize spacing so each control lines up cleanly in the two-column layout.
+        ui.spacing_mut().item_spacing.y = 12.0;
         let force_sdl2_check = ui.checkbox(&mut self.options.force_sdl, "Force Steam Runtime SDL2");
 
         let enable_kwin_script_check = ui.checkbox(
@@ -580,90 +578,86 @@ impl PartyApp {
                     .to_string();
         }
 
-        ui.horizontal(|ui| {
-            let filter_label = ui.label("Controller filter");
-            let r1 = ui.radio_value(
-                &mut self.options.pad_filter_type,
-                PadFilterType::All,
-                "All controllers",
-            );
-            let r2 = ui.radio_value(
-                &mut self.options.pad_filter_type,
-                PadFilterType::NoSteamInput,
-                "No Steam Input",
-            );
-            let r3 = ui.radio_value(
-                &mut self.options.pad_filter_type,
-                PadFilterType::OnlySteamInput,
-                "Only Steam Input",
-            );
+        // Group the controller filter radios so they wrap neatly on narrow windows.
+        ui.group(|group| {
+            group.spacing_mut().item_spacing.y = 6.0;
+            let filter_label = group.label("Controller filter");
+            group.horizontal_wrapped(|radios| {
+                let r1 = radios.radio_value(
+                    &mut self.options.pad_filter_type,
+                    PadFilterType::All,
+                    "All controllers",
+                );
+                let r2 = radios.radio_value(
+                    &mut self.options.pad_filter_type,
+                    PadFilterType::NoSteamInput,
+                    "No Steam Input",
+                );
+                let r3 = radios.radio_value(
+                    &mut self.options.pad_filter_type,
+                    PadFilterType::OnlySteamInput,
+                    "Only Steam Input",
+                );
 
-            if filter_label.hovered() || r1.hovered() || r2.hovered() || r3.hovered() {
-                self.infotext = "Select which controllers to filter out. If unsure, set this to \"No Steam Input\". If you use Steam Input to remap controllers, you may want to select \"Only Steam Input\", but be warned that this option is experimental and is known to break certain Proton games.".to_string();
-            }
+                if filter_label.hovered() || r1.hovered() || r2.hovered() || r3.hovered() {
+                    self.infotext = "Select which controllers to filter out. If unsure, set this to \"No Steam Input\". If you use Steam Input to remap controllers, you may want to select \"Only Steam Input\", but be warned that this option is experimental and is known to break certain Proton games.".to_string();
+                }
 
-            if r1.clicked() || r2.clicked() || r3.clicked() {
-                self.input_devices = scan_input_devices(&self.options.pad_filter_type);
-            }
+                if r1.clicked() || r2.clicked() || r3.clicked() {
+                    self.input_devices = scan_input_devices(&self.options.pad_filter_type);
+                }
+            });
         });
 
         // Present the Proton selector as a combo box backed by the discovered
         // installations, followed by a manual override text field.
-        ui.horizontal(|ui| {
-            let proton_ver_label = ui.label("Proton version");
-            ui.vertical(|ui| {
-                ui.spacing_mut().item_spacing.y = 4.0;
-                ui.horizontal(|ui| {
-                    let combo_response = egui::ComboBox::from_id_source("settings_proton_combo")
-                        .selected_text(self.proton_dropdown_label())
-                        .width(260.0)
-                        .show_ui(ui, |combo_ui| {
+        // Wrap the Proton selector and manual override into a tidy stack for clarity.
+        ui.group(|group| {
+            group.spacing_mut().item_spacing.y = 8.0;
+            let proton_ver_label = group.label("Proton version");
+            let combo_response = egui::ComboBox::from_id_salt("settings_proton_combo")
+                .selected_text(self.proton_dropdown_label())
+                .width(220.0)
+                .show_ui(group, |combo_ui| {
+                    combo_ui.selectable_value(
+                        &mut self.options.proton_version,
+                        String::new(),
+                        "Auto (GE-Proton)",
+                    );
+
+                    if self.proton_versions.is_empty() {
+                        combo_ui.label("No Proton builds detected");
+                    } else {
+                        for install in &self.proton_versions {
                             combo_ui.selectable_value(
                                 &mut self.options.proton_version,
-                                String::new(),
-                                "Auto (GE-Proton)",
+                                install.id.clone(),
+                                install.display_label(),
                             );
-
-                            if self.proton_versions.is_empty() {
-                                combo_ui.label("No Proton builds detected");
-                            } else {
-                                for install in &self.proton_versions {
-                                    combo_ui.selectable_value(
-                                        &mut self.options.proton_version,
-                                        install.id.clone(),
-                                        install.display_label(),
-                                    );
-                                }
-                            }
-
-                            combo_ui.separator();
-                            combo_ui.label(
-                                "Select a build above or keep using the custom path below.",
-                            );
-                        })
-                        .response;
-
-                    let refresh_btn = ui.small_button("Refresh");
-                    if refresh_btn.clicked() {
-                        self.refresh_proton_versions();
+                        }
                     }
 
-                    if proton_ver_label.hovered()
-                        || combo_response.hovered()
-                        || refresh_btn.hovered()
-                    {
-                        self.infotext = "Choose an installed Proton build or refresh the list after installing a new compatibility tool. Keep the field below blank for the default GE-Proton.".to_string();
-                    }
-                });
+                    combo_ui.separator();
+                    combo_ui.label("Select a build above or keep using the custom path below.");
+                })
+                .response;
 
-                let proton_ver_editbox = ui.add(
-                    egui::TextEdit::singleline(&mut self.options.proton_version)
-                        .hint_text("GE-Proton or /path/to/proton"),
-                );
-                if proton_ver_editbox.hovered() {
-                    self.infotext = "Enter a custom Proton identifier or absolute path. Leave empty to auto-select GE-Proton.".to_string();
-                }
-            });
+            let refresh_btn = group.small_button("Refresh");
+            if refresh_btn.clicked() {
+                self.refresh_proton_versions();
+            }
+
+            if proton_ver_label.hovered() || combo_response.hovered() || refresh_btn.hovered() {
+                self.infotext = "Choose an installed Proton build or refresh the list after installing a new compatibility tool. Keep the field below blank for the default GE-Proton.".to_string();
+            }
+
+            let proton_ver_editbox = group.add(
+                egui::TextEdit::singleline(&mut self.options.proton_version)
+                    .hint_text("GE-Proton or /path/to/proton"),
+            );
+            if proton_ver_editbox.hovered() {
+                self.infotext = "Enter a custom Proton identifier or absolute path. Leave empty to auto-select GE-Proton.".to_string();
+            }
         });
 
         let proton_separate_pfxs_check = ui.checkbox(
@@ -676,59 +670,71 @@ impl PartyApp {
 
         ui.separator();
 
-        ui.horizontal(|ui| {
-        if ui.button("Erase Proton Prefix").clicked() {
-            if yesno("Erase Prefix?", "This will erase the Wine prefix used by PartyDeck. This shouldn't erase profile/game-specific data, but exercise caution. Are you sure?") && PATH_PARTY.join("gamesyms").exists() {
-                if let Err(err) = std::fs::remove_dir_all(PATH_PARTY.join("pfx")) {
-                    msg("Error", &format!("Couldn't erase pfx data: {}", err));
-                }
-                else if let Err(err) = std::fs::create_dir_all(PATH_PARTY.join("pfx")) {
-                    msg("Error", &format!("Couldn't re-create pfx directory: {}", err));
-                }
-                else {
-                    msg("Data Erased", "Proton prefix data successfully erased.");
-                }
-            }
-        }
-
-        if ui.button("Erase Symlink Data").clicked() {
-            if yesno("Erase Symlink Data?", "This will erase all game symlink data. This shouldn't erase profile/game-specific data, but exercise caution. Are you sure?") && PATH_PARTY.join("gamesyms").exists() {
-                if let Err(err) = std::fs::remove_dir_all(PATH_PARTY.join("gamesyms")) {
-                    msg("Error", &format!("Couldn't erase symlink data: {}", err));
-                }
-                else if let Err(err) = std::fs::create_dir_all(PATH_PARTY.join("gamesyms")) {
-                    msg("Error", &format!("Couldn't re-create symlink directory: {}", err));
-                }
-                else {
-                    msg("Data Erased", "Game symlink data successfully erased.");
-                }
-            }
-        }
-        });
-
-        ui.horizontal(|ui| {
-            if ui.button("Open PartyDeck Data Folder").clicked() {
-                if let Err(_) = std::process::Command::new("sh")
-                    .arg("-c")
-                    .arg(format!("xdg-open {}/", PATH_PARTY.display()))
-                    .status()
+        // Keep destructive maintenance actions in a single row to avoid tall gaps.
+        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |actions| {
+            actions.spacing_mut().item_spacing.x = 10.0;
+            if actions.button("Erase Proton Prefix").clicked() {
+                if yesno(
+                    "Erase Prefix?",
+                    "This will erase the Wine prefix used by PartyDeck. This shouldn't erase profile/game-specific data, but exercise caution. Are you sure?",
+                ) && PATH_PARTY.join("gamesyms").exists()
                 {
-                    msg("Error", "Couldn't open PartyDeck Data Folder!");
+                    if let Err(err) = std::fs::remove_dir_all(PATH_PARTY.join("pfx")) {
+                        msg("Error", &format!("Couldn't erase pfx data: {}", err));
+                    } else if let Err(err) = std::fs::create_dir_all(PATH_PARTY.join("pfx")) {
+                        msg("Error", &format!("Couldn't re-create pfx directory: {}", err));
+                    } else {
+                        msg("Data Erased", "Proton prefix data successfully erased.");
+                    }
                 }
             }
-            if ui.button("Edit game paths").clicked() {
-                if let Err(_) = std::process::Command::new("sh")
-                    .arg("-c")
-                    .arg(format!("xdg-open {}/paths.json", PATH_PARTY.display(),))
-                    .status()
+
+            if actions.button("Erase Symlink Data").clicked() {
+                if yesno(
+                    "Erase Symlink Data?",
+                    "This will erase all game symlink data. This shouldn't erase profile/game-specific data, but exercise caution. Are you sure?",
+                ) && PATH_PARTY.join("gamesyms").exists()
                 {
-                    msg("Error", "Couldn't open paths.json!");
+                    if let Err(err) = std::fs::remove_dir_all(PATH_PARTY.join("gamesyms")) {
+                        msg("Error", &format!("Couldn't erase symlink data: {}", err));
+                    } else if let Err(err) = std::fs::create_dir_all(PATH_PARTY.join("gamesyms")) {
+                        msg("Error", &format!("Couldn't re-create symlink directory: {}", err));
+                    } else {
+                        msg("Data Erased", "Game symlink data successfully erased.");
+                    }
                 }
             }
         });
+
+        // Surface shortcuts to important data locations with compact spacing.
+        ui.with_layout(
+            egui::Layout::left_to_right(egui::Align::Center),
+            |actions| {
+                actions.spacing_mut().item_spacing.x = 10.0;
+                if actions.button("Open PartyDeck Data Folder").clicked() {
+                    if let Err(_) = std::process::Command::new("sh")
+                        .arg("-c")
+                        .arg(format!("xdg-open {}/", PATH_PARTY.display()))
+                        .status()
+                    {
+                        msg("Error", "Couldn't open PartyDeck Data Folder!");
+                    }
+                }
+                if actions.button("Edit game paths").clicked() {
+                    if let Err(_) = std::process::Command::new("sh")
+                        .arg("-c")
+                        .arg(format!("xdg-open {}/paths.json", PATH_PARTY.display(),))
+                        .status()
+                    {
+                        msg("Error", "Couldn't open paths.json!");
+                    }
+                }
+            },
+        );
     }
 
     pub fn display_settings_gamescope(&mut self, ui: &mut Ui) {
+        ui.spacing_mut().item_spacing.y = 12.0;
         let gamescope_lowres_fix_check = ui.checkbox(
             &mut self.options.gamescope_fix_lowres,
             "Automatically fix low resolution instances",
