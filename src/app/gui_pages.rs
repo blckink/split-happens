@@ -361,7 +361,9 @@ impl PartyApp {
 
         ui.separator();
 
-        let mut devices_to_remove = Vec::new();
+        // Track the exact instance/device pairs flagged for removal so shared
+        // controllers can be detached cleanly from a single slot.
+        let mut devices_to_remove: Vec<(usize, usize)> = Vec::new();
         for (i, instance) in &mut self.instances.iter_mut().enumerate() {
             ui.horizontal(|ui| {
                 ui.label(format!("Instance {}", i + 1));
@@ -387,29 +389,32 @@ impl PartyApp {
                     ui.label("Adding new device...");
                 }
             });
-            for &dev in instance.devices.iter() {
-                let mut dev_text = RichText::new(format!(
-                    "{} {}",
-                    self.input_devices[dev].emoji(),
-                    self.input_devices[dev].fancyname()
-                ));
+            for (device_slot, &dev) in instance.devices.iter().enumerate() {
+                if let Some(device) = self.input_devices.get(dev) {
+                    let mut dev_text =
+                        RichText::new(format!("{} {}", device.emoji(), device.fancyname()));
 
-                if self.input_devices[dev].has_button_held() {
-                    dev_text = dev_text.strong();
-                }
-
-                ui.horizontal(|ui| {
-                    ui.label("  ");
-                    ui.label(dev_text);
-                    if ui.button("🗑").clicked() {
-                        devices_to_remove.push(dev);
+                    if device.has_button_held() {
+                        dev_text = dev_text.strong();
                     }
-                });
+
+                    ui.horizontal(|ui| {
+                        ui.label("  ");
+                        ui.label(dev_text);
+                        if ui.button("🗑").clicked() {
+                            devices_to_remove.push((i, device_slot));
+                        }
+                    });
+                } else {
+                    // Queue phantom entries that reference stale device indices
+                    // produced while a pad disconnects mid-session.
+                    devices_to_remove.push((i, device_slot));
+                }
             }
         }
 
-        for d in devices_to_remove {
-            self.remove_device(d);
+        for (instance_index, device_index) in devices_to_remove.into_iter().rev() {
+            self.remove_device_at(instance_index, device_index);
         }
 
         if self.instances.len() > 0 {
