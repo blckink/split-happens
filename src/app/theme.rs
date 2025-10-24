@@ -23,28 +23,33 @@ pub fn apply_partydeck_theme(ctx: &egui::Context) {
     // Start with the current style so spacing tweaks build on upstream defaults.
     let mut style = (*ctx.style()).clone();
     style.visuals = visuals;
-    style.spacing.item_spacing = egui::vec2(14.0, 12.0);
-    style.spacing.button_padding = egui::vec2(14.0, 10.0);
-    style.spacing.interact_size = egui::vec2(56.0, 28.0);
-    // Expand default font sizes so text stays legible from the couch.
+    style.spacing.item_spacing = egui::vec2(10.0, 10.0);
+    style.spacing.button_padding = egui::vec2(10.0, 8.0);
+    style.spacing.interact_size = egui::vec2(48.0, 26.0);
+
+    // Size typography relative to the viewport width so the UI remains legible
+    // when the window shrinks without looking oversized on larger monitors.
+    let screen_width = ctx.screen_rect().width().max(640.0);
+    let scale = (screen_width / 1280.0).clamp(0.85, 1.05);
     style.text_styles.insert(
         TextStyle::Heading,
-        FontId::new(30.0, FontFamily::Proportional),
+        FontId::new(26.0 * scale, FontFamily::Proportional),
     );
-    style
-        .text_styles
-        .insert(TextStyle::Body, FontId::new(20.0, FontFamily::Proportional));
+    style.text_styles.insert(
+        TextStyle::Body,
+        FontId::new(18.0 * scale, FontFamily::Proportional),
+    );
     style.text_styles.insert(
         TextStyle::Button,
-        FontId::new(20.0, FontFamily::Proportional),
+        FontId::new(16.0 * scale, FontFamily::Proportional),
     );
     style.text_styles.insert(
         TextStyle::Small,
-        FontId::new(16.0, FontFamily::Proportional),
+        FontId::new(14.0 * scale, FontFamily::Proportional),
     );
     style.text_styles.insert(
         TextStyle::Monospace,
-        FontId::new(18.0, FontFamily::Monospace),
+        FontId::new(16.0 * scale, FontFamily::Monospace),
     );
 
     ctx.set_style(style);
