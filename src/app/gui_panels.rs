@@ -2,8 +2,8 @@ use super::app::{MenuPage, PartyApp};
 use crate::input::*;
 use crate::util::*;
 
-use eframe::egui::RichText;
 use eframe::egui::output::OpenUrl;
+use eframe::egui::RichText;
 use eframe::egui::{self, TextWrapMode, Ui};
 use egui_extras::{Size, StripBuilder};
 
@@ -60,29 +60,49 @@ impl PartyApp {
                                 );
                                 nav.separator();
 
-                                if styled_nav_button(nav, "Home", self.cur_page == MenuPage::Home)
-                                    .clicked()
-                                {
-                                    self.cur_page = MenuPage::Home;
+                                let home_button =
+                                    styled_nav_button(nav, "Home", self.cur_page == MenuPage::Home);
+                                if self.pending_nav_focus && self.cur_page == MenuPage::Home {
+                                    // Hand focus back to the highlighted header button so
+                                    // controller presses activate it immediately.
+                                    home_button.request_focus();
+                                    self.pending_nav_focus = false;
                                 }
-                                if styled_nav_button(
+                                if home_button.clicked() {
+                                    self.cur_page = MenuPage::Home;
+                                    self.nav_in_focus = false;
+                                    self.pending_nav_focus = false;
+                                }
+
+                                let settings_button = styled_nav_button(
                                     nav,
                                     "Settings",
                                     self.cur_page == MenuPage::Settings,
-                                )
-                                .clicked()
-                                {
-                                    self.cur_page = MenuPage::Settings;
+                                );
+                                if self.pending_nav_focus && self.cur_page == MenuPage::Settings {
+                                    settings_button.request_focus();
+                                    self.pending_nav_focus = false;
                                 }
-                                if styled_nav_button(
+                                if settings_button.clicked() {
+                                    self.cur_page = MenuPage::Settings;
+                                    self.nav_in_focus = false;
+                                    self.pending_nav_focus = false;
+                                }
+
+                                let profiles_button = styled_nav_button(
                                     nav,
                                     "Profiles",
                                     self.cur_page == MenuPage::Profiles,
-                                )
-                                .clicked()
-                                {
+                                );
+                                if self.pending_nav_focus && self.cur_page == MenuPage::Profiles {
+                                    profiles_button.request_focus();
+                                    self.pending_nav_focus = false;
+                                }
+                                if profiles_button.clicked() {
                                     self.profiles = scan_profiles(false);
                                     self.cur_page = MenuPage::Profiles;
+                                    self.nav_in_focus = false;
+                                    self.pending_nav_focus = false;
                                 }
                             });
                         });
