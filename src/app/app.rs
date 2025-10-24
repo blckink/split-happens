@@ -63,6 +63,15 @@ pub struct PartyApp {
     /// Requests a focus pulse for the active navigation button so pressing
     /// Cross/Enter immediately triggers it after moving focus with the D-pad.
     pub pending_nav_focus: bool,
+    /// Tracks which navigation entry is currently highlighted so changing focus
+    /// with the controller no longer flips pages until the user confirms.
+    pub nav_selection: MenuPage,
+    /// Defers a focus pulse for the first interactive control on newly opened
+    /// pages so controller navigation immediately highlights actionable widgets.
+    pub pending_content_focus: bool,
+    /// Requests a scroll adjustment after focus changes so the highlighted
+    /// element remains visible when navigating large forms with the D-pad.
+    pub pending_scroll_to_focus: bool,
 }
 
 macro_rules! cur_game {
@@ -106,6 +115,9 @@ impl PartyApp {
             needs_viewport_focus: true,
             nav_in_focus: false,
             pending_nav_focus: false,
+            nav_selection: MenuPage::Home,
+            pending_content_focus: false,
+            pending_scroll_to_focus: false,
         }
     }
 }
@@ -191,6 +203,31 @@ impl eframe::App for PartyApp {
 }
 
 impl PartyApp {
+    /// Highlights the active widget and manages focus/scroll bookkeeping so
+    /// controller navigation remains visible across scrollable layouts.
+    pub fn decorate_focus(&mut self, ui: &mut egui::Ui, response: &egui::Response) {
+        if !response.enabled() {
+            return;
+        }
+
+        if self.pending_content_focus {
+            response.request_focus();
+            response.scroll_to_me(Some(egui::Align::Center));
+            self.pending_content_focus = false;
+            self.pending_scroll_to_focus = false;
+        } else if self.pending_scroll_to_focus && response.has_focus() {
+            response.scroll_to_me(Some(egui::Align::Center));
+            self.pending_scroll_to_focus = false;
+        }
+
+        if response.has_focus() {
+            let visuals = ui.visuals();
+            let stroke = egui::Stroke::new(2.0, visuals.selection.bg_fill);
+            ui.painter()
+                .rect_stroke(response.rect.expand(4.0), 8.0, stroke);
+        }
+    }
+
     /// Cycles between the Home, Settings, and Profiles buttons in the header so
     /// the controller can open different sections without touching a mouse.
     fn cycle_nav_focus(&mut self, horizontal: i32) {
@@ -199,27 +236,55 @@ impl PartyApp {
         }
 
         let nav_order = [MenuPage::Home, MenuPage::Settings, MenuPage::Profiles];
+        let source = if self.nav_in_focus {
+            self.nav_selection
+        } else {
+            self.cur_page
+        };
         let current_index = nav_order
             .iter()
-            .position(|page| *page == self.cur_page)
+            .position(|page| *page == source)
             .unwrap_or(0) as i32;
         let next_index = (current_index + horizontal).clamp(0, nav_order.len() as i32 - 1);
         let target = nav_order[next_index as usize];
 
-        if target == MenuPage::Profiles {
-            self.profiles = scan_profiles(false);
+        self.nav_selection = target;
+        self.pending_nav_focus = true;
+    }
+
+    /// Applies the currently highlighted navigation selection and prepares the
+    /// destination page so controller focus begins at the first actionable
+    /// element instead of auto-activating headers.
+    fn activate_nav_selection(&mut self) {
+        let target = self.nav_selection;
+        match target {
+            MenuPage::Home => {
+                self.cur_page = MenuPage::Home;
+                self.pending_home_focus = true;
+                self.pending_content_focus = false;
+                self.pending_scroll_to_focus = false;
+            }
+            MenuPage::Settings => {
+                self.cur_page = MenuPage::Settings;
+                self.pending_content_focus = true;
+                self.pending_scroll_to_focus = true;
+            }
+            MenuPage::Profiles => {
+                self.profiles = scan_profiles(false);
+                self.cur_page = MenuPage::Profiles;
+                self.pending_content_focus = true;
+                self.pending_scroll_to_focus = true;
+            }
+            MenuPage::Game | MenuPage::Instances => {
+                self.cur_page = target;
+                self.pending_content_focus = true;
+                self.pending_scroll_to_focus = true;
+            }
         }
 
-        self.cur_page = target;
-
-        if self.cur_page == MenuPage::Home {
-            self.pending_home_focus = true;
-            self.nav_in_focus = true;
-            self.pending_nav_focus = true;
-        } else {
-            self.nav_in_focus = false;
-            self.pending_nav_focus = false;
-        }
+        self.nav_selection = self.cur_page;
+        self.nav_in_focus = false;
+        self.pending_nav_focus = false;
     }
 
     pub fn spawn_task<F>(&mut self, msg: &str, f: F)
@@ -242,26 +307,41 @@ impl PartyApp {
                 continue;
             }
             match pad.poll() {
-                Some(PadButton::ABtn) => match self.cur_page {
-                    MenuPage::Home => open_selected_from_home = true,
-                    _ => keypress = Some(Key::Enter),
-                },
+                Some(PadButton::ABtn) => {
+                    if self.nav_in_focus {
+                        self.activate_nav_selection();
+                    } else {
+                        match self.cur_page {
+                            MenuPage::Home => open_selected_from_home = true,
+                            _ => keypress = Some(Key::Enter),
+                        }
+                    }
+                }
                 Some(PadButton::BBtn) => {
                     self.cur_page = MenuPage::Home;
+                    self.nav_selection = MenuPage::Home;
                     self.pending_home_focus = true;
                     self.nav_in_focus = false;
                     self.pending_nav_focus = false;
+                    self.pending_content_focus = false;
+                    self.pending_scroll_to_focus = false;
                 }
                 Some(PadButton::XBtn) => {
                     self.profiles = scan_profiles(false);
                     self.cur_page = MenuPage::Profiles;
+                    self.nav_selection = MenuPage::Profiles;
                     self.nav_in_focus = false;
                     self.pending_nav_focus = false;
+                    self.pending_content_focus = true;
+                    self.pending_scroll_to_focus = true;
                 }
                 Some(PadButton::YBtn) => {
                     self.cur_page = MenuPage::Settings;
+                    self.nav_selection = MenuPage::Settings;
                     self.nav_in_focus = false;
                     self.pending_nav_focus = false;
+                    self.pending_content_focus = true;
+                    self.pending_scroll_to_focus = true;
                 }
                 Some(PadButton::SelectBtn) => keypress = Some(Key::Tab),
                 Some(PadButton::StartBtn) => {
@@ -294,6 +374,7 @@ impl PartyApp {
                     // down from the navigation bar.
                     self.nav_in_focus = false;
                     self.pending_nav_focus = false;
+                    self.nav_selection = self.cur_page;
                     self.pending_home_focus = true;
                 }
             } else {
@@ -304,6 +385,7 @@ impl PartyApp {
                     // top-most row of tiles.
                     self.nav_in_focus = true;
                     self.pending_nav_focus = true;
+                    self.nav_selection = self.cur_page;
                     routed_to_nav = true;
                 }
 
@@ -318,6 +400,7 @@ impl PartyApp {
             // home grid so other pages can own the navigation flow.
             self.nav_in_focus = false;
             self.pending_nav_focus = false;
+            self.nav_selection = self.cur_page;
 
             if vertical > 0 {
                 // Step forward through interactive widgets with Tab so
@@ -327,6 +410,12 @@ impl PartyApp {
                 // Walk backwards across the form with Shift+Tab when pressing
                 // up on the D-pad.
                 tab_backward += -vertical;
+            }
+
+            if vertical != 0 {
+                // Ensure the form scrolls along with the newly focused widget so
+                // controller navigation never leaves the highlight off-screen.
+                self.pending_scroll_to_focus = true;
             }
         }
 
@@ -536,8 +625,11 @@ impl PartyApp {
         self.instance_add_dev = None;
         self.pending_game_list_focus = true;
         self.cur_page = MenuPage::Instances;
+        self.nav_selection = MenuPage::Home;
         self.nav_in_focus = false;
         self.pending_nav_focus = false;
+        self.pending_content_focus = true;
+        self.pending_scroll_to_focus = true;
     }
 
     /// Returns the Proton installation that matches the current settings
@@ -624,6 +716,9 @@ impl PartyApp {
                         self.remove_device(i);
                     } else if self.instances.len() < 1 {
                         self.cur_page = MenuPage::Game;
+                        self.nav_selection = MenuPage::Home;
+                        self.pending_content_focus = true;
+                        self.pending_scroll_to_focus = true;
                     }
                 }
                 Some(PadButton::YBtn) | Some(PadButton::AKey) => {
@@ -790,8 +885,12 @@ impl PartyApp {
         let _ = save_cfg(&cfg);
 
         self.cur_page = MenuPage::Home;
+        self.nav_selection = MenuPage::Home;
+        self.pending_home_focus = true;
         self.nav_in_focus = false;
         self.pending_nav_focus = false;
+        self.pending_content_focus = false;
+        self.pending_scroll_to_focus = false;
         self.spawn_task(
             "Launching...\n\nDon't press any buttons or move any analog sticks or mice.",
             move || {

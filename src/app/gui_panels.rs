@@ -2,8 +2,8 @@ use super::app::{MenuPage, PartyApp};
 use crate::input::*;
 use crate::util::*;
 
-use eframe::egui::output::OpenUrl;
 use eframe::egui::RichText;
+use eframe::egui::output::OpenUrl;
 use eframe::egui::{self, TextWrapMode, Ui};
 use egui_extras::{Size, StripBuilder};
 
@@ -24,6 +24,7 @@ impl PartyApp {
                     ui: &mut Ui,
                     label: impl Into<String>,
                     selected: bool,
+                    focused: bool,
                 ) -> egui::Response {
                     let text = RichText::new(label.into()).size(15.0);
                     let visuals = ui.visuals().clone();
@@ -35,6 +36,10 @@ impl PartyApp {
                         button = button
                             .fill(visuals.selection.bg_fill)
                             .stroke(visuals.selection.stroke);
+                    } else if focused {
+                        button = button
+                            .fill(visuals.widgets.hovered.bg_fill)
+                            .stroke(egui::Stroke::new(2.0, visuals.selection.bg_fill));
                     } else {
                         button = button
                             .fill(visuals.widgets.inactive.bg_fill)
@@ -60,9 +65,13 @@ impl PartyApp {
                                 );
                                 nav.separator();
 
-                                let home_button =
-                                    styled_nav_button(nav, "Home", self.cur_page == MenuPage::Home);
-                                if self.pending_nav_focus && self.cur_page == MenuPage::Home {
+                                let home_button = styled_nav_button(
+                                    nav,
+                                    "Home",
+                                    self.cur_page == MenuPage::Home,
+                                    self.nav_in_focus && self.nav_selection == MenuPage::Home,
+                                );
+                                if self.pending_nav_focus && self.nav_selection == MenuPage::Home {
                                     // Hand focus back to the highlighted header button so
                                     // controller presses activate it immediately.
                                     home_button.request_focus();
@@ -70,39 +79,55 @@ impl PartyApp {
                                 }
                                 if home_button.clicked() {
                                     self.cur_page = MenuPage::Home;
+                                    self.nav_selection = MenuPage::Home;
                                     self.nav_in_focus = false;
                                     self.pending_nav_focus = false;
+                                    self.pending_home_focus = true;
+                                    self.pending_content_focus = false;
+                                    self.pending_scroll_to_focus = false;
                                 }
 
                                 let settings_button = styled_nav_button(
                                     nav,
                                     "Settings",
                                     self.cur_page == MenuPage::Settings,
+                                    self.nav_in_focus && self.nav_selection == MenuPage::Settings,
                                 );
-                                if self.pending_nav_focus && self.cur_page == MenuPage::Settings {
+                                if self.pending_nav_focus
+                                    && self.nav_selection == MenuPage::Settings
+                                {
                                     settings_button.request_focus();
                                     self.pending_nav_focus = false;
                                 }
                                 if settings_button.clicked() {
                                     self.cur_page = MenuPage::Settings;
+                                    self.nav_selection = MenuPage::Settings;
                                     self.nav_in_focus = false;
                                     self.pending_nav_focus = false;
+                                    self.pending_content_focus = true;
+                                    self.pending_scroll_to_focus = true;
                                 }
 
                                 let profiles_button = styled_nav_button(
                                     nav,
                                     "Profiles",
                                     self.cur_page == MenuPage::Profiles,
+                                    self.nav_in_focus && self.nav_selection == MenuPage::Profiles,
                                 );
-                                if self.pending_nav_focus && self.cur_page == MenuPage::Profiles {
+                                if self.pending_nav_focus
+                                    && self.nav_selection == MenuPage::Profiles
+                                {
                                     profiles_button.request_focus();
                                     self.pending_nav_focus = false;
                                 }
                                 if profiles_button.clicked() {
                                     self.profiles = scan_profiles(false);
                                     self.cur_page = MenuPage::Profiles;
+                                    self.nav_selection = MenuPage::Profiles;
                                     self.nav_in_focus = false;
                                     self.pending_nav_focus = false;
+                                    self.pending_content_focus = true;
+                                    self.pending_scroll_to_focus = true;
                                 }
                             });
                         });
@@ -117,7 +142,7 @@ impl PartyApp {
                                         let ui = scope;
                                         ui.style_mut().wrap_mode = Some(TextWrapMode::Extend);
 
-                                        if styled_nav_button(ui, "Quit", false).clicked() {
+                                        if styled_nav_button(ui, "Quit", false, false).clicked() {
                                             ui.ctx()
                                                 .send_viewport_cmd(egui::ViewportCommand::Close);
                                         }
@@ -127,16 +152,19 @@ impl PartyApp {
                                         } else {
                                             format!("v{}", env!("CARGO_PKG_VERSION"))
                                         };
-                                        if styled_nav_button(ui, version_label, false).clicked() {
+                                        if styled_nav_button(ui, version_label, false, false)
+                                            .clicked()
+                                        {
                                             ui.ctx().open_url(OpenUrl::new_tab(
                                                 "https://github.com/blckink/suckmydeck/releases",
                                             ));
                                         }
 
-                                        if styled_nav_button(ui, "Add Game", false).clicked() {
+                                        if styled_nav_button(ui, "Add Game", false, false).clicked()
+                                        {
                                             self.prompt_add_game();
                                         }
-                                        if styled_nav_button(ui, "Rescan Controllers", false)
+                                        if styled_nav_button(ui, "Rescan Controllers", false, false)
                                             .clicked()
                                         {
                                             self.instances.clear();
