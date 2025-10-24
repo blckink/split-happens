@@ -160,7 +160,9 @@ impl PartyApp {
                                 &response,
                                 egui::popup::PopupCloseBehavior::CloseOnClick,
                                 |menu_ui| {
-                                    if menu_ui.button("Remove").clicked() {
+                                    let remove_button = menu_ui.button("Remove");
+                                    self.decorate_focus(menu_ui, &remove_button);
+                                    if remove_button.clicked() {
                                         if yesno(
                                             "Remove game?",
                                             &format!(
@@ -333,7 +335,10 @@ impl PartyApp {
                             row.with_layout(
                                 egui::Layout::right_to_left(egui::Align::Center),
                                 |actions| {
-                                    if actions.button(RichText::new("Open").size(18.0)).clicked() {
+                                    let open_button =
+                                        actions.button(RichText::new("Open").size(18.0));
+                                    self.decorate_focus(actions, &open_button);
+                                    if open_button.clicked() {
                                         if let Err(_) = std::process::Command::new("sh")
                                             .arg("-c")
                                             .arg(format!(
@@ -347,8 +352,10 @@ impl PartyApp {
                                         }
                                     }
 
-                                    if actions.button(RichText::new("Rename").size(18.0)).clicked()
-                                    {
+                                    let rename_button =
+                                        actions.button(RichText::new("Rename").size(18.0));
+                                    self.decorate_focus(actions, &rename_button);
+                                    if rename_button.clicked() {
                                         if let Some(new_name) =
                                             dialog::Input::new("Enter new name (alphanumeric)")
                                                 .title("Rename Profile")
@@ -393,7 +400,9 @@ impl PartyApp {
                     ui.add_space(8.0);
                 }
             });
-        if ui.button(RichText::new("New Profile").size(20.0)).clicked() {
+        let new_profile_button = ui.button(RichText::new("New Profile").size(20.0));
+        self.decorate_focus(ui, &new_profile_button);
+        if new_profile_button.clicked() {
             if let Some(name) = dialog::Input::new("Enter name (must be alphanumeric):")
                 .title("New Profile")
                 .show()
@@ -427,7 +436,9 @@ impl PartyApp {
                 egui::Image::new(egui::include_image!("../../res/BTN_START_PS5.png"))
                     .max_height(16.0),
             );
-            if ui.button("Play").clicked() {
+            let play_button = ui.button("Play");
+            self.decorate_focus(ui, &play_button);
+            if play_button.clicked() {
                 self.open_instances_for(self.selected_game);
             }
             if let HandlerRef(h) = cur_game!(self) {
@@ -519,20 +530,45 @@ impl PartyApp {
 
                 if let HandlerRef(_) = cur_game!(self) {
                     ui.label("👤");
-                    egui::ComboBox::from_id_salt(format!("{i}")).show_index(
-                        ui,
-                        &mut instance.profselection,
-                        self.profiles.len(),
-                        |i| self.profiles[i].clone(),
-                    );
+                    // Clamp invalid selections when the profile list refreshes so the
+                    // drop-down keeps pointing at a valid entry.
+                    if instance.profselection >= self.profiles.len() && !self.profiles.is_empty() {
+                        instance.profselection = 0;
+                    }
+                    // Surface the currently selected profile name in the combo box even
+                    // when no assignment has been made yet.
+                    let selected_text = self
+                        .profiles
+                        .get(instance.profselection)
+                        .cloned()
+                        .unwrap_or_else(|| "Select profile".to_string());
+                    // Wrap the combo box in a manual `show_ui` call so we can decorate
+                    // the response with controller focus feedback.
+                    let combo_response = egui::ComboBox::from_id_salt(format!("{i}"))
+                        .selected_text(selected_text)
+                        .show_ui(ui, |combo_ui| {
+                            for (index, profile_name) in self.profiles.iter().enumerate() {
+                                combo_ui.selectable_value(
+                                    &mut instance.profselection,
+                                    index,
+                                    profile_name.clone(),
+                                );
+                            }
+                        })
+                        .response;
+                    self.decorate_focus(ui, &combo_response);
                 }
 
                 if self.instance_add_dev == None {
-                    if ui.button("➕ Invite New Device").clicked() {
+                    let invite_button = ui.button("➕ Invite New Device");
+                    self.decorate_focus(ui, &invite_button);
+                    if invite_button.clicked() {
                         self.instance_add_dev = Some(i);
                     }
                 } else if self.instance_add_dev == Some(i) {
-                    if ui.button("🗙 Cancel").clicked() {
+                    let cancel_button = ui.button("🗙 Cancel");
+                    self.decorate_focus(ui, &cancel_button);
+                    if cancel_button.clicked() {
                         self.instance_add_dev = None;
                     }
                     ui.label("Adding new device...");
@@ -550,7 +586,9 @@ impl PartyApp {
                     ui.horizontal(|ui| {
                         ui.label("  ");
                         ui.label(dev_text);
-                        if ui.button("🗑").clicked() {
+                        let remove_button = ui.button("🗑");
+                        self.decorate_focus(ui, &remove_button);
+                        if remove_button.clicked() {
                             devices_to_remove.push((i, device_slot));
                         }
                     });
@@ -577,7 +615,9 @@ impl PartyApp {
                     egui::Image::new(egui::include_image!("../../res/BTN_START_PS5.png"))
                         .max_height(16.0),
                 );
-                if ui.button("Start").clicked() {
+                let start_button = ui.button("Start");
+                self.decorate_focus(ui, &start_button);
+                if start_button.clicked() {
                     self.prepare_game_launch();
                 }
             });
@@ -593,16 +633,19 @@ impl PartyApp {
         // Normalize spacing so each control lines up cleanly in the two-column layout.
         ui.spacing_mut().item_spacing.y = 12.0;
         let force_sdl2_check = ui.checkbox(&mut self.options.force_sdl, "Force Steam Runtime SDL2");
+        self.decorate_focus(ui, &force_sdl2_check);
 
         let enable_kwin_script_check = ui.checkbox(
             &mut self.options.enable_kwin_script,
             "Automatically resize/reposition instances",
         );
+        self.decorate_focus(ui, &enable_kwin_script_check);
 
         let vertical_two_player_check = ui.checkbox(
             &mut self.options.vertical_two_player,
             "Vertical split for 2 players",
         );
+        self.decorate_focus(ui, &vertical_two_player_check);
 
         if force_sdl2_check.hovered() {
             self.infotext = "Forces games to use the version of SDL2 included in the Steam Runtime. Only works on native Linux games, may fix problematic game controller support (incorrect mappings) in some games, may break others. If unsure, leave this unchecked.".to_string();
@@ -628,16 +671,19 @@ impl PartyApp {
                     PadFilterType::All,
                     "All controllers",
                 );
+                self.decorate_focus(radios, &r1);
                 let r2 = radios.radio_value(
                     &mut self.options.pad_filter_type,
                     PadFilterType::NoSteamInput,
                     "No Steam Input",
                 );
+                self.decorate_focus(radios, &r2);
                 let r3 = radios.radio_value(
                     &mut self.options.pad_filter_type,
                     PadFilterType::OnlySteamInput,
                     "Only Steam Input",
                 );
+                self.decorate_focus(radios, &r3);
 
                 if filter_label.hovered() || r1.hovered() || r2.hovered() || r3.hovered() {
                     self.infotext = "Select which controllers to filter out. If unsure, set this to \"No Steam Input\". If you use Steam Input to remap controllers, you may want to select \"Only Steam Input\", but be warned that this option is experimental and is known to break certain Proton games.".to_string();
@@ -681,8 +727,10 @@ impl PartyApp {
                     combo_ui.label("Select a build above or keep using the custom path below.");
                 })
                 .response;
+            self.decorate_focus(group, &combo_response);
 
             let refresh_btn = group.small_button("Refresh");
+            self.decorate_focus(group, &refresh_btn);
             if refresh_btn.clicked() {
                 self.refresh_proton_versions();
             }
@@ -695,6 +743,7 @@ impl PartyApp {
                 egui::TextEdit::singleline(&mut self.options.proton_version)
                     .hint_text("GE-Proton or /path/to/proton"),
             );
+            self.decorate_focus(group, &proton_ver_editbox);
             if proton_ver_editbox.hovered() {
                 self.infotext = "Enter a custom Proton identifier or absolute path. Leave empty to auto-select GE-Proton.".to_string();
             }
@@ -704,6 +753,7 @@ impl PartyApp {
             &mut self.options.proton_separate_pfxs,
             "Run instances in separate Proton prefixes",
         );
+        self.decorate_focus(ui, &proton_separate_pfxs_check);
         if proton_separate_pfxs_check.hovered() {
             self.infotext = "Runs each instance in its own Proton prefix. If unsure, leave this unchecked. This option will take up more space on the disk, but may also help with certain Proton-related issues such as only one instance of a game starting.".to_string();
         }
@@ -713,7 +763,9 @@ impl PartyApp {
         // Keep destructive maintenance actions in a single row to avoid tall gaps.
         ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |actions| {
             actions.spacing_mut().item_spacing.x = 10.0;
-            if actions.button("Erase Proton Prefix").clicked() {
+            let erase_prefix_btn = actions.button("Erase Proton Prefix");
+            self.decorate_focus(actions, &erase_prefix_btn);
+            if erase_prefix_btn.clicked() {
                 if yesno(
                     "Erase Prefix?",
                     "This will erase the Wine prefix used by Split Happens. This shouldn't erase profile/game-specific data, but exercise caution. Are you sure?",
@@ -729,7 +781,9 @@ impl PartyApp {
                 }
             }
 
-            if actions.button("Erase Symlink Data").clicked() {
+            let erase_symlink_btn = actions.button("Erase Symlink Data");
+            self.decorate_focus(actions, &erase_symlink_btn);
+            if erase_symlink_btn.clicked() {
                 if yesno(
                     "Erase Symlink Data?",
                     "This will erase all game symlink data. This shouldn't erase profile/game-specific data, but exercise caution. Are you sure?",
@@ -751,7 +805,9 @@ impl PartyApp {
             egui::Layout::left_to_right(egui::Align::Center),
             |actions| {
                 actions.spacing_mut().item_spacing.x = 10.0;
-                if actions.button("Open Split Happens Data Folder").clicked() {
+                let open_data_btn = actions.button("Open Split Happens Data Folder");
+                self.decorate_focus(actions, &open_data_btn);
+                if open_data_btn.clicked() {
                     if let Err(_) = std::process::Command::new("sh")
                         .arg("-c")
                         .arg(format!("xdg-open {}/", PATH_APP.display()))
@@ -760,7 +816,9 @@ impl PartyApp {
                         msg("Error", "Couldn't open Split Happens Data Folder!");
                     }
                 }
-                if actions.button("Edit game paths").clicked() {
+                let edit_paths_btn = actions.button("Edit game paths");
+                self.decorate_focus(actions, &edit_paths_btn);
+                if edit_paths_btn.clicked() {
                     if let Err(_) = std::process::Command::new("sh")
                         .arg("-c")
                         .arg(format!("xdg-open {}/paths.json", PATH_APP.display(),))
@@ -781,6 +839,7 @@ impl PartyApp {
             &mut self.options.performance_gamescope_rt,
             "Real-time scheduling for Gamescope",
         );
+        self.decorate_focus(ui, &realtime_toggle);
         if realtime_toggle.hovered() {
             self.infotext = "Requests gamescope's real-time compositor mode to reduce frame pacing spikes when two sessions share the GPU.".to_string();
         }
@@ -789,6 +848,7 @@ impl PartyApp {
             &mut self.options.performance_limit_40fps,
             "Limit Gamescope output to 40 FPS",
         );
+        self.decorate_focus(ui, &fps_limit_toggle);
         if fps_limit_toggle.hovered() {
             self.infotext = "Caps each window to 40 frames per second so both players stay within the Deck's thermal and power envelope.".to_string();
         }
@@ -797,6 +857,7 @@ impl PartyApp {
             &mut self.options.performance_enable_proton_fsr,
             "Enable Proton FSR upscaling",
         );
+        self.decorate_focus(ui, &proton_fsr_toggle);
         if proton_fsr_toggle.hovered() {
             self.infotext = "Turns on Proton's fullscreen FSR so Windows titles can render at lower resolutions while gamescope upscales the result.".to_string();
         }
@@ -808,14 +869,17 @@ impl PartyApp {
             &mut self.options.gamescope_fix_lowres,
             "Automatically fix low resolution instances",
         );
+        self.decorate_focus(ui, &gamescope_lowres_fix_check);
         let gamescope_sdl_backend_check = ui.checkbox(
             &mut self.options.gamescope_sdl_backend,
             "Use SDL backend for Gamescope",
         );
+        self.decorate_focus(ui, &gamescope_sdl_backend_check);
         let kbm_support_check = ui.checkbox(
             &mut self.options.kbm_support,
             "Enable keyboard and mouse support through custom Gamescope",
         );
+        self.decorate_focus(ui, &kbm_support_check);
 
         if gamescope_lowres_fix_check.hovered() {
             self.infotext = "Many games have graphical problems or even crash when running at resolutions below 600p. If this is enabled, any instances below 600p will automatically be resized before launching.".to_string();
