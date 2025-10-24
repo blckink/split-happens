@@ -92,22 +92,6 @@ impl eframe::App for LightPartyApp {
             self.display_panel_top(ui);
         });
 
-        if self.cur_page == MenuPage::Instances {
-            egui::SidePanel::right("devices_panel")
-                .resizable(false)
-                .exact_width(180.0)
-                .show(ctx, |ui| {
-                    if self.task.is_some() {
-                        ui.disable();
-                    }
-                    self.display_panel_right(ui, ctx);
-                });
-        }
-
-        if self.cur_page == MenuPage::Settings {
-            self.display_panel_bottom(ctx);
-        }
-
         egui::CentralPanel::default().show(ctx, |ui| {
             if self.task.is_some() {
                 ui.disable();
@@ -390,228 +374,284 @@ impl LightPartyApp {
 
 impl LightPartyApp {
     pub fn display_panel_top(&mut self, ui: &mut Ui) {
-        ui.horizontal(|ui| {
-            ui.selectable_value(&mut self.cur_page, MenuPage::Instances, "Play");
-            ui.selectable_value(&mut self.cur_page, MenuPage::Settings, "Settings");
+        // Mirror the streamlined navigation styling from the full launcher.
+        egui::Frame::new()
+            .fill(ui.visuals().panel_fill)
+            .inner_margin(egui::Margin::symmetric(16, 10))
+            .show(ui, |bar_ui| {
+                bar_ui.set_height(48.0);
+                bar_ui.horizontal(|row| {
+                    row.spacing_mut().item_spacing.x = 12.0;
+                    row.label(
+                        RichText::new("PartyDeck")
+                            .heading()
+                            .color(row.visuals().strong_text_color()),
+                    );
 
-            if ui.button("🎮 Rescan").clicked() {
-                self.instances.clear();
-                self.input_devices = scan_input_devices(&self.options.pad_filter_type);
-            }
+                    row.separator();
+                    row.selectable_value(
+                        &mut self.cur_page,
+                        MenuPage::Instances,
+                        RichText::new("Play").size(16.0),
+                    );
+                    row.selectable_value(
+                        &mut self.cur_page,
+                        MenuPage::Settings,
+                        RichText::new("Settings").size(16.0),
+                    );
 
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                if ui.button("❌ Quit").clicked() {
-                    ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
-                }
-                ui.hyperlink_to(
-                    format!("PartyDeck v{}", env!("CARGO_PKG_VERSION")),
-                    "https://github.com/blckink/suckmydeck/releases",
-                );
-                ui.add(egui::Separator::default().vertical());
-                ui.hyperlink_to(
-                    "Open Source Licenses",
-                    "https://github.com/blckink/suckmydeck/tree/main?tab=License-2-ov-file",
-                );
+                    row.with_layout(
+                        egui::Layout::right_to_left(egui::Align::Center),
+                        |actions| {
+                            if actions
+                                .button(
+                                    RichText::new("Quit")
+                                        .size(14.0)
+                                        .color(actions.visuals().strong_text_color()),
+                                )
+                                .clicked()
+                            {
+                                actions
+                                    .ctx()
+                                    .send_viewport_cmd(egui::ViewportCommand::Close);
+                            }
+                            actions.hyperlink_to(
+                                RichText::new(format!("v{}", env!("CARGO_PKG_VERSION"))).size(14.0),
+                                "https://github.com/blckink/suckmydeck/releases",
+                            );
+                            actions.add(egui::Separator::default().vertical());
+                            if actions.button(RichText::new("Rescan").size(14.0)).clicked() {
+                                self.instances.clear();
+                                self.input_devices =
+                                    scan_input_devices(&self.options.pad_filter_type);
+                            }
+                        },
+                    );
+                });
             });
-        });
     }
 
     pub fn display_panel_right(&mut self, ui: &mut Ui, ctx: &egui::Context) {
-        ui.add_space(6.0);
-
-        ui.heading("Devices");
+        // Provide a compact device summary identical to the full UI treatment.
+        ui.heading("Connected Devices");
         ui.separator();
 
-        for pad in self.input_devices.iter() {
-            let mut dev_text = RichText::new(format!(
-                "{} {} ({})",
-                pad.emoji(),
-                pad.fancyname(),
-                pad.path()
-            ))
-            .small();
+        if self.input_devices.is_empty() {
+            ui.label(RichText::new("No controllers detected.").weak());
+        } else {
+            for pad in self.input_devices.iter() {
+                let mut dev_text = RichText::new(format!(
+                    "{} {} ({})",
+                    pad.emoji(),
+                    pad.fancyname(),
+                    pad.path()
+                ))
+                .size(14.0);
 
-            if !pad.enabled() {
-                dev_text = dev_text.weak();
-            } else if pad.has_button_held() {
-                dev_text = dev_text.strong();
+                if !pad.enabled() {
+                    dev_text = dev_text.weak();
+                } else if pad.has_button_held() {
+                    dev_text = dev_text.strong();
+                }
+
+                ui.label(dev_text);
             }
-
-            ui.label(dev_text);
         }
 
-        ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-            ui.link("Devices not being detected?").on_hover_ui(|ui| {
-                ui.style_mut().interaction.selectable_labels = true;
-                ui.label("Try adding your user to the `input` group.");
-                ui.label("In a terminal, enter the following command:");
-                ui.horizontal(|ui| {
-                    ui.code("sudo usermod -aG input $USER");
-                    if ui.button("📎").clicked() {
+        ui.add_space(12.0);
+        ui.link("Devices not being detected?")
+            .on_hover_ui(|hover_ui| {
+                hover_ui.style_mut().interaction.selectable_labels = true;
+                hover_ui.label("Try adding your user to the `input` group.");
+                hover_ui.label("In a terminal, enter the following command:");
+                hover_ui.horizontal(|row| {
+                    row.code("sudo usermod -aG input $USER");
+                    if row.button("📎").clicked() {
                         ctx.copy_text("sudo usermod -aG input $USER".to_string());
                     }
                 });
             });
-        });
     }
 
-    pub fn display_panel_bottom(&mut self, ctx: &egui::Context) {
-        egui::TopBottomPanel::bottom("info_panel")
-            .exact_height(50.0)
-            .show(ctx, |ui| {
-                if self.task.is_some() {
-                    ui.disable();
-                }
-                egui::ScrollArea::vertical().show(ui, |ui| {
-                    ui.label(&self.infotext);
-                });
-            });
-    }
-}
-
-impl LightPartyApp {
     pub fn display_page_settings(&mut self, ui: &mut Ui) {
-        let force_sdl2_check = ui.checkbox(&mut self.options.force_sdl, "Force Steam Runtime SDL2");
+        self.infotext.clear();
+        // Keep all lightweight settings accessible in a single scrollable surface.
+        egui::ScrollArea::vertical()
+            .auto_shrink([false; 2])
+            .show(ui, |scroll| {
+                scroll.heading("Settings");
+                scroll.add_space(12.0);
 
-        let enable_kwin_script_check = ui.checkbox(
-            &mut self.options.enable_kwin_script,
-            "Automatically resize/reposition instances",
-        );
+                // Mirror the consolidated settings structure from the desktop UI.
+                scroll.heading("General");
+                scroll.add_space(6.0);
+                let force_sdl2_check =
+                    scroll.checkbox(&mut self.options.force_sdl, "Force Steam Runtime SDL2");
 
-        let vertical_two_player_check = ui.checkbox(
-            &mut self.options.vertical_two_player,
-            "Vertical split for 2 players",
-        );
+                let enable_kwin_script_check = scroll.checkbox(
+                    &mut self.options.enable_kwin_script,
+                    "Automatically resize/reposition instances",
+                );
 
-        if force_sdl2_check.hovered() {
-            self.infotext = "Forces games to use the version of SDL2 included in the Steam Runtime. Only works on native Linux games, may fix problematic game controller support (incorrect mappings) in some games, may break others. If unsure, leave this unchecked.".to_string();
-        }
+                let vertical_two_player_check = scroll.checkbox(
+                    &mut self.options.vertical_two_player,
+                    "Vertical split for 2 players",
+                );
 
-        if enable_kwin_script_check.hovered() {
-            self.infotext = "Resizes/repositions instances to fit the screen using a KWin script. If unsure, leave this checked. If using a desktop environment or window manager other than KDE Plasma, uncheck this; note that you will need to manually resize and reposition the windows.".to_string();
-        }
+                if force_sdl2_check.hovered() {
+                    self.infotext = "Forces games to use the version of SDL2 included in the Steam Runtime. Only works on native Linux games, may fix problematic game controller support (incorrect mappings) in some games, may break others. If unsure, leave this unchecked.".to_string();
+                }
 
-        if vertical_two_player_check.hovered() {
-            self.infotext =
-                "Splits two-player games vertically (side by side) instead of horizontally."
-                    .to_string();
-        }
+                if enable_kwin_script_check.hovered() {
+                    self.infotext = "Resizes/repositions instances to fit the screen using a KWin script. If unsure, leave this checked. If using a desktop environment or window manager other than KDE Plasma, uncheck this; note that you will need to manually resize and reposition the windows.".to_string();
+                }
 
-        ui.horizontal(|ui| {
-            let filter_label = ui.label("Controller filter");
-            let r1 = ui.radio_value(
-                &mut self.options.pad_filter_type,
-                PadFilterType::All,
-                "All controllers",
-            );
-            let r2 = ui.radio_value(
-                &mut self.options.pad_filter_type,
-                PadFilterType::NoSteamInput,
-                "No Steam Input",
-            );
-            let r3 = ui.radio_value(
-                &mut self.options.pad_filter_type,
-                PadFilterType::OnlySteamInput,
-                "Only Steam Input",
-            );
+                if vertical_two_player_check.hovered() {
+                    self.infotext =
+                        "Splits two-player games vertically (side by side) instead of horizontally."
+                            .to_string();
+                }
 
-            if filter_label.hovered() || r1.hovered() || r2.hovered() || r3.hovered() {
-                self.infotext = "Select which controllers to filter out. If unsure, set this to \"No Steam Input\". If you use Steam Input to remap controllers, you may want to select \"Only Steam Input\", but be warned that this option is experimental and is known to break certain Proton games.".to_string();
-            }
+                scroll.horizontal(|row| {
+                    let filter_label = row.label("Controller filter");
+                    let r1 = row.radio_value(
+                        &mut self.options.pad_filter_type,
+                        PadFilterType::All,
+                        "All controllers",
+                    );
+                    let r2 = row.radio_value(
+                        &mut self.options.pad_filter_type,
+                        PadFilterType::NoSteamInput,
+                        "No Steam Input",
+                    );
+                    let r3 = row.radio_value(
+                        &mut self.options.pad_filter_type,
+                        PadFilterType::OnlySteamInput,
+                        "Only Steam Input",
+                    );
 
-            if r1.clicked() || r2.clicked() || r3.clicked() {
-                self.input_devices = scan_input_devices(&self.options.pad_filter_type);
-            }
-        });
+                    if filter_label.hovered() || r1.hovered() || r2.hovered() || r3.hovered() {
+                        self.infotext = "Select which controllers to filter out. If unsure, set this to \"No Steam Input\". If you use Steam Input to remap controllers, you may want to select \"Only Steam Input\", but be warned that this option is experimental and is known to break certain Proton games.".to_string();
+                    }
 
-        // Mirror the enhanced Proton selector introduced in the full UI.
-        ui.horizontal(|ui| {
-            let proton_ver_label = ui.label("Proton version");
-            ui.vertical(|ui| {
-                ui.spacing_mut().item_spacing.y = 4.0;
-                ui.horizontal(|ui| {
-                    let combo_response = egui::ComboBox::from_id_source("light_settings_proton_combo")
-                        .selected_text(self.proton_dropdown_label())
-                        .width(260.0)
-                        .show_ui(ui, |combo_ui| {
-                            combo_ui.selectable_value(
-                                &mut self.options.proton_version,
-                                String::new(),
-                                "Auto (GE-Proton)",
-                            );
+                    if r1.clicked() || r2.clicked() || r3.clicked() {
+                        self.input_devices = scan_input_devices(&self.options.pad_filter_type);
+                    }
+                });
 
-                            if self.proton_versions.is_empty() {
-                                combo_ui.label("No Proton builds detected");
-                            } else {
-                                for install in &self.proton_versions {
-                                    combo_ui.selectable_value(
-                                        &mut self.options.proton_version,
-                                        install.id.clone(),
-                                        install.display_label(),
-                                    );
+                scroll.add_space(12.0);
+                // Group Proton-related options under a dedicated compatibility heading.
+                scroll.heading("Compatibility");
+                scroll.add_space(6.0);
+                scroll.horizontal(|row| {
+                    let proton_ver_label = row.label("Proton version");
+                    row.vertical(|col| {
+                        col.spacing_mut().item_spacing.y = 4.0;
+                        col.horizontal(|inner| {
+                            let combo_response = egui::ComboBox::from_id_source(
+                                "light_settings_proton_combo",
+                            )
+                            .selected_text(self.proton_dropdown_label())
+                            .width(260.0)
+                            .show_ui(inner, |combo_ui| {
+                                combo_ui.selectable_value(
+                                    &mut self.options.proton_version,
+                                    String::new(),
+                                    "Auto (GE-Proton)",
+                                );
+
+                                if self.proton_versions.is_empty() {
+                                    combo_ui.label("No Proton builds detected");
+                                } else {
+                                    for install in &self.proton_versions {
+                                        combo_ui.selectable_value(
+                                            &mut self.options.proton_version,
+                                            install.id.clone(),
+                                            install.display_label(),
+                                        );
+                                    }
                                 }
+
+                                combo_ui.separator();
+                                combo_ui.label(
+                                    "Select a build above or keep using the custom path below.",
+                                );
+                            })
+                            .response;
+
+                            let refresh_btn = inner.small_button("Refresh");
+                            if refresh_btn.clicked() {
+                                self.refresh_proton_versions();
                             }
 
-                            combo_ui.separator();
-                            combo_ui.label(
-                                "Select a build above or keep using the custom path below.",
-                            );
-                        })
-                        .response;
+                            if proton_ver_label.hovered()
+                                || combo_response.hovered()
+                                || refresh_btn.hovered()
+                            {
+                                self.infotext = "Choose an installed Proton build or refresh the list after installing a new compatibility tool. Keep the field below blank for the default GE-Proton.".to_string();
+                            }
+                        });
 
-                    let refresh_btn = ui.small_button("Refresh");
-                    if refresh_btn.clicked() {
-                        self.refresh_proton_versions();
-                    }
-
-                    if proton_ver_label.hovered()
-                        || combo_response.hovered()
-                        || refresh_btn.hovered()
-                    {
-                        self.infotext = "Choose an installed Proton build or refresh the list after installing a new compatibility tool. Keep the field below blank for the default GE-Proton.".to_string();
-                    }
+                        let proton_ver_editbox = col.add(
+                            egui::TextEdit::singleline(&mut self.options.proton_version)
+                                .hint_text("GE-Proton or /path/to/proton"),
+                        );
+                        if proton_ver_editbox.hovered() {
+                            self.infotext = "Enter a custom Proton identifier or absolute path. Leave empty to auto-select GE-Proton.".to_string();
+                        }
+                    });
                 });
 
-                let proton_ver_editbox = ui.add(
-                    egui::TextEdit::singleline(&mut self.options.proton_version)
-                        .hint_text("GE-Proton or /path/to/proton"),
+                let proton_separate_pfxs_check = scroll.checkbox(
+                    &mut self.options.proton_separate_pfxs,
+                    "Run instances in separate Proton prefixes",
                 );
-                if proton_ver_editbox.hovered() {
-                    self.infotext = "Enter a custom Proton identifier or absolute path. Leave empty to auto-select GE-Proton.".to_string();
+                if proton_separate_pfxs_check.hovered() {
+                    self.infotext = "Runs each instance in its own Proton prefix. If unsure, leave this unchecked. This option will take up more space on the disk, but may also help with certain Proton-related issues such as only one instance of a game starting.".to_string();
                 }
+
+                scroll.add_space(20.0);
+                // Follow with the Gamescope tweaks so everything lives on one page.
+                scroll.heading("Gamescope");
+                scroll.add_space(6.0);
+                let gamescope_lowres_fix_check = scroll.checkbox(
+                    &mut self.options.gamescope_fix_lowres,
+                    "Automatically fix low resolution instances",
+                );
+                let gamescope_sdl_backend_check = scroll.checkbox(
+                    &mut self.options.gamescope_sdl_backend,
+                    "Use SDL backend for Gamescope",
+                );
+                let kbm_support_check = scroll.checkbox(
+                    &mut self.options.kbm_support,
+                    "Enable keyboard and mouse support through custom Gamescope",
+                );
+
+                if gamescope_lowres_fix_check.hovered() {
+                    self.infotext = "Many games have graphical problems or even crash when running at resolutions below 600p. If this is enabled, any instances below 600p will automatically be resized before launching.".to_string();
+                }
+                if gamescope_sdl_backend_check.hovered() {
+                    self.infotext = "Runs gamescope sessions using the SDL backend. If unsure, leave this checked. If gamescope sessions only show a black screen or give an error (especially on Nvidia + Wayland), try disabling this.".to_string();
+                }
+                if kbm_support_check.hovered() {
+                    self.infotext = "Runs a custom Gamescope build with support for holding keyboards and mice. If you want to use your own Gamescope installation, uncheck this.".to_string();
+                }
+
+                scroll.add_space(20.0);
+                // Allow the lightweight UI to persist changes without leaving the page.
+                scroll.horizontal(|actions| {
+                    if actions.button("Save Settings").clicked() {
+                        if let Err(e) = save_cfg(&self.options) {
+                            msg("Error", &format!("Couldn't save settings: {}", e));
+                        }
+                    }
+                    if actions.button("Restore Defaults").clicked() {
+                        self.options = PartyConfig::default();
+                        self.input_devices = scan_input_devices(&self.options.pad_filter_type);
+                    }
+                });
+                scroll.separator();
             });
-        });
-
-        let proton_separate_pfxs_check = ui.checkbox(
-            &mut self.options.proton_separate_pfxs,
-            "Run instances in separate Proton prefixes",
-        );
-        if proton_separate_pfxs_check.hovered() {
-            self.infotext = "Runs each instance in its own Proton prefix. If unsure, leave this unchecked. This option will take up more space on the disk, but may also help with certain Proton-related issues such as only one instance of a game starting.".to_string();
-        }
-
-        let gamescope_lowres_fix_check = ui.checkbox(
-            &mut self.options.gamescope_fix_lowres,
-            "Automatically fix low resolution instances",
-        );
-        let gamescope_sdl_backend_check = ui.checkbox(
-            &mut self.options.gamescope_sdl_backend,
-            "Use SDL backend for Gamescope",
-        );
-        let kbm_support_check = ui.checkbox(
-            &mut self.options.kbm_support,
-            "Enable keyboard and mouse support through custom Gamescope",
-        );
-
-        if gamescope_lowres_fix_check.hovered() {
-            self.infotext = "Many games have graphical problems or even crash when running at resolutions below 600p. If this is enabled, any instances below 600p will automatically be resized before launching.".to_string();
-        }
-        if gamescope_sdl_backend_check.hovered() {
-            self.infotext = "Runs gamescope sessions using the SDL backend. If unsure, leave this checked. If gamescope sessions only show a black screen or give an error (especially on Nvidia + Wayland), try disabling this.".to_string();
-        }
-        if kbm_support_check.hovered() {
-            self.infotext = "Runs a custom Gamescope build with support for holding keyboards and mice. If you want to use your own Gamescope installation, uncheck this.".to_string();
-        }
     }
 
     pub fn display_page_instances(&mut self, ui: &mut Ui) {
@@ -720,5 +760,10 @@ impl LightPartyApp {
                 }
             });
         }
+
+        // Mirror the inline device overview from the full UI.
+        ui.add_space(20.0);
+        let devices_ctx = ui.ctx().clone();
+        self.display_panel_right(ui, &devices_ctx);
     }
 }

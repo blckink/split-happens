@@ -1,6 +1,6 @@
-use super::app::{PartyApp, SettingsPage};
+use super::app::PartyApp;
 use super::config::*;
-use crate::game::Game::*;
+use crate::game::{Game::*, remove_game};
 use crate::input::*;
 use crate::paths::*;
 use crate::util::*;
@@ -17,20 +17,8 @@ macro_rules! cur_game {
 
 impl PartyApp {
     pub fn display_page_main(&mut self, ui: &mut Ui) {
-        // Surface quick actions above the grid so users can immediately add or
-        // rescan handlers without diving into secondary menus.
-        ui.horizontal(|ui| {
-            ui.heading("Library");
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                if ui.button("Add Game").clicked() {
-                    self.prompt_add_game();
-                }
-                if ui.button("Refresh").clicked() {
-                    self.reload_games();
-                }
-            });
-        });
-        ui.separator();
+        // Provide gentle breathing room between the navigation bar and the tile grid.
+        ui.add_space(8.0);
 
         if self.games.is_empty() {
             ui.vertical_centered(|ui| {
@@ -42,6 +30,7 @@ impl PartyApp {
 
         // Arrange the responsive tile grid with generous spacing so artwork
         // stays prominent on both desktop and Steam Deck screens.
+        let mut refresh_games = false;
         let tile_spacing = 16.0;
         let min_tile_width = 320.0;
 
@@ -79,7 +68,8 @@ impl PartyApp {
                         row_ui.spacing_mut().item_spacing.x = tile_spacing;
 
                         for index in start..end {
-                            let game = &self.games[index];
+                            let game = self.games[index].to_owned();
+                            let removal_game = game.to_owned();
                             let image_height = (tile_width * 9.0 / 16.0).clamp(160.0, 320.0);
                             let tile_height = image_height + 96.0;
 
@@ -152,16 +142,14 @@ impl PartyApp {
                                         egui::RichText::new(game.name()).size(24.0).strong(),
                                     );
 
-                                    match game {
+                                    match &game {
                                         HandlerRef(handler) => {
-                                            let platform =
+                                            // Display a concise platform tag without author metadata for a cleaner tile.
+                                            let platform_label =
                                                 if handler.win { "Proton" } else { "Native" };
                                             tile_ui.label(
-                                                egui::RichText::new(format!(
-                                                    "{} • by {}",
-                                                    platform, handler.author
-                                                ))
-                                                .color(tile_ui.visuals().weak_text_color()),
+                                                egui::RichText::new(platform_label)
+                                                    .color(tile_ui.visuals().weak_text_color()),
                                             );
                                             tile_ui.label(
                                                 egui::RichText::new(format!(
@@ -188,6 +176,40 @@ impl PartyApp {
                                 self.open_instances_for(index);
                             }
 
+                            // Offer a lightweight context menu so games can still be removed from the grid.
+                            let popup_id =
+                                row_ui.make_persistent_id(format!("home_tile_context_{index}"));
+                            egui::popup::popup_below_widget(
+                                row_ui,
+                                popup_id,
+                                &response,
+                                egui::popup::PopupCloseBehavior::CloseOnClick,
+                                |menu_ui| {
+                                    if menu_ui.button("Remove").clicked() {
+                                        if yesno(
+                                            "Remove game?",
+                                            &format!(
+                                                "Are you sure you want to remove {}?",
+                                                removal_game.name()
+                                            ),
+                                        ) {
+                                            if let Err(err) = remove_game(&removal_game) {
+                                                println!("Failed to remove game: {}", err);
+                                                msg(
+                                                    "Error",
+                                                    &format!("Failed to remove game: {}", err),
+                                                );
+                                            }
+                                            refresh_games = true;
+                                        }
+                                        menu_ui.close_menu();
+                                    }
+                                },
+                            );
+                            if response.secondary_clicked() {
+                                row_ui.memory_mut(|mem| mem.toggle_popup(popup_id));
+                            }
+
                             if self.pending_home_focus && is_selected {
                                 // Pull focus to the active tile so controller actions work immediately.
                                 response.request_focus();
@@ -206,40 +228,47 @@ impl PartyApp {
                     self.pending_home_focus = false;
                 }
             });
+
+        if refresh_games {
+            self.reload_games();
+        }
     }
 
     pub fn display_page_settings(&mut self, ui: &mut Ui) {
         self.infotext.clear();
-        ui.horizontal(|ui| {
-            ui.heading("Settings");
-            ui.selectable_value(&mut self.settings_page, SettingsPage::General, "General");
-            ui.selectable_value(
-                &mut self.settings_page,
-                SettingsPage::Gamescope,
-                "Gamescope",
-            );
-        });
-        ui.separator();
+        // Wrap the complete settings stack in a scroll area so long forms remain accessible.
+        egui::ScrollArea::vertical()
+            .auto_shrink([false; 2])
+            .show(ui, |scroll| {
+                scroll.heading("Settings");
+                scroll.add_space(12.0);
 
-        match self.settings_page {
-            SettingsPage::General => self.display_settings_general(ui),
-            SettingsPage::Gamescope => self.display_settings_gamescope(ui),
-        }
+                // Surface configuration groups sequentially for a single scrollable view.
+                scroll.heading("General");
+                scroll.add_space(6.0);
+                self.display_settings_general(scroll);
 
-        ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-            ui.horizontal(|ui| {
-                if ui.button("Save Settings").clicked() {
-                    if let Err(e) = save_cfg(&self.options) {
-                        msg("Error", &format!("Couldn't save settings: {}", e));
+                scroll.add_space(20.0);
+                // Continue with Gamescope tuning without forcing a tab change.
+                scroll.heading("Gamescope");
+                scroll.add_space(6.0);
+                self.display_settings_gamescope(scroll);
+
+                scroll.add_space(20.0);
+                // Keep persistence controls anchored at the bottom of the combined settings view.
+                scroll.horizontal(|actions| {
+                    if actions.button("Save Settings").clicked() {
+                        if let Err(e) = save_cfg(&self.options) {
+                            msg("Error", &format!("Couldn't save settings: {}", e));
+                        }
                     }
-                }
-                if ui.button("Restore Defaults").clicked() {
-                    self.options = PartyConfig::default();
-                    self.input_devices = scan_input_devices(&self.options.pad_filter_type);
-                }
+                    if actions.button("Restore Defaults").clicked() {
+                        self.options = PartyConfig::default();
+                        self.input_devices = scan_input_devices(&self.options.pad_filter_type);
+                    }
+                });
+                scroll.separator();
             });
-            ui.separator();
-        });
     }
 
     pub fn display_page_profiles(&mut self, ui: &mut Ui) {
@@ -517,6 +546,11 @@ impl PartyApp {
                 }
             });
         }
+
+        // Surface the connected device overview inline now that the sidebar is gone.
+        ui.add_space(20.0);
+        let devices_ctx = ui.ctx().clone();
+        self.display_panel_right(ui, &devices_ctx);
     }
 
     pub fn display_settings_general(&mut self, ui: &mut Ui) {
