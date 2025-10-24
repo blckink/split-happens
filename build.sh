@@ -9,8 +9,10 @@
 # linker to Cargo in SteamOS environments.
 add_rust_lld_search_paths() {
   # Gather shared library directories from ldconfig so rust-lld can discover
-  # glibc when no system compiler wrapper is present.
-  local libpath libdir added_dirs=""
+  # glibc when no system compiler wrapper is present. While scanning, capture
+  # the first libgcc path so we can fabricate the unversioned SONAMEs that
+  # rust-lld expects when cc is unavailable.
+  local libpath libdir added_dirs="" libgcc_source="" shim_dir="target/rust-lld-shims"
 
   if ! command -v ldconfig >/dev/null 2>&1; then
     return
@@ -26,7 +28,28 @@ add_rust_lld_search_paths() {
 
     added_dirs+=" ${libdir}"
     RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-L native=${libdir}"
+
+    # Remember where libgcc_s lives so we can expose libgcc aliases later on.
+    if [ -z "$libgcc_source" ] && [ "$(basename "$libpath")" = "libgcc_s.so.1" ]; then
+      libgcc_source="$libpath"
+    fi
   done < <(ldconfig -p | awk -F'=> ' 'NF==2 {gsub(/^ +| +$/, "", $2); print $2}')
+
+  if [ -n "$libgcc_source" ]; then
+    # Surface libgcc under both libgcc.so and libgcc_s.so so rust-lld can
+    # satisfy the -lgcc/-lgcc_s search pairs injected by Rust's stdlib.
+    mkdir -p "$shim_dir"
+    ln -sf "$libgcc_source" "$shim_dir/libgcc.so"
+    ln -sf "$libgcc_source" "$shim_dir/libgcc_s.so"
+
+    case " ${added_dirs} " in
+      *" ${shim_dir} "*)
+        ;;
+      *)
+        RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-L native=${shim_dir}"
+        ;;
+    esac
+  fi
 
   export RUSTFLAGS
 }
