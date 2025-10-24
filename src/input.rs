@@ -98,57 +98,62 @@ impl InputDevice {
     }
     pub fn poll(&mut self) -> Option<PadButton> {
         let mut btn: Option<PadButton> = None;
-        if let Ok(events) = self.dev.fetch_events() {
-            // Collect the event summaries up-front so the iterator's borrow of
-            // `self.dev` ends before we mutate any of the device state.
-            let summaries: Vec<EventSummary> = events.map(|event| event.destructure()).collect();
-
-            for summary in summaries {
-                match summary {
-                    EventSummary::Key(_, _, 1) => {
-                        self.has_button_held = true;
-                    }
-                    EventSummary::Key(_, _, 0) => {
-                        self.has_button_held = false;
-                    }
-                    _ => {}
-                }
-
-                btn = match summary {
-                    EventSummary::Key(_, KeyCode::BTN_SOUTH, 1) => Some(PadButton::ABtn),
-                    EventSummary::Key(_, KeyCode::BTN_EAST, 1) => Some(PadButton::BBtn),
-                    EventSummary::Key(_, KeyCode::BTN_NORTH, 1) => Some(PadButton::XBtn),
-                    EventSummary::Key(_, KeyCode::BTN_WEST, 1) => Some(PadButton::YBtn),
-                    EventSummary::Key(_, KeyCode::BTN_START, 1) => Some(PadButton::StartBtn),
-                    EventSummary::Key(_, KeyCode::BTN_SELECT, 1) => Some(PadButton::SelectBtn),
-                    EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_HAT0X, -1) => {
-                        Some(PadButton::Left)
-                    }
-                    EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_HAT0X, 1) => {
-                        Some(PadButton::Right)
-                    }
-                    EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_HAT0Y, -1) => {
-                        Some(PadButton::Up)
-                    }
-                    EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_HAT0Y, 1) => {
-                        Some(PadButton::Down)
-                    }
-                    EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_X, value) => {
-                        self.map_horizontal_axis(value).or(btn)
-                    }
-                    EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_Y, value) => {
-                        self.map_vertical_axis(value).or(btn)
-                    }
-                    //keyboard
-                    EventSummary::Key(_, KeyCode::KEY_A, 1) => Some(PadButton::AKey),
-                    EventSummary::Key(_, KeyCode::KEY_R, 1) => Some(PadButton::RKey),
-                    EventSummary::Key(_, KeyCode::KEY_X, 1) => Some(PadButton::XKey),
-                    EventSummary::Key(_, KeyCode::KEY_Z, 1) => Some(PadButton::ZKey),
-                    //mouse
-                    EventSummary::Key(_, KeyCode::BTN_RIGHT, 1) => Some(PadButton::RightClick),
-                    _ => btn,
-                };
+        let summaries = match self.dev.fetch_events() {
+            Ok(events) => {
+                // Collect the event summaries up-front so the iterator's borrow
+                // of `self.dev` ends before we mutate any of the device state.
+                events.map(|event| event.destructure()).collect::<Vec<_>>()
             }
+            Err(_) => {
+                return btn;
+            }
+        };
+
+        for summary in summaries {
+            match summary {
+                EventSummary::Key(_, _, 1) => {
+                    self.has_button_held = true;
+                }
+                EventSummary::Key(_, _, 0) => {
+                    self.has_button_held = false;
+                }
+                _ => {}
+            }
+
+            btn = match summary {
+                EventSummary::Key(_, KeyCode::BTN_SOUTH, 1) => Some(PadButton::ABtn),
+                EventSummary::Key(_, KeyCode::BTN_EAST, 1) => Some(PadButton::BBtn),
+                EventSummary::Key(_, KeyCode::BTN_NORTH, 1) => Some(PadButton::XBtn),
+                EventSummary::Key(_, KeyCode::BTN_WEST, 1) => Some(PadButton::YBtn),
+                EventSummary::Key(_, KeyCode::BTN_START, 1) => Some(PadButton::StartBtn),
+                EventSummary::Key(_, KeyCode::BTN_SELECT, 1) => Some(PadButton::SelectBtn),
+                EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_HAT0X, -1) => {
+                    Some(PadButton::Left)
+                }
+                EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_HAT0X, 1) => {
+                    Some(PadButton::Right)
+                }
+                EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_HAT0Y, -1) => {
+                    Some(PadButton::Up)
+                }
+                EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_HAT0Y, 1) => {
+                    Some(PadButton::Down)
+                }
+                EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_X, value) => {
+                    self.map_horizontal_axis(value).or(btn)
+                }
+                EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_Y, value) => {
+                    self.map_vertical_axis(value).or(btn)
+                }
+                //keyboard
+                EventSummary::Key(_, KeyCode::KEY_A, 1) => Some(PadButton::AKey),
+                EventSummary::Key(_, KeyCode::KEY_R, 1) => Some(PadButton::RKey),
+                EventSummary::Key(_, KeyCode::KEY_X, 1) => Some(PadButton::XKey),
+                EventSummary::Key(_, KeyCode::KEY_Z, 1) => Some(PadButton::ZKey),
+                //mouse
+                EventSummary::Key(_, KeyCode::BTN_RIGHT, 1) => Some(PadButton::RightClick),
+                _ => btn,
+            };
         }
         btn
     }
