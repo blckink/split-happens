@@ -36,7 +36,9 @@ function getGamescopeClients() {
   return gamescopeClients;
 }
 
-function gamescopeAboveBelow() {
+// Accept the activated window so the handler signature matches current KWin
+// expectations while reusing the aggregated focus checks below.
+function gamescopeAboveBelow(_activatedWindow) {
   var gamescopeClients = getGamescopeClients();
   for (var i = 0; i < gamescopeClients.length; i++) {
     if (
@@ -50,7 +52,9 @@ function gamescopeAboveBelow() {
   }
 }
 
-function gamescopeSplitscreen() {
+// Accept the newly added window to satisfy KWin's signal signature; the layout still
+// derives from the current gamescope client inventory.
+function gamescopeSplitscreen(_addedWindow) {
   var gamescopeClients = getGamescopeClients();
 
   switch (gamescopeClients.length) {
