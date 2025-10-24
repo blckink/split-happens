@@ -99,9 +99,11 @@ impl InputDevice {
     pub fn poll(&mut self) -> Option<PadButton> {
         let mut btn: Option<PadButton> = None;
         if let Ok(events) = self.dev.fetch_events() {
-            for event in events {
-                let summary = event.destructure();
+            // Collect the event summaries up-front so the iterator's borrow of
+            // `self.dev` ends before we mutate any of the device state.
+            let summaries: Vec<EventSummary> = events.map(|event| event.destructure()).collect();
 
+            for summary in summaries {
                 match summary {
                     EventSummary::Key(_, _, 1) => {
                         self.has_button_held = true;
