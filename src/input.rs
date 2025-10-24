@@ -2,6 +2,11 @@ use crate::app::PadFilterType;
 
 use evdev::*;
 
+/// Minimum absolute axis magnitude required before an analog stick registers a
+/// directional navigation event. This keeps small stick drift from spamming the
+/// UI with unintended moves while still remaining responsive.
+const ANALOG_DEADZONE: i32 = 12_000;
+
 #[derive(Clone, PartialEq, Copy)]
 pub enum DeviceType {
     Gamepad,
@@ -43,6 +48,13 @@ pub struct InputDevice {
     enabled: bool,
     device_type: DeviceType,
     has_button_held: bool,
+    /// Remembers the last normalized horizontal stick direction so we only
+    /// emit navigation events when the player actually changes direction.
+    last_axis_x: i32,
+    /// Remembers the last normalized vertical stick direction for the same
+    /// reason as `last_axis_x` and avoids repeated events while the stick stays
+    /// held in one direction.
+    last_axis_y: i32,
 }
 impl InputDevice {
     pub fn name(&self) -> &str {
@@ -119,6 +131,12 @@ impl InputDevice {
                     EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_HAT0Y, 1) => {
                         Some(PadButton::Down)
                     }
+                    EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_X, value) => {
+                        self.map_horizontal_axis(value).or(btn)
+                    }
+                    EventSummary::AbsoluteAxis(_, AbsoluteAxisCode::ABS_Y, value) => {
+                        self.map_vertical_axis(value).or(btn)
+                    }
                     //keyboard
                     EventSummary::Key(_, KeyCode::KEY_A, 1) => Some(PadButton::AKey),
                     EventSummary::Key(_, KeyCode::KEY_R, 1) => Some(PadButton::RKey),
@@ -131,6 +149,50 @@ impl InputDevice {
             }
         }
         btn
+    }
+
+    /// Normalizes raw analog stick values into -1, 0, 1 so we can reason about
+    /// direction while respecting the configured deadzone.
+    fn normalize_axis(value: i32) -> i32 {
+        if value <= -ANALOG_DEADZONE {
+            -1
+        } else if value >= ANALOG_DEADZONE {
+            1
+        } else {
+            0
+        }
+    }
+
+    /// Converts horizontal stick motion into one-shot left/right navigation
+    /// events so the UI can treat the analog stick just like the D-pad.
+    fn map_horizontal_axis(&mut self, value: i32) -> Option<PadButton> {
+        let direction = Self::normalize_axis(value);
+        if direction == self.last_axis_x {
+            return None;
+        }
+
+        self.last_axis_x = direction;
+        match direction {
+            -1 => Some(PadButton::Left),
+            1 => Some(PadButton::Right),
+            _ => None,
+        }
+    }
+
+    /// Converts vertical stick motion into one-shot up/down navigation events
+    /// so analog navigation mirrors the existing D-pad behavior.
+    fn map_vertical_axis(&mut self, value: i32) -> Option<PadButton> {
+        let direction = Self::normalize_axis(value);
+        if direction == self.last_axis_y {
+            return None;
+        }
+
+        self.last_axis_y = direction;
+        match direction {
+            -1 => Some(PadButton::Up),
+            1 => Some(PadButton::Down),
+            _ => None,
+        }
     }
 }
 
@@ -176,6 +238,8 @@ pub fn scan_input_devices(filter: &PadFilterType) -> Vec<InputDevice> {
                 enabled,
                 device_type,
                 has_button_held: false,
+                last_axis_x: 0,
+                last_axis_y: 0,
             });
         }
     }
