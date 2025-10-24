@@ -21,6 +21,13 @@ if ! command -v cc >/dev/null 2>&1; then
     export CC=${CC:-gcc}
     export CXX=${CXX:-g++}
   fi
+
+  if ! command -v "${CC:-cc}" >/dev/null 2>&1; then
+    # Fall back to rust-lld as the linker when no system compiler shims are
+    # present so Deck users can still build without installing toolchains.
+    export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C linker=rust-lld"
+    export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=${CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER:-rust-lld}
+  fi
 fi
 
 # Tighten the release profile when building on SteamOS/Steam Deck hardware so
