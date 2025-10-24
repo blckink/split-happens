@@ -15,8 +15,8 @@ use crate::util::*;
 
 use ctrlc;
 use nix::libc;
-use nix::sched::{sched_setaffinity, CpuSet};
-use nix::sys::signal::{kill, Signal};
+use nix::sched::{CpuSet, sched_setaffinity};
+use nix::sys::signal::{Signal, kill};
 use nix::unistd::Pid;
 use std::process::{Child, Command, Stdio};
 use std::time::Duration;
