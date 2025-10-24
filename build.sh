@@ -12,7 +12,15 @@ add_rust_lld_search_paths() {
   # glibc when no system compiler wrapper is present. While scanning, capture
   # the first libgcc path so we can fabricate the unversioned SONAMEs that
   # rust-lld expects when cc is unavailable.
-  local libpath libdir added_dirs="" libgcc_source="" shim_dir="target/rust-lld-shims"
+  local libpath libdir added_dirs="" shim_dir="target/rust-lld-shims"
+  local libgcc_source="" libgcc_fallback="" arch_hint=""
+
+  # Record the rustc host architecture so we can prefer libgcc builds that
+  # match the current target instead of accidentally wiring up i386 shims on
+  # multilib hosts where ldconfig lists 32-bit entries first.
+  if command -v rustc >/dev/null 2>&1; then
+    arch_hint=$(rustc -vV 2>/dev/null | awk -F': ' '/^host: / {print $2}' | awk -F'-' '{print $1}')
+  fi
 
   if ! command -v ldconfig >/dev/null 2>&1; then
     return
@@ -30,10 +38,20 @@ add_rust_lld_search_paths() {
     RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-L native=${libdir}"
 
     # Remember where libgcc_s lives so we can expose libgcc aliases later on.
-    if [ -z "$libgcc_source" ] && [ "$(basename "$libpath")" = "libgcc_s.so.1" ]; then
-      libgcc_source="$libpath"
+    if [ "$(basename "$libpath")" = "libgcc_s.so.1" ]; then
+      # Prefer the entry that matches the current architecture to avoid
+      # accidentally linking a 32-bit library when building 64-bit targets.
+      if [ -n "$arch_hint" ] && [ -z "$libgcc_source" ] && [[ "$libpath" == *"${arch_hint}"* ]]; then
+        libgcc_source="$libpath"
+      elif [ -z "$libgcc_fallback" ]; then
+        libgcc_fallback="$libpath"
+      fi
     fi
   done < <(ldconfig -p | awk -F'=> ' 'NF==2 {gsub(/^ +| +$/, "", $2); print $2}')
+
+  if [ -z "$libgcc_source" ]; then
+    libgcc_source="$libgcc_fallback"
+  fi
 
   if [ -n "$libgcc_source" ]; then
     # Surface libgcc under both libgcc.so and libgcc_s.so so rust-lld can
