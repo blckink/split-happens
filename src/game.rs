@@ -71,6 +71,15 @@ impl Game {
         }
     }
 
+    /// Surfaces the optional Steam header artwork so the UI can render
+    /// full-width tiles without duplicating handler lookup logic.
+    pub fn hero_image_path(&self) -> Option<PathBuf> {
+        match self {
+            Game::ExecRef(_) => None,
+            Game::HandlerRef(handler) => handler.steam_header.clone(),
+        }
+    }
+
     /// Generates a stable identifier so per-game state (like remembered profile
     /// selections) can survive application restarts regardless of UI order.
     pub fn persistent_id(&self) -> String {

@@ -1,4 +1,4 @@
-use super::app::{MenuPage, PartyApp, SettingsPage};
+use super::app::{PartyApp, SettingsPage};
 use super::config::*;
 use crate::game::Game::*;
 use crate::input::*;
@@ -17,19 +17,176 @@ macro_rules! cur_game {
 
 impl PartyApp {
     pub fn display_page_main(&mut self, ui: &mut Ui) {
-        ui.heading("Welcome to PartyDeck");
+        // Surface quick actions above the grid so users can immediately add or
+        // rescan handlers without diving into secondary menus.
+        ui.horizontal(|ui| {
+            ui.heading("Library");
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                if ui.button("Add Game").clicked() {
+                    self.prompt_add_game();
+                }
+                if ui.button("Refresh").clicked() {
+                    self.reload_games();
+                }
+            });
+        });
         ui.separator();
-        ui.label("Press SELECT/BACK or Tab to unlock gamepad navigation.");
-        ui.hyperlink_to(
-            "Download game handlers here",
-            "https://drive.proton.me/urls/D9HBKM18YR#zG8XC8yVy9WL",
-        );
-        ui.label("PartyDeck is in the very early stages of development; as such, you will likely encounter bugs, issues, and strange design decisions.");
-        ui.label("For debugging purposes, it's recommended to read terminal output (stdout) for further information on errors.");
-        ui.label("If you have found this software useful, consider donating to support further development!");
-        ui.hyperlink_to("Ko-fi", "https://ko-fi.com/wunner");
-        ui.label("If you've encountered issues or want to suggest improvements, criticism and feedback are always appreciated!");
-        ui.hyperlink_to("GitHub", "https://github.com/blckink/suckmydeck");
+
+        if self.games.is_empty() {
+            ui.vertical_centered(|ui| {
+                ui.add_space(48.0);
+                ui.label("No games found yet. Use \"Add Game\" to import a handler or executable.");
+            });
+            return;
+        }
+
+        // Arrange the responsive tile grid with generous spacing so artwork
+        // stays prominent on both desktop and Steam Deck screens.
+        let tile_spacing = 16.0;
+        let min_tile_width = 320.0;
+
+        egui::ScrollArea::vertical()
+            .auto_shrink([false; 2])
+            .show(ui, |scroll_ui| {
+                let mut available_width = scroll_ui.available_width();
+                if available_width <= 0.0 {
+                    available_width = min_tile_width;
+                }
+
+                let mut columns = ((available_width + tile_spacing)
+                    / (min_tile_width + tile_spacing))
+                    .floor() as usize;
+                if columns == 0 {
+                    columns = 1;
+                }
+
+                let tile_width = if columns == 1 {
+                    available_width
+                } else {
+                    (available_width - tile_spacing * (columns as f32 - 1.0)) / columns as f32
+                };
+
+                let total_rows = (self.games.len() + columns - 1) / columns;
+
+                for row in 0..total_rows {
+                    let start = row * columns;
+                    let end = usize::min(start + columns, self.games.len());
+
+                    scroll_ui.horizontal(|row_ui| {
+                        row_ui.set_width(available_width);
+                        row_ui.spacing_mut().item_spacing.x = tile_spacing;
+
+                        for index in start..end {
+                            let game = &self.games[index];
+                            let image_height = (tile_width * 9.0 / 16.0).clamp(160.0, 320.0);
+                            let tile_height = image_height + 96.0;
+
+                            let (rect, response) = row_ui.allocate_exact_size(
+                                egui::vec2(tile_width, tile_height),
+                                egui::Sense::click(),
+                            );
+
+                            let fill_color = if response.hovered() {
+                                row_ui.visuals().widgets.hovered.bg_fill
+                            } else {
+                                row_ui.visuals().extreme_bg_color
+                            };
+                            let stroke = if response.hovered() {
+                                row_ui.visuals().widgets.hovered.bg_stroke
+                            } else {
+                                row_ui.visuals().widgets.inactive.bg_stroke
+                            };
+
+                            let mut tile_ui = row_ui.new_child(
+                                egui::UiBuilder::new()
+                                    .max_rect(rect)
+                                    .layout(egui::Layout::top_down(egui::Align::Center)),
+                            );
+                            egui::Frame::new()
+                                .fill(fill_color)
+                                .stroke(stroke)
+                                .corner_radius(egui::CornerRadius::same(12))
+                                .inner_margin(egui::Margin::symmetric(14, 14))
+                                .show(&mut tile_ui, |tile_ui| {
+                                    let image_width = tile_ui.available_width();
+                                    let image_area = egui::vec2(image_width, image_height);
+                                    let (image_rect, _) = tile_ui
+                                        .allocate_exact_size(image_area, egui::Sense::hover());
+
+                                    let rounding = egui::CornerRadius::same(10);
+                                    tile_ui.painter().rect_filled(
+                                        image_rect,
+                                        rounding,
+                                        tile_ui.visuals().widgets.inactive.bg_fill,
+                                    );
+
+                                    if let Some(hero_path) = game.hero_image_path() {
+                                        let hero_widget = egui::Image::new(format!(
+                                            "file://{}",
+                                            hero_path.display()
+                                        ))
+                                        .fit_to_exact_size(image_area)
+                                        .maintain_aspect_ratio(true);
+                                        tile_ui.put(image_rect, hero_widget);
+                                    } else {
+                                        let icon_size = image_height.min(128.0);
+                                        let icon_rect = egui::Rect::from_center_size(
+                                            image_rect.center(),
+                                            egui::vec2(icon_size, icon_size),
+                                        );
+                                        let icon_widget = egui::Image::new(game.icon())
+                                            .fit_to_exact_size(icon_rect.size());
+                                        tile_ui.put(icon_rect, icon_widget);
+                                    }
+
+                                    tile_ui.add_space(12.0);
+                                    tile_ui.label(
+                                        egui::RichText::new(game.name()).size(20.0).strong(),
+                                    );
+
+                                    match game {
+                                        HandlerRef(handler) => {
+                                            let platform =
+                                                if handler.win { "Proton" } else { "Native" };
+                                            tile_ui.label(
+                                                egui::RichText::new(format!(
+                                                    "{} • by {}",
+                                                    platform, handler.author
+                                                ))
+                                                .color(tile_ui.visuals().weak_text_color()),
+                                            );
+                                            tile_ui.label(
+                                                egui::RichText::new(format!(
+                                                    "Version {}",
+                                                    handler.version
+                                                ))
+                                                .small()
+                                                .color(tile_ui.visuals().weak_text_color()),
+                                            );
+                                        }
+                                        ExecRef(exec) => {
+                                            tile_ui.label(
+                                                egui::RichText::new(
+                                                    exec.path().display().to_string(),
+                                                )
+                                                .small()
+                                                .color(tile_ui.visuals().weak_text_color()),
+                                            );
+                                        }
+                                    }
+                                });
+
+                            if response.clicked() {
+                                self.open_instances_for(index);
+                            }
+                        }
+                    });
+
+                    if row + 1 < total_rows {
+                        scroll_ui.add_space(tile_spacing);
+                    }
+                }
+            });
     }
 
     pub fn display_page_settings(&mut self, ui: &mut Ui) {
@@ -122,10 +279,7 @@ impl PartyApp {
                     .max_height(16.0),
             );
             if ui.button("Play").clicked() {
-                self.instances.clear();
-                self.profiles = scan_profiles(true);
-                self.instance_add_dev = None;
-                self.cur_page = MenuPage::Instances;
+                self.open_instances_for(self.selected_game);
             }
             if let HandlerRef(h) = cur_game!(self) {
                 ui.add(egui::Separator::default().vertical());

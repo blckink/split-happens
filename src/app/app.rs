@@ -6,6 +6,7 @@ use crate::game::*;
 use crate::input::*;
 use crate::instance::*;
 use crate::launch::launch_game;
+use crate::paths::*;
 use crate::util::*;
 
 use eframe::egui::{self, Key};
@@ -107,15 +108,20 @@ impl eframe::App for PartyApp {
             self.display_panel_top(ui);
         });
 
-        egui::SidePanel::left("games_panel")
-            .resizable(false)
-            .exact_width(200.0)
-            .show(ctx, |ui| {
-                if self.task.is_some() {
-                    ui.disable();
-                }
-                self.display_panel_left(ui);
-            });
+        if self.cur_page != MenuPage::Home {
+            // Keep the traditional left navigation only when the user is in a
+            // detail view so the new tile-based home screen can stretch across
+            // the full window.
+            egui::SidePanel::left("games_panel")
+                .resizable(false)
+                .exact_width(200.0)
+                .show(ctx, |ui| {
+                    if self.task.is_some() {
+                        ui.disable();
+                    }
+                    self.display_panel_left(ui);
+                });
+        }
 
         if self.cur_page == MenuPage::Instances {
             egui::SidePanel::right("devices_panel")
@@ -197,6 +203,7 @@ impl PartyApp {
 
     fn handle_gamepad_gui(&mut self, raw_input: &mut egui::RawInput) {
         let mut key: Option<egui::Key> = None;
+        let mut trigger_instances = false;
         for pad in &mut self.input_devices {
             if !pad.enabled() {
                 continue;
@@ -212,10 +219,7 @@ impl PartyApp {
                 Some(PadButton::SelectBtn) => key = Some(Key::Tab),
                 Some(PadButton::StartBtn) => {
                     if self.cur_page == MenuPage::Game {
-                        self.instances.clear();
-                        self.profiles = scan_profiles(true);
-                        self.instance_add_dev = None;
-                        self.cur_page = MenuPage::Instances;
+                        trigger_instances = true;
                     }
                 }
                 Some(PadButton::Up) => key = Some(Key::ArrowUp),
@@ -225,6 +229,10 @@ impl PartyApp {
                 Some(_) => {}
                 None => {}
             }
+        }
+
+        if trigger_instances {
+            self.open_instances_for(self.selected_game);
         }
 
         if let Some(key) = key {
@@ -242,6 +250,70 @@ impl PartyApp {
     /// compatibility tools without restarting PartyDeck.
     pub fn refresh_proton_versions(&mut self) {
         self.proton_versions = discover_proton_versions();
+    }
+
+    /// Opens the handler/executable picker and refreshes the library so newly
+    /// installed entries immediately appear in the UI.
+    pub fn prompt_add_game(&mut self) {
+        if let Err(err) = add_game() {
+            println!("Couldn't add game: {err}");
+            msg("Error", &format!("Couldn't add game: {err}"));
+        }
+
+        let dir_tmp = PATH_PARTY.join("tmp");
+        if dir_tmp.exists() {
+            if let Err(err) = std::fs::remove_dir_all(&dir_tmp) {
+                eprintln!("Failed to remove temporary handler files: {err}");
+            }
+        }
+
+        self.reload_games();
+    }
+
+    /// Rebuilds the game list while preserving the previously selected entry
+    /// whenever possible so the UI does not jump unexpectedly.
+    pub fn reload_games(&mut self) {
+        let previous_id = self
+            .games
+            .get(self.selected_game)
+            .map(|game| game.persistent_id());
+
+        let refreshed = scan_all_games();
+
+        if refreshed.is_empty() {
+            self.selected_game = 0;
+        } else if let Some(prev) = previous_id {
+            if let Some(idx) = refreshed
+                .iter()
+                .position(|game| game.persistent_id() == prev)
+            {
+                self.selected_game = idx;
+            } else {
+                self.selected_game = 0;
+            }
+        } else {
+            self.selected_game = 0;
+        }
+
+        if !refreshed.is_empty() && self.selected_game >= refreshed.len() {
+            self.selected_game = 0;
+        }
+
+        self.games = refreshed;
+    }
+
+    /// Routes the user to the instance assignment screen for the selected tile
+    /// so profiles can be linked with a single tap from the home grid.
+    pub fn open_instances_for(&mut self, game_index: usize) {
+        if game_index >= self.games.len() {
+            return;
+        }
+
+        self.selected_game = game_index;
+        self.instances.clear();
+        self.profiles = scan_profiles(true);
+        self.instance_add_dev = None;
+        self.cur_page = MenuPage::Instances;
     }
 
     /// Returns the Proton installation that matches the current settings

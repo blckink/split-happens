@@ -1,7 +1,6 @@
 use super::app::{MenuPage, PartyApp};
 use crate::game::{Game::*, *};
 use crate::input::*;
-use crate::paths::*;
 use crate::util::*;
 
 use eframe::egui::RichText;
@@ -67,18 +66,10 @@ impl PartyApp {
             ui.heading("Games");
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if ui.button("➕").clicked() {
-                    if let Err(err) = add_game() {
-                        println!("Couldn't add game: {err}");
-                        msg("Error", &format!("Couldn't add game: {err}"));
-                    }
-                    let dir_tmp = PATH_PARTY.join("tmp");
-                    if dir_tmp.exists() {
-                        std::fs::remove_dir_all(&dir_tmp).unwrap();
-                    }
-                    self.games = crate::game::scan_all_games();
+                    self.prompt_add_game();
                 }
                 if ui.button("🔄").clicked() {
-                    self.games = crate::game::scan_all_games();
+                    self.reload_games();
                 }
             });
         });
@@ -211,7 +202,7 @@ impl PartyApp {
         }
         // Hacky workaround to avoid borrowing conflicts from inside the loop
         if refresh_games {
-            self.games = scan_all_games();
+            self.reload_games();
         }
     }
 }
