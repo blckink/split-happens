@@ -20,6 +20,7 @@
 - Keep Goldberg's `auto_accept_invite.txt` empty when enabling auto-accept so the experimental overlay bypass matches upstream documentation; avoid writing sentinel values like `1`.
 - Guest profiles must use deterministic slot names (Guest1, Guest2, etc.) so saves persist between sessions instead of rotating through random aliases.
 - Avoid reintroducing Nemirtingas log-mirroring debug helpers; rely on the emulator's own error-level output for diagnostics.
+- `cargo check` currently fails with a borrow checker error in `src/input.rs` (E0499). Documented until the underlying issue is fixed.
 - Capture any newly provided project-wide user instructions in this file so they are not forgotten on future tasks.
 - When a task exposes a recurring mistake or introduces a new global rule from the user, document it here immediately so future work remains aligned.
 - When fixing any mistake, record the lesson here alongside new user-wide instructions so regressions and misunderstandings do not return.
