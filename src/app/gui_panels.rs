@@ -53,7 +53,7 @@ impl PartyApp {
                             left.spacing_mut().item_spacing.x = 8.0;
                             left.horizontal_wrapped(|nav| {
                                 nav.label(
-                                    RichText::new("PartyDeck")
+                                    RichText::new("Split Happens")
                                         .heading()
                                         .size(20.0)
                                         .color(nav.visuals().strong_text_color()),

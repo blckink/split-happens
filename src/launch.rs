@@ -27,7 +27,7 @@ fn prepare_working_tree(
     nemirtingas_rel: &str,
     src: &Path,
 ) -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let run_fs = PATH_PARTY.join(format!("run/{profname}/fs"));
+    let run_fs = PATH_APP.join(format!("run/{profname}/fs"));
     if run_fs.exists() {
         std::fs::remove_dir_all(&run_fs)?;
     }
@@ -67,7 +67,7 @@ struct NemirtingasLogContext {
 }
 
 /// Scans the Proton AppData roots for Nemirtingas log files and copies their
-/// contents into the PartyDeck profile log so the advertised path always
+/// contents into the Split Happens profile log so the advertised path always
 /// contains the most recent emulator errors for the user.
 fn collect_nemirtingas_logs(contexts: &[NemirtingasLogContext]) {
     for context in contexts {
@@ -110,7 +110,7 @@ fn collect_nemirtingas_logs(contexts: &[NemirtingasLogContext]) {
                         }
                         Err(err) => {
                             println!(
-                                "[PARTYDECK][WARN] Failed to enumerate Nemirtingas logs under {}: {}",
+                                "[SPLIT HAPPENS][WARN] Failed to enumerate Nemirtingas logs under {}: {}",
                                 path.display(),
                                 err
                             );
@@ -137,7 +137,7 @@ fn collect_nemirtingas_logs(contexts: &[NemirtingasLogContext]) {
                 }
                 Err(err) => {
                     println!(
-                        "[PARTYDECK][WARN] Failed to read Nemirtingas log {}: {}",
+                        "[SPLIT HAPPENS][WARN] Failed to read Nemirtingas log {}: {}",
                         source.display(),
                         err
                     );
@@ -152,7 +152,7 @@ fn collect_nemirtingas_logs(contexts: &[NemirtingasLogContext]) {
         if let Some(parent) = context.profile_log.parent() {
             if let Err(err) = fs::create_dir_all(parent) {
                 println!(
-                    "[PARTYDECK][WARN] Failed to prepare Nemirtingas log directory {}: {}",
+                    "[SPLIT HAPPENS][WARN] Failed to prepare Nemirtingas log directory {}: {}",
                     parent.display(),
                     err
                 );
@@ -169,7 +169,7 @@ fn collect_nemirtingas_logs(contexts: &[NemirtingasLogContext]) {
             Ok(mut dest) => {
                 if let Err(err) = dest.write_all(&aggregated) {
                     println!(
-                        "[PARTYDECK][WARN] Failed to persist Nemirtingas log {}: {}",
+                        "[SPLIT HAPPENS][WARN] Failed to persist Nemirtingas log {}: {}",
                         context.profile_log.display(),
                         err
                     );
@@ -177,7 +177,7 @@ fn collect_nemirtingas_logs(contexts: &[NemirtingasLogContext]) {
             }
             Err(err) => {
                 println!(
-                    "[PARTYDECK][WARN] Failed to open Nemirtingas log {}: {}",
+                    "[SPLIT HAPPENS][WARN] Failed to open Nemirtingas log {}: {}",
                     context.profile_log.display(),
                     err
                 );
@@ -524,7 +524,7 @@ fn promote_instance_priority(pid: u32, index: usize, total_instances: usize) {
     let result = unsafe { libc::setpriority(libc::PRIO_PROCESS, pid as libc::id_t, -5) };
     if result == 0 {
         println!(
-            "[PARTYDECK] Elevated scheduling priority for instance {}/{} (PID {}).",
+            "[SPLIT HAPPENS] Elevated scheduling priority for instance {}/{} (PID {}).",
             index + 1,
             total_instances,
             pid
@@ -532,7 +532,7 @@ fn promote_instance_priority(pid: u32, index: usize, total_instances: usize) {
     } else {
         let err = std::io::Error::last_os_error();
         println!(
-            "[PARTYDECK][WARN] Unable to boost priority for instance {} (PID {}): {}",
+            "[SPLIT HAPPENS][WARN] Unable to boost priority for instance {} (PID {}): {}",
             index + 1,
             pid,
             err
@@ -636,7 +636,7 @@ fn reset_nemirtingas_session_state(nepice_dir: &Path) {
                 match result {
                     Ok(_) => cleared_state = true,
                     Err(err) => println!(
-                        "[PARTYDECK][WARN] Failed to remove stale Nemirtingas appdata {}: {}",
+                        "[SPLIT HAPPENS][WARN] Failed to remove stale Nemirtingas appdata {}: {}",
                         path.display(),
                         err
                     ),
@@ -644,7 +644,7 @@ fn reset_nemirtingas_session_state(nepice_dir: &Path) {
             }
         }
         Err(err) => println!(
-            "[PARTYDECK][WARN] Failed to enumerate Nemirtingas appdata {}: {}",
+            "[SPLIT HAPPENS][WARN] Failed to enumerate Nemirtingas appdata {}: {}",
             appdata.display(),
             err
         ),
@@ -653,7 +653,7 @@ fn reset_nemirtingas_session_state(nepice_dir: &Path) {
     if cleared_state {
         if let Err(err) = fs::create_dir_all(appdata.join("Commands")) {
             println!(
-                "[PARTYDECK][WARN] Failed to recreate Nemirtingas command directory {}: {}",
+                "[SPLIT HAPPENS][WARN] Failed to recreate Nemirtingas command directory {}: {}",
                 appdata.join("Commands").display(),
                 err
             );
@@ -715,7 +715,7 @@ fn apply_instance_cpu_affinity(pid: u32, instance_index: usize, total_instances:
 
     let Ok(cpu_count) = std::thread::available_parallelism() else {
         println!(
-            "[PARTYDECK][WARN] Unable to query CPU core count for affinity; leaving instance {} unpinned.",
+            "[SPLIT HAPPENS][WARN] Unable to query CPU core count for affinity; leaving instance {} unpinned.",
             instance_index + 1
         );
         return;
@@ -724,7 +724,7 @@ fn apply_instance_cpu_affinity(pid: u32, instance_index: usize, total_instances:
 
     if cpu_count == 0 {
         println!(
-            "[PARTYDECK][WARN] Reported CPU core count was zero; skipping affinity for instance {}.",
+            "[SPLIT HAPPENS][WARN] Reported CPU core count was zero; skipping affinity for instance {}.",
             instance_index + 1
         );
         return;
@@ -732,7 +732,7 @@ fn apply_instance_cpu_affinity(pid: u32, instance_index: usize, total_instances:
 
     if cpu_count < total_instances {
         println!(
-            "[PARTYDECK][WARN] Only {} CPU cores available for {} instances; skipping affinity to avoid starving players.",
+            "[SPLIT HAPPENS][WARN] Only {} CPU cores available for {} instances; skipping affinity to avoid starving players.",
             cpu_count, total_instances
         );
         return;
@@ -748,7 +748,7 @@ fn apply_instance_cpu_affinity(pid: u32, instance_index: usize, total_instances:
 
     if target_width == 0 {
         println!(
-            "[PARTYDECK][WARN] Calculated empty CPU set for instance {}; affinity skipped.",
+            "[SPLIT HAPPENS][WARN] Calculated empty CPU set for instance {}; affinity skipped.",
             instance_index + 1
         );
         return;
@@ -771,7 +771,7 @@ fn apply_instance_cpu_affinity(pid: u32, instance_index: usize, total_instances:
 
     if assigned.is_empty() {
         println!(
-            "[PARTYDECK][WARN] No CPU cores mapped to instance {}; affinity skipped.",
+            "[SPLIT HAPPENS][WARN] No CPU cores mapped to instance {}; affinity skipped.",
             instance_index + 1
         );
         return;
@@ -780,7 +780,7 @@ fn apply_instance_cpu_affinity(pid: u32, instance_index: usize, total_instances:
     for &core in &assigned {
         if let Err(err) = cpuset.set(core) {
             println!(
-                "[PARTYDECK][WARN] Unable to add core {} to affinity set for instance {}: {}",
+                "[SPLIT HAPPENS][WARN] Unable to add core {} to affinity set for instance {}: {}",
                 core,
                 instance_index + 1,
                 err
@@ -798,7 +798,7 @@ fn apply_instance_cpu_affinity(pid: u32, instance_index: usize, total_instances:
                 .collect::<Vec<_>>()
                 .join(", ");
             println!(
-                "[PARTYDECK] Bound instance {}/{} (PID {}) to CPU cores [{}]",
+                "[SPLIT HAPPENS] Bound instance {}/{} (PID {}) to CPU cores [{}]",
                 instance_index + 1,
                 total_instances,
                 pid,
@@ -807,7 +807,7 @@ fn apply_instance_cpu_affinity(pid: u32, instance_index: usize, total_instances:
         }
         Err(err) => {
             println!(
-                "[PARTYDECK][WARN] Failed to set CPU affinity for instance {}: {}",
+                "[SPLIT HAPPENS][WARN] Failed to set CPU affinity for instance {}: {}",
                 instance_index + 1,
                 err
             );
@@ -817,10 +817,10 @@ fn apply_instance_cpu_affinity(pid: u32, instance_index: usize, total_instances:
 
 /// Appends launch diagnostics to a persistent log so users can inspect warnings after the game exits.
 fn append_launch_log(level: &str, message: &str) {
-    let log_dir = PATH_PARTY.join("logs");
+    let log_dir = PATH_APP.join("logs");
     if let Err(err) = fs::create_dir_all(&log_dir) {
         println!(
-            "[PARTYDECK][WARN] Failed to prepare launch log directory {}: {}",
+            "[SPLIT HAPPENS][WARN] Failed to prepare launch log directory {}: {}",
             log_dir.display(),
             err
         );
@@ -835,7 +835,7 @@ fn append_launch_log(level: &str, message: &str) {
         .and_then(|mut file| writeln!(file, "[{}] {}", level, message))
     {
         println!(
-            "[PARTYDECK][WARN] Failed to persist launch warning log {}: {}",
+            "[SPLIT HAPPENS][WARN] Failed to persist launch warning log {}: {}",
             log_path.display(),
             err
         );
@@ -844,7 +844,7 @@ fn append_launch_log(level: &str, message: &str) {
 
 /// Prints and persists a launch warning so it appears both on stdout and in the log file.
 fn log_launch_warning(message: &str) {
-    println!("[PARTYDECK][WARN] {message}");
+    println!("[SPLIT HAPPENS][WARN] {message}");
     append_launch_log("WARN", message);
 }
 
@@ -872,7 +872,7 @@ where
                     println!("{line}");
                 }
                 Err(err) => {
-                    println!("[PARTYDECK][WARN] Failed to read child output: {err}");
+                    println!("[SPLIT HAPPENS][WARN] Failed to read child output: {err}");
                     break;
                 }
             }
@@ -885,7 +885,7 @@ fn log_handler_resource_state(handler: &Handler, gamedir: &str) {
     // Report the resolved executable path so the user can confirm the handler layout.
     let exec_path = PathBuf::from(gamedir).join(&handler.exec);
     println!(
-        "[PARTYDECK] Handler {} uses executable {}",
+        "[SPLIT HAPPENS] Handler {} uses executable {}",
         handler.uid,
         exec_path.display()
     );
@@ -894,7 +894,7 @@ fn log_handler_resource_state(handler: &Handler, gamedir: &str) {
         // Expose the resolved Nemirtingas config target to make missing path issues obvious.
         let nemirtingas_target = PathBuf::from(gamedir).join(&handler.path_nemirtingas);
         println!(
-            "[PARTYDECK] Handler {} expects Nemirtingas config at {}",
+            "[SPLIT HAPPENS] Handler {} expects Nemirtingas config at {}",
             handler.uid,
             nemirtingas_target.display()
         );
@@ -985,7 +985,7 @@ fn log_handler_resource_state(handler: &Handler, gamedir: &str) {
             // List the discovered EOSSDK assets to help verify the patched binaries are available.
             for path in eos_paths {
                 println!(
-                    "[PARTYDECK] Found EOS-related file for Nemirtingas: {}",
+                    "[SPLIT HAPPENS] Found EOS-related file for Nemirtingas: {}",
                     path.display()
                 );
             }
@@ -999,7 +999,7 @@ fn log_handler_resource_state(handler: &Handler, gamedir: &str) {
     // Surface the resolved Goldberg override directory so the user can spot missing assets.
     let goldberg_dir = PathBuf::from(gamedir).join(&handler.path_goldberg);
     println!(
-        "[PARTYDECK] Handler {} expects Goldberg assets at {}",
+        "[SPLIT HAPPENS] Handler {} expects Goldberg assets at {}",
         handler.uid,
         goldberg_dir.display()
     );
@@ -1054,7 +1054,7 @@ fn log_handler_resource_state(handler: &Handler, gamedir: &str) {
                         }
                     }
                     println!(
-                        "[PARTYDECK] Detected steam_appid.txt at {} with value {}",
+                        "[SPLIT HAPPENS] Detected steam_appid.txt at {} with value {}",
                         file_path.display(),
                         trimmed
                     );
@@ -1065,7 +1065,7 @@ fn log_handler_resource_state(handler: &Handler, gamedir: &str) {
             }
         } else {
             println!(
-                "[PARTYDECK] Found Goldberg config file: {}",
+                "[SPLIT HAPPENS] Found Goldberg config file: {}",
                 file_path.display()
             );
         }
@@ -1110,7 +1110,7 @@ pub fn launch_game(
 
     if let Some(port) = synchronized_goldberg_port {
         println!(
-            "[PARTYDECK] Goldberg listen_port for {} synchronized to {}",
+            "[SPLIT HAPPENS] Goldberg listen_port for {} synchronized to {}",
             game_id, port
         );
     }
@@ -1125,7 +1125,7 @@ pub fn launch_game(
             for profile in &profile_names {
                 if let Some(port) = nemirtingas_ports.get(profile) {
                     println!(
-                        "[PARTYDECK] Nemirtingas LAN port for profile {} on {} resolved to {}",
+                        "[SPLIT HAPPENS] Nemirtingas LAN port for profile {} on {} resolved to {}",
                         profile, game_id, port
                     );
                 }
@@ -1143,7 +1143,7 @@ pub fn launch_game(
 
     let home = PATH_HOME.to_string_lossy().to_string();
     let localshare = PATH_LOCAL_SHARE.to_string_lossy().to_string();
-    let party = PATH_PARTY.to_string_lossy().to_string();
+    let party = PATH_APP.to_string_lossy().to_string();
     let steam = PATH_STEAM.to_string_lossy().to_string();
 
     let gamedir = match game {
@@ -1178,7 +1178,7 @@ pub fn launch_game(
             ));
         } else if let Some(path) = &resolved.root_path {
             println!(
-                "[PARTYDECK] Using Proton build {} at {}",
+                "[SPLIT HAPPENS] Using Proton build {} at {}",
                 resolved.display_name,
                 path.display()
             );
@@ -1302,7 +1302,7 @@ pub fn launch_game(
                     let mut restart_requested = false;
                     if !status.success() {
                         println!(
-                            "[PARTYDECK][WARN] Instance {} exited unexpectedly (status: {:?}).",
+                            "[SPLIT HAPPENS][WARN] Instance {} exited unexpectedly (status: {:?}).",
                             state.profile_name, status
                         );
                         let prompt = format!(
@@ -1356,14 +1356,14 @@ pub fn launch_game(
                                 state.proton_prefix = respawn.proton_prefix;
                                 state.finished = false;
                                 println!(
-                                    "[PARTYDECK] Restarted profile {} in slot {}.",
+                                    "[SPLIT HAPPENS] Restarted profile {} in slot {}.",
                                     state.profile_name,
                                     state.index + 1
                                 );
                             }
                             Err(err) => {
                                 println!(
-                                    "[PARTYDECK][WARN] Failed to restart instance {}: {}",
+                                    "[SPLIT HAPPENS][WARN] Failed to restart instance {}: {}",
                                     state.profile_name, err
                                 );
                                 state.finished = true;
@@ -1378,7 +1378,7 @@ pub fn launch_game(
                 Ok(None) => {}
                 Err(err) => {
                     println!(
-                        "[PARTYDECK][WARN] Failed to poll instance {}: {}",
+                        "[SPLIT HAPPENS][WARN] Failed to poll instance {}: {}",
                         state.profile_name, err
                     );
                 }

@@ -157,12 +157,17 @@ if [ -r /etc/os-release ] && grep -qi 'steamos' /etc/os-release; then
   export CARGO_PROFILE_RELEASE_LTO="${CARGO_PROFILE_RELEASE_LTO:-thin}"
 fi
 
-cargo build --release && \
-rm -rf build/partydeck
+cargo build --release && {
+  # Remove legacy PartyDeck artifacts before staging the new Split Happens binary.
+  rm -rf "build/Split Happens"
+  rm -rf build/partydeck
+} && \
 mkdir -p build/ build/res build/bin && \
-cp target/release/partydeck build/ && \
-command -v strip >/dev/null 2>&1 && strip build/partydeck || true && \
+cp target/release/split-happens "build/Split Happens" && \
+command -v strip >/dev/null 2>&1 && strip "build/Split Happens" || true && \
 cp LICENSE build/ && cp COPYING.md build/thirdparty.txt && \
+# Bundle the Big Picture helper so Steam users can add Split Happens quickly.
+cp split_happens_big_picture.sh build/ && chmod +x build/split_happens_big_picture.sh && \
 cp res/splitscreen_kwin.js res/splitscreen_kwin_vertical.js build/res && \
 gsc=$(command -v gamescope || true) && \
 [ -n "$gsc" ] && cp "$gsc" build/bin/gamescope-kbm || true

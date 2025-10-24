@@ -2,7 +2,7 @@ use eframe::egui::{self, Color32, FontFamily, FontId, TextStyle};
 
 /// Applies a Steam-inspired dark theme with larger typography so the UI feels at
 /// home on televisions and docked Steam Deck sessions.
-pub fn apply_partydeck_theme(ctx: &egui::Context) {
+pub fn apply_split_happens_theme(ctx: &egui::Context) {
     // Embrace deep blues and muted panels to mirror Steam's visual language.
     let mut visuals = egui::Visuals::dark();
     visuals.window_fill = Color32::from_rgb(15, 22, 33);

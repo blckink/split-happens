@@ -99,7 +99,7 @@ pub fn scan_all_games() -> Vec<Game> {
     }
 
     // Scan executable paths from paths.json
-    if let Ok(file) = std::fs::File::open(PATH_PARTY.join("paths.json")) {
+    if let Ok(file) = std::fs::File::open(PATH_APP.join("paths.json")) {
         let json: Value = serde_json::from_reader(BufReader::new(file)).unwrap_or_default();
 
         if let Some(executables) = json[".executables"].as_array() {
@@ -121,7 +121,7 @@ pub fn scan_all_games() -> Vec<Game> {
 
 pub fn add_game() -> Result<(), Box<dyn Error>> {
     let file = FileDialog::new()
-        .set_title("Select Linux/Windows Program or PartyDeck Handler (.pdh)")
+        .set_title("Select Linux/Windows Program or Split Happens Handler (.pdh)")
         .set_directory(&*PATH_HOME)
         .pick_file();
 
@@ -147,7 +147,7 @@ pub fn add_game() -> Result<(), Box<dyn Error>> {
     // Add executable path to the paths.json file
     if file.extension().unwrap_or_default() != "pdh" {
         // Prepare the JSON data - either load existing or create new
-        let mut json = if let Ok(file) = File::open(PATH_PARTY.join("paths.json")) {
+        let mut json = if let Ok(file) = File::open(PATH_APP.join("paths.json")) {
             serde_json::from_reader(BufReader::new(file))
                 .unwrap_or(Value::Object(serde_json::Map::new()))
         } else {
@@ -174,7 +174,7 @@ pub fn add_game() -> Result<(), Box<dyn Error>> {
         let updated_data = serde_json::to_string_pretty(&json)
             .map_err(|e| format!("Failed to serialize paths.json: {}", e))?;
 
-        std::fs::write(PATH_PARTY.join("paths.json"), updated_data)
+        std::fs::write(PATH_APP.join("paths.json"), updated_data)
             .map_err(|e| format!("Failed to write paths.json: {}", e))?;
     }
 
@@ -185,7 +185,7 @@ pub fn remove_game(game: &Game) -> Result<(), Box<dyn Error>> {
     match game {
         Game::ExecRef(e) => {
             // Load current paths.json
-            let mut json = if let Ok(file) = File::open(PATH_PARTY.join("paths.json")) {
+            let mut json = if let Ok(file) = File::open(PATH_APP.join("paths.json")) {
                 serde_json::from_reader(BufReader::new(file))
                     .unwrap_or(Value::Object(serde_json::Map::new()))
             } else {
@@ -201,7 +201,7 @@ pub fn remove_game(game: &Game) -> Result<(), Box<dyn Error>> {
             // Save the updated paths.json
             let updated_data = serde_json::to_string_pretty(&json)?;
 
-            std::fs::write(PATH_PARTY.join("paths.json"), updated_data)?;
+            std::fs::write(PATH_APP.join("paths.json"), updated_data)?;
         }
 
         Game::HandlerRef(h) => {

@@ -8,7 +8,7 @@ mod paths;
 mod util;
 
 use crate::app::*;
-use crate::paths::PATH_PARTY;
+use crate::paths::PATH_APP;
 use crate::util::*;
 
 fn main() -> eframe::Result {
@@ -38,7 +38,7 @@ fn main() -> eframe::Result {
             .join(" ");
         cmd.arg(args_string);
 
-        println!("[PARTYDECK] Launching kwin session: {:?}", cmd);
+        println!("[SPLIT HAPPENS] Launching kwin session: {:?}", cmd);
 
         match cmd.spawn() {
             Ok(_) => std::process::exit(0),
@@ -70,17 +70,17 @@ fn main() -> eframe::Result {
 
     let fullscreen = std::env::args().any(|arg| arg == "--fullscreen");
 
-    std::fs::create_dir_all(PATH_PARTY.join("gamesyms"))
+    std::fs::create_dir_all(PATH_APP.join("gamesyms"))
         .expect("Failed to create gamesyms directory");
-    std::fs::create_dir_all(PATH_PARTY.join("handlers"))
+    std::fs::create_dir_all(PATH_APP.join("handlers"))
         .expect("Failed to create handlers directory");
-    std::fs::create_dir_all(PATH_PARTY.join("profiles"))
+    std::fs::create_dir_all(PATH_APP.join("profiles"))
         .expect("Failed to create profiles directory");
 
     remove_guest_profiles().unwrap();
 
-    if PATH_PARTY.join("tmp").exists() {
-        std::fs::remove_dir_all(PATH_PARTY.join("tmp")).unwrap();
+    if PATH_APP.join("tmp").exists() {
+        std::fs::remove_dir_all(PATH_APP.join("tmp")).unwrap();
     }
 
     let (_, scrheight) = get_screen_resolution();
@@ -111,19 +111,19 @@ fn main() -> eframe::Result {
         options.hardware_acceleration = eframe::HardwareAcceleration::Required;
     }
 
-    println!("\n[PARTYDECK] starting...\n");
+    println!("\n[SPLIT HAPPENS] starting...\n");
     if steamdeck {
-        println!("[PARTYDECK] Steam Deck optimizations enabled");
+        println!("[SPLIT HAPPENS] Steam Deck optimizations enabled");
     }
 
     eframe::run_native(
-        "PartyDeck",
+        "Split Happens",
         options,
         Box::new(move |cc| {
             // This gives us image support:
             egui_extras::install_image_loaders(&cc.egui_ctx);
             cc.egui_ctx.set_zoom_factor(zoom_factor);
-            apply_partydeck_theme(&cc.egui_ctx);
+            apply_split_happens_theme(&cc.egui_ctx);
             Ok(match light {
                 true => Box::<LightPartyApp>::new(LightPartyApp::new_lightapp(
                     exec,
@@ -138,11 +138,11 @@ fn main() -> eframe::Result {
 
 static USAGE_TEXT: &str = r#"
 {}
-Usage: partydeck [OPTIONS]
+Usage: split-happens [OPTIONS]
 
 Options:
-    --exec <executable>   Execute the specified executable in splitscreen. If this isn't specified, PartyDeck will launch in the regular GUI mode.
+    --exec <executable>   Execute the specified executable in splitscreen. If this isn't specified, Split Happens will launch in the regular GUI mode.
     --args [args]         Specify arguments for the executable to be launched with. Must be quoted if containing spaces.
     --fullscreen          Start the GUI in fullscreen mode
-    --kwin                Launch PartyDeck inside of a KWin session
+    --kwin                Launch Split Happens inside of a KWin session
 "#;

@@ -6,7 +6,7 @@ use std::time::Duration;
 /// can branch once and reuse the result for subsequent performance hints.
 static IS_STEAM_DECK: OnceLock<bool> = OnceLock::new();
 
-/// Returns `true` when PartyDeck detects a Steam Deck host environment.
+/// Returns `true` when Split Happens detects a Steam Deck host environment.
 ///
 /// SteamOS exposes several markers that we probe in a best-effort fashion so
 /// development builds on desktop Linux keep functioning while real Deck users

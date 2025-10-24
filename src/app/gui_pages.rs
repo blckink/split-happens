@@ -298,7 +298,7 @@ impl PartyApp {
                                             .arg("-c")
                                             .arg(format!(
                                                 "xdg-open {}/profiles/{}",
-                                                PATH_PARTY.display(),
+                                                PATH_APP.display(),
                                                 profile_name
                                             ))
                                             .status()
@@ -676,12 +676,12 @@ impl PartyApp {
             if actions.button("Erase Proton Prefix").clicked() {
                 if yesno(
                     "Erase Prefix?",
-                    "This will erase the Wine prefix used by PartyDeck. This shouldn't erase profile/game-specific data, but exercise caution. Are you sure?",
-                ) && PATH_PARTY.join("gamesyms").exists()
+                    "This will erase the Wine prefix used by Split Happens. This shouldn't erase profile/game-specific data, but exercise caution. Are you sure?",
+                ) && PATH_APP.join("gamesyms").exists()
                 {
-                    if let Err(err) = std::fs::remove_dir_all(PATH_PARTY.join("pfx")) {
+                    if let Err(err) = std::fs::remove_dir_all(PATH_APP.join("pfx")) {
                         msg("Error", &format!("Couldn't erase pfx data: {}", err));
-                    } else if let Err(err) = std::fs::create_dir_all(PATH_PARTY.join("pfx")) {
+                    } else if let Err(err) = std::fs::create_dir_all(PATH_APP.join("pfx")) {
                         msg("Error", &format!("Couldn't re-create pfx directory: {}", err));
                     } else {
                         msg("Data Erased", "Proton prefix data successfully erased.");
@@ -693,11 +693,11 @@ impl PartyApp {
                 if yesno(
                     "Erase Symlink Data?",
                     "This will erase all game symlink data. This shouldn't erase profile/game-specific data, but exercise caution. Are you sure?",
-                ) && PATH_PARTY.join("gamesyms").exists()
+                ) && PATH_APP.join("gamesyms").exists()
                 {
-                    if let Err(err) = std::fs::remove_dir_all(PATH_PARTY.join("gamesyms")) {
+                    if let Err(err) = std::fs::remove_dir_all(PATH_APP.join("gamesyms")) {
                         msg("Error", &format!("Couldn't erase symlink data: {}", err));
-                    } else if let Err(err) = std::fs::create_dir_all(PATH_PARTY.join("gamesyms")) {
+                    } else if let Err(err) = std::fs::create_dir_all(PATH_APP.join("gamesyms")) {
                         msg("Error", &format!("Couldn't re-create symlink directory: {}", err));
                     } else {
                         msg("Data Erased", "Game symlink data successfully erased.");
@@ -711,19 +711,19 @@ impl PartyApp {
             egui::Layout::left_to_right(egui::Align::Center),
             |actions| {
                 actions.spacing_mut().item_spacing.x = 10.0;
-                if actions.button("Open PartyDeck Data Folder").clicked() {
+                if actions.button("Open Split Happens Data Folder").clicked() {
                     if let Err(_) = std::process::Command::new("sh")
                         .arg("-c")
-                        .arg(format!("xdg-open {}/", PATH_PARTY.display()))
+                        .arg(format!("xdg-open {}/", PATH_APP.display()))
                         .status()
                     {
-                        msg("Error", "Couldn't open PartyDeck Data Folder!");
+                        msg("Error", "Couldn't open Split Happens Data Folder!");
                     }
                 }
                 if actions.button("Edit game paths").clicked() {
                     if let Err(_) = std::process::Command::new("sh")
                         .arg("-c")
-                        .arg(format!("xdg-open {}/paths.json", PATH_PARTY.display(),))
+                        .arg(format!("xdg-open {}/paths.json", PATH_APP.display(),))
                         .status()
                     {
                         msg("Error", "Couldn't open paths.json!");

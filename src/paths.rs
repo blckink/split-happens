@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::sync::LazyLock;
 
 pub static PATH_RES: LazyLock<PathBuf> = LazyLock::new(|| {
-    let localinstall = PathBuf::from("/usr/share/partydeck");
+    let localinstall = PathBuf::from("/usr/share/split-happens");
     if localinstall.exists() {
         return localinstall;
     }
@@ -16,11 +16,11 @@ pub static PATH_HOME: LazyLock<PathBuf> =
 
 pub static PATH_LOCAL_SHARE: LazyLock<PathBuf> = LazyLock::new(|| PATH_HOME.join(".local/share"));
 
-pub static PATH_PARTY: LazyLock<PathBuf> = LazyLock::new(|| {
+pub static PATH_APP: LazyLock<PathBuf> = LazyLock::new(|| {
     if let Ok(xdg_data_home) = env::var("XDG_DATA_HOME") {
-        return PathBuf::from(xdg_data_home).join("partydeck");
+        return PathBuf::from(xdg_data_home).join("split-happens");
     }
-    PATH_LOCAL_SHARE.join("partydeck")
+    PATH_LOCAL_SHARE.join("split-happens")
 });
 
 pub static PATH_STEAM: LazyLock<PathBuf> = LazyLock::new(|| {

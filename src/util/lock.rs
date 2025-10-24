@@ -5,7 +5,7 @@ use std::io::{ErrorKind, Write};
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::paths::PATH_PARTY;
+use crate::paths::PATH_APP;
 use crate::util::SanitizePath;
 
 #[derive(Serialize, Deserialize)]
@@ -23,7 +23,7 @@ pub struct ProfileLock {
 
 impl ProfileLock {
     pub fn acquire(game: &str, profile: &str) -> Result<Self, Box<dyn std::error::Error>> {
-        let dir = PATH_PARTY.join("run/locks");
+        let dir = PATH_APP.join("run/locks");
         std::fs::create_dir_all(&dir)?;
         let game = game.to_string().sanitize_path();
         let path = dir.join(format!("{}_{}.lock", game, profile));

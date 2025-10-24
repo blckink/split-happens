@@ -13,7 +13,7 @@
 - Before each launch, completely purge Nemirtingas `appdata` artifacts (except logs) so stale EOS command caches never trigger `COMMAND_STATE_SUBMITTED` assertion dialogs for players.
 - Persist launch warnings to a text log under the PARTY directory in addition to printing them to the console for easier debugging.
 - Generate and persist unique Nemirtingas `EpicId`/`ProductUserId` pairs for each profile so invite codes stay stable between sessions.
-- Treat Nemirtingas configs that still use the default `DefaultName` username as invalid placeholders; rewrite them to the PartyDeck profile name so the regenerated IDs remain deterministic.
+- Treat Nemirtingas configs that still use the default `DefaultName` username as invalid placeholders; rewrite them to the Split Happens profile name so the regenerated IDs remain deterministic.
 - Share a single deterministic Nemirtingas LAN port across all profiles for a game, reusing the Goldberg override when present.
 - When a handler ships a Nemirtingas config (`eos.config_path`), still normalize Goldberg `listen_port` deterministically while mirroring that value into the Nemirtingas override so both systems align.
 - Default Goldberg `gc_token`/`new_app_ticket` toggles to `1` (files and INI flags) so the experimental steam_api build bundled in `res/goldberg` works without manual edits.
@@ -22,6 +22,7 @@
 - Avoid reintroducing Nemirtingas log-mirroring debug helpers; rely on the emulator's own error-level output for diagnostics.
 - Capture any newly provided project-wide user instructions in this file so they are not forgotten on future tasks.
 - When a task exposes a recurring mistake or introduces a new global rule from the user, document it here immediately so future work remains aligned.
+- When fixing any mistake, record the lesson here alongside new user-wide instructions so regressions and misunderstandings do not return.
 - Audit complete emulator logs before summarizing state transitions (e.g., JOINABLE flips) so transient values are not misreported.
 - Favor pure-Rust or system-provided tooling for HTTP/download tasks; avoid adding crates that require native C toolchains (e.g., OpenSSL, ring, zstd-sys) so Steam Deck builds stay dependency-free.
 - Maintain state-of-the-art UI polish with smooth transitions, clean reusable code, perfectly aligned layouts, and avoid oversized padding or empty frames around iconography.
