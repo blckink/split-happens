@@ -96,5 +96,5 @@ function gamescopeSplitscreen() {
 }
 
 workspace.windowAdded.connect(gamescopeSplitscreen);
-workspace.windowRemoved.connect(gamescopeSplitscreen);
+// Avoid reacting to removals so the vertical split remains fixed during crashes.
 workspace.windowActivated.connect(gamescopeAboveBelow);
