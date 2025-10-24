@@ -311,6 +311,12 @@ fn spawn_instance_child(
             cmd.env("PROTON_VERB", "run");
             cmd.env("PROTONPATH", env.env_value.clone());
         }
+        if cfg.performance_enable_proton_fsr {
+            // Enable Proton's built-in FSR scaling so Windows games can render below native resolution without severe blur.
+            cmd.env("WINE_FULLSCREEN_FSR", "1");
+            cmd.env("WINE_FULLSCREEN_FSR_MODE", "1");
+            cmd.env("WINE_FULLSCREEN_FSR_STRENGTH", "2");
+        }
         if let HandlerRef(h) = game {
             if !h.dll_overrides.is_empty() {
                 let mut overrides = String::new();
@@ -356,6 +362,16 @@ fn spawn_instance_child(
     cmd.arg("-H").arg(instance.height.to_string());
     if cfg.gamescope_sdl_backend {
         cmd.arg("--backend=sdl");
+    }
+
+    if cfg.performance_gamescope_rt {
+        // Promote gamescope to its real-time scheduling mode to smooth frame pacing on the Deck.
+        cmd.arg("--rt");
+    }
+    if cfg.performance_limit_40fps {
+        // Clamp both active and unfocused windows to 40 FPS to keep dual sessions within the Deck's power budget.
+        cmd.arg("--fps-limit=40");
+        cmd.arg("--secondary-no-focus-fps-limit=40");
     }
 
     if cfg.kbm_support {

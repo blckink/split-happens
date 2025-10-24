@@ -28,6 +28,13 @@ pub struct PartyConfig {
     pub pad_filter_type: PadFilterType,
     #[serde(default)]
     pub last_profile_assignments: HashMap<String, Vec<String>>,
+    // Performance toggles that gate optional Steam Deck optimizations.
+    #[serde(default)]
+    pub performance_limit_40fps: bool,
+    #[serde(default)]
+    pub performance_gamescope_rt: bool,
+    #[serde(default)]
+    pub performance_enable_proton_fsr: bool,
 }
 
 impl Default for PartyConfig {
@@ -43,6 +50,9 @@ impl Default for PartyConfig {
             vertical_two_player: false,
             pad_filter_type: PadFilterType::NoSteamInput,
             last_profile_assignments: HashMap::new(),
+            performance_limit_40fps: false,
+            performance_gamescope_rt: false,
+            performance_enable_proton_fsr: false,
         }
     }
 }

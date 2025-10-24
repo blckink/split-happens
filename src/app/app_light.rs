@@ -554,6 +554,11 @@ impl LightPartyApp {
                         });
                     });
 
+                scroll.add_space(18.0);
+                scroll.heading("Performance");
+                scroll.add_space(6.0);
+                self.render_light_settings_performance(scroll);
+
                 scroll.add_space(16.0);
                 // Allow the lightweight UI to persist changes without leaving the page.
                 scroll.with_layout(
@@ -755,6 +760,35 @@ impl LightPartyApp {
                 }
             },
         );
+    }
+
+    fn render_light_settings_performance(&mut self, ui: &mut Ui) {
+        // Present the same Deck performance assists for the handheld-friendly layout.
+        ui.spacing_mut().item_spacing.y = 12.0;
+
+        let realtime_toggle = ui.checkbox(
+            &mut self.options.performance_gamescope_rt,
+            "Real-time scheduling for Gamescope",
+        );
+        if realtime_toggle.hovered() {
+            self.infotext = "Requests gamescope's real-time compositor mode to reduce frame pacing spikes when two sessions share the GPU.".to_string();
+        }
+
+        let fps_limit_toggle = ui.checkbox(
+            &mut self.options.performance_limit_40fps,
+            "Limit Gamescope output to 40 FPS",
+        );
+        if fps_limit_toggle.hovered() {
+            self.infotext = "Caps each window to 40 frames per second so both players stay within the Deck's thermal and power envelope.".to_string();
+        }
+
+        let proton_fsr_toggle = ui.checkbox(
+            &mut self.options.performance_enable_proton_fsr,
+            "Enable Proton FSR upscaling",
+        );
+        if proton_fsr_toggle.hovered() {
+            self.infotext = "Turns on Proton's fullscreen FSR so Windows titles can render at lower resolutions while gamescope upscales the result.".to_string();
+        }
     }
 
     fn render_light_settings_gamescope(&mut self, ui: &mut Ui) {
