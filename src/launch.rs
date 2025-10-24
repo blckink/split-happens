@@ -218,6 +218,7 @@ fn spawn_instance_child(
     proton_env: Option<&ProtonEnvironment>,
     nemirtingas_ports: &HashMap<String, u16>,
     drained_prefixes: &mut HashSet<String>,
+    purged_nemirtingas_prefixes: &mut HashSet<String>,
     party: &str,
     steam: &str,
     home: &str,
@@ -356,7 +357,11 @@ fn spawn_instance_child(
             .join("users")
             .join("steamuser")
             .join("AppData");
-        reset_proton_nemirtingas_session_state(&proton_appdata);
+        if purged_nemirtingas_prefixes.insert(pfx.clone()) {
+            // Only purge Nemirtingas Proton caches once per shared prefix so
+            // sibling instances cannot delete each other's command queues.
+            reset_proton_nemirtingas_session_state(&proton_appdata);
+        }
         log_context.appdata_root = Some(proton_appdata.join("Roaming").join("NemirtingasEpicEmu"));
         proton_prefix = Some(pfx);
     }
@@ -1489,6 +1494,9 @@ pub fn launch_game(
     }
 
     let mut drained_prefixes: HashSet<String> = HashSet::new();
+    // Track which Proton prefixes already had their Nemirtingas caches scrubbed
+    // so shared prefixes are only purged once before any instances launch.
+    let mut purged_nemirtingas_prefixes: HashSet<String> = HashSet::new();
     let mut runtime_instances: Vec<RuntimeInstance> = Vec::new();
     for (i, instance) in instances.iter().enumerate() {
         let outcome = spawn_instance_child(
@@ -1506,6 +1514,7 @@ pub fn launch_game(
             proton_env.as_ref(),
             &nemirtingas_ports,
             &mut drained_prefixes,
+            &mut purged_nemirtingas_prefixes,
             &party,
             &steam,
             &home,
@@ -1576,6 +1585,7 @@ pub fn launch_game(
                     if restart_requested {
                         if let Some(prefix) = state.proton_prefix.clone() {
                             drained_prefixes.remove(&prefix);
+                            purged_nemirtingas_prefixes.remove(&prefix);
                         }
                         std::thread::sleep(Duration::from_secs(2));
                         match spawn_instance_child(
@@ -1593,6 +1603,7 @@ pub fn launch_game(
                             proton_env.as_ref(),
                             &nemirtingas_ports,
                             &mut drained_prefixes,
+                            &mut purged_nemirtingas_prefixes,
                             &party,
                             &steam,
                             &home,
