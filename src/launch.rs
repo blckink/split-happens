@@ -484,9 +484,10 @@ fn log_launch_warning(message: &str) {
     append_launch_log("WARN", message);
 }
 
-/// Gamescope repeats this benign warning endlessly; capture the exact text so we can filter it.
-const GAMESCOPE_DUP_BUFFER_WARNING: &str =
-    "[gamescope] [Warn]  xwm: got the same buffer committed twice, ignoring.";
+/// Gamescope repeats this benign warning endlessly; capture the invariant suffix so we can filter
+/// both the standard and `gamescope-kbm` variants without hard-coding each prefix.
+const GAMESCOPE_DUP_BUFFER_WARNING_SUFFIX: &str =
+    "[Warn]  xwm: got the same buffer committed twice, ignoring.";
 
 /// Streams child output on a background thread while suppressing the noisy duplicate-buffer warning.
 fn forward_child_output<R>(reader: R)
@@ -499,7 +500,9 @@ where
             match line {
                 Ok(line) => {
                     let trimmed = line.trim();
-                    if trimmed == GAMESCOPE_DUP_BUFFER_WARNING {
+                    if trimmed.starts_with("[gamescope")
+                        && trimmed.ends_with(GAMESCOPE_DUP_BUFFER_WARNING_SUFFIX)
+                    {
                         continue;
                     }
                     println!("{line}");
