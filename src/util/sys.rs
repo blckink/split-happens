@@ -5,6 +5,7 @@ use std::ops::Deref;
 use std::path::PathBuf;
 use std::sync::{Mutex, MutexGuard, OnceLock};
 use x11rb::connection::Connection;
+use zbus::Error as ZbusError;
 use zbus::zvariant::{OwnedValue, Value};
 
 use super::steamdeck::is_steam_deck;
@@ -43,6 +44,12 @@ fn describe_kwin_id(id: &OwnedValue) -> String {
         Value::U64(num) => num.to_string(),
         other => format!("{other:?}"),
     }
+}
+
+/// Detects when KWin refuses a DBus call because the argument signature
+/// mismatched its expectations so we can fall back to a string-based API.
+fn kwin_signature_mismatch(err: &ZbusError) -> bool {
+    err.to_string().contains("Signature mismatch")
 }
 
 pub fn msg(title: &str, contents: &str) {
@@ -108,7 +115,20 @@ pub fn kwin_dbus_start_script(file: PathBuf) -> Result<(), Box<dyn Error>> {
     // Launch the freshly registered script so all future game windows are
     // immediately snapped into their target positions, regardless of the
     // identifier type reported by the compositor.
-    let _: () = proxy.call("start", &(script_id.clone(),))?;
+    // Prefer the identifier returned by KWin so we stop the exact runtime instance,
+    // but gracefully fall back to the legacy string-based API when the compositor
+    // rejects numeric handles on newer Plasma builds.
+    if let Err(err) = proxy.call::<(), _>("start", &(script_id.clone(),)) {
+        if kwin_signature_mismatch(&err) {
+            println!(
+                "KWin rejected script id {}; retrying with string fallback...",
+                describe_kwin_id(&script_id)
+            );
+            proxy.call::<(), _>("start", &("splitscreen",))?;
+        } else {
+            return Err(Box::new(err));
+        }
+    }
 
     // Remember which script instance we activated to avoid leaving stray
     // registrations behind when the session terminates.
@@ -134,7 +154,20 @@ pub fn kwin_dbus_unload_script() -> Result<(), Box<dyn Error>> {
     let script_id = lock_kwin_script_slot()?.take();
 
     if let Some(id) = script_id {
-        let _: bool = proxy.call("unloadScript", &(id,))?;
+        // Attempt to unload by identifier first and gracefully fall back to the
+        // string API when the compositor expects a name-only signature.
+        let label = describe_kwin_id(&id);
+        if let Err(err) = proxy.call::<bool, _>("unloadScript", &(id,)) {
+            if kwin_signature_mismatch(&err) {
+                println!(
+                    "KWin rejected script id {}; unloading via name fallback...",
+                    label
+                );
+                proxy.call::<bool, _>("unloadScript", &("splitscreen",))?;
+            } else {
+                return Err(Box::new(err));
+            }
+        }
     } else {
         let _: bool = proxy.call("unloadScript", &("splitscreen"))?;
     }
