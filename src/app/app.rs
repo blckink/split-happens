@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::thread::sleep;
 
 use super::config::*;
@@ -47,6 +48,9 @@ pub struct PartyApp {
     /// Target interval between egui repaints so Steam Deck builds can dial in
     /// smoother menus when docked without sacrificing handheld battery life.
     pub repaint_interval: std::time::Duration,
+    /// Tracks when the input list was last synchronized so new controllers can
+    /// be discovered automatically without hammering the kernel every frame.
+    pub last_input_scan: std::time::Instant,
 }
 
 macro_rules! cur_game {
@@ -84,6 +88,7 @@ impl PartyApp {
             loading_since: None,
             task: None,
             repaint_interval,
+            last_input_scan: std::time::Instant::now(),
         }
     }
 }
@@ -100,6 +105,10 @@ impl eframe::App for PartyApp {
     }
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // Opportunistically refresh the device cache so Bluetooth pads appear
+        // without requiring the user to mash the manual rescan button.
+        self.maybe_refresh_input_devices();
+
         egui::TopBottomPanel::top("menu_nav_panel").show(ctx, |ui| {
             if self.task.is_some() {
                 ui.disable();
@@ -297,14 +306,13 @@ impl PartyApp {
                     {
                         continue;
                     }
-                    if self.is_device_in_any_instance(i) {
-                        continue;
-                    }
 
                     match self.instance_add_dev {
                         Some(inst) => {
                             self.instance_add_dev = None;
-                            self.instances[inst].devices.push(i);
+                            if !self.instances[inst].devices.contains(&i) {
+                                self.instances[inst].devices.push(i);
+                            }
                         }
                         None => {
                             // Restore the last-used profile for this slot when starting a
@@ -391,11 +399,77 @@ impl PartyApp {
 
     pub fn remove_device(&mut self, dev: usize) {
         if let Some((instance_index, device_index)) = self.find_device_in_instance(dev) {
-            self.instances[instance_index].devices.remove(device_index);
-            if self.instances[instance_index].devices.is_empty() {
-                self.instances.remove(instance_index);
+            self.remove_device_at(instance_index, device_index);
+        }
+    }
+
+    /// Removes a device from a specific instance slot so duplicate controller
+    /// assignments can be cleaned up without touching other players.
+    pub fn remove_device_at(&mut self, instance_index: usize, device_index: usize) {
+        if let Some(instance) = self.instances.get_mut(instance_index) {
+            if device_index < instance.devices.len() {
+                instance.devices.remove(device_index);
             }
         }
+        self.prune_empty_instances();
+    }
+
+    /// Prunes stale instance assignments and remaps surviving devices after a
+    /// background rescan so controller indices stay consistent.
+    fn sync_input_devices(&mut self) {
+        let old_paths: Vec<String> = self
+            .input_devices
+            .iter()
+            .map(|device| device.path().to_string())
+            .collect();
+        let new_devices = scan_input_devices(&self.options.pad_filter_type);
+        let new_paths: Vec<String> = new_devices
+            .iter()
+            .map(|device| device.path().to_string())
+            .collect();
+
+        if new_paths == old_paths {
+            return;
+        }
+
+        let mut path_to_index: HashMap<String, usize> = HashMap::new();
+        for (idx, path) in new_paths.iter().enumerate() {
+            path_to_index.insert(path.clone(), idx);
+        }
+
+        for instance in &mut self.instances {
+            let mut remapped: Vec<usize> = Vec::with_capacity(instance.devices.len());
+            for &old_index in &instance.devices {
+                if let Some(old_path) = old_paths.get(old_index) {
+                    if let Some(&new_index) = path_to_index.get(old_path) {
+                        if !remapped.contains(&new_index) {
+                            remapped.push(new_index);
+                        }
+                    }
+                }
+            }
+            instance.devices = remapped;
+        }
+
+        self.prune_empty_instances();
+        self.input_devices = new_devices;
+    }
+
+    /// Drops any join slots that lost all devices after a rescan so the UI
+    /// never renders empty placeholders.
+    fn prune_empty_instances(&mut self) {
+        self.instances
+            .retain(|instance| !instance.devices.is_empty());
+    }
+
+    /// Periodically rescans for controllers to surface new Bluetooth devices as
+    /// soon as they connect.
+    fn maybe_refresh_input_devices(&mut self) {
+        if self.last_input_scan.elapsed() < std::time::Duration::from_secs(2) {
+            return;
+        }
+        self.last_input_scan = std::time::Instant::now();
+        self.sync_input_devices();
     }
 
     pub fn prepare_game_launch(&mut self) {

@@ -23,3 +23,4 @@
 - When a task exposes a recurring mistake or introduces a new global rule from the user, document it here immediately so future work remains aligned.
 - Audit complete emulator logs before summarizing state transitions (e.g., JOINABLE flips) so transient values are not misreported.
 - Favor pure-Rust or system-provided tooling for HTTP/download tasks; avoid adding crates that require native C toolchains (e.g., OpenSSL, ring, zstd-sys) so Steam Deck builds stay dependency-free.
+- Maintain state-of-the-art UI polish with smooth transitions, clean reusable code, perfectly aligned layouts, and avoid oversized padding or empty frames around iconography.
